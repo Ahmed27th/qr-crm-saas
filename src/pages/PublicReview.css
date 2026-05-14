@@ -1,0 +1,239 @@
+/* ─── Review Page ─────────────────────────────────────────────────────── */
+.review-container {
+  min-height: 100vh;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.review-background-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: radial-gradient(circle at 50% -10%,
+    rgba(226, 179, 107, 0.12) 0%,
+    transparent 65%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.review-card-wrapper {
+  position: relative;
+  z-index: 1;
+  max-width: 460px;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 4rem;
+}
+
+/* ─── Header ───────────────────────────────────────────────────────────── */
+.review-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.review-logo {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 4px solid var(--accent-primary);
+  object-fit: cover;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15),
+              0 0 0 8px rgba(226, 179, 107, 0.08);
+  display: block;
+  margin: 0 auto 1.25rem;
+  animation: float 5s ease-in-out infinite;
+}
+
+.review-logo-placeholder {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 4px solid var(--accent-primary);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.25rem;
+  background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+  font-size: 2rem;
+  font-weight: 900;
+  color: #fff;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-8px); }
+}
+
+/* ─── Rating ───────────────────────────────────────────────────────────── */
+.star-rating-container {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 1.5rem 0 0.75rem;
+}
+
+.star-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  line-height: 0;
+}
+.star-button:hover  { transform: scale(1.25); }
+.star-button:active { transform: scale(0.88); }
+
+.rating-label {
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent-primary);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  min-height: 1.2rem;
+  margin-bottom: 1.75rem;
+}
+
+/* ─── Textarea ─────────────────────────────────────────────────────────── */
+.review-textarea-wrapper {
+  background: var(--bg-secondary);
+  border: 1.5px solid var(--border-color);
+  border-radius: 16px;
+  padding: 1.25rem;
+  transition: border-color 0.25s, box-shadow 0.25s;
+  margin-bottom: 1.5rem;
+}
+.review-textarea-wrapper:focus-within {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 4px rgba(226, 179, 107, 0.12);
+}
+
+.review-textarea {
+  width: 100%;
+  min-height: 110px;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+.review-textarea::placeholder {
+  color: var(--text-tertiary);
+}
+
+/* ─── Submit Button ────────────────────────────────────────────────────── */
+.submit-btn {
+  width: 100%;
+  padding: 1.1rem;
+  border-radius: 14px;
+  background: var(--accent-gradient);
+  color: #1a1a1a;
+  font-weight: 800;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.2s;
+  box-shadow: 0 8px 24px rgba(226, 179, 107, 0.25);
+}
+.submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(226, 179, 107, 0.35);
+  filter: brightness(1.06);
+}
+.submit-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ─── Success State ────────────────────────────────────────────────────── */
+.success-celebration {
+  text-align: center;
+  padding: 1.5rem;
+}
+
+.success-icon-wrapper {
+  width: 112px;
+  height: 112px;
+  border-radius: 50%;
+  background: rgba(226, 179, 107, 0.1);
+  border: 1px solid rgba(226, 179, 107, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 2rem;
+  color: var(--accent-primary);
+  position: relative;
+}
+.success-icon-wrapper::after {
+  content: '';
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  border: 1px dashed rgba(226, 179, 107, 0.4);
+  animation: rotate 12s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ─── Google Button ────────────────────────────────────────────────────── */
+.google-btn {
+  width: 100%;
+  background: #ffffff;
+  color: #1a1a1a;
+  padding: 1rem 1.5rem;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  border: 1.5px solid #e5e7eb;
+  cursor: pointer;
+  margin-bottom: 0.75rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+.google-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.google-logo-mini {
+  height: 18px;
+  display: block;
+}
+
+/* ─── Back Link ────────────────────────────────────────────────────────── */
+.review-back-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin: 2rem auto 0;
+  padding: 0.5rem;
+  transition: color 0.2s;
+}
+.review-back-btn:hover { color: var(--accent-primary); }

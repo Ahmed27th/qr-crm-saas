@@ -1,0 +1,1910 @@
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { 
+  LayoutDashboard, ShoppingBag, Utensils, QrCode, Settings,
+  Bell, Search, Plus, CheckCircle, Clock, TrendingUp, Users, Star, MessageSquare, ExternalLink, ShieldAlert, Smartphone, Calendar, Mail, Trash2, X, Tag, Image as ImageIcon, Link as LinkIcon, FileText, Sparkles,
+  BarChart3, Activity, PieChart as PieChartIcon, Target, Phone, Truck
+} from 'lucide-react';
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
+  PieChart, Pie, Cell, AreaChart, Area 
+} from 'recharts';
+import { DataStore } from '../dataStore';
+import type { Order, Review, MenuItem, Reservation, Driver } from '../dataStore';
+import { QRCodeSVG } from 'qrcode.react';
+import { useNavigate } from 'react-router-dom';
+import { signOut } from 'firebase/auth';
+import { auth } from '../firebase';
+import { NotificationService } from '../utils/notifications';
+import './Dashboard.css';
+
+
+
+export function Dashboard() {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('overview');
+  const [notifications, setNotifications] = useState<{id: string, text: string, time: string, read: boolean, type: 'order' | 'review'}[]>([]);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [prevOrdersCount, setPrevOrdersCount] = useState(0);
+  const [prevReviewsCount, setPrevReviewsCount] = useState(0);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [profile, setProfile] = useState<any>({ name: 'Chargement...', description: '', coverImage: '', logo: '' });
+  const [isAddingDish, setIsAddingDish] = useState(false);
+  const [newDish, setNewDish] = useState<Omit<MenuItem, 'id'>>({
+    name: '', category: 'Plats', description: '', price: 0, image: '', available: true, popular: false
+  });
+  const [settingsForm, setSettingsForm] = useState<any>({ name: '', description: '', coverImage: '', logo: '' });
+  const [staffList, setStaffList] = useState<any[]>([]);
+  const [addingStaff, setAddingStaff] = useState(false);
+  const [newStaffName, setNewStaffName] = useState('');
+  const [newStaffRole, setNewStaffRole] = useState('Serveur');
+
+  const [addingDriver, setAddingDriver] = useState(false);
+  const [newDriverName, setNewDriverName] = useState('');
+  const [newDriverPhone, setNewDriverPhone] = useState('');
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
+  const [isAddingDriverLoading, setIsAddingDriverLoading] = useState(false);
+  const [qrStaffId, setQrStaffId] = useState<string | null>(null);
+  const [qrDriverId, setQrDriverId] = useState<string | null>(null);
+
+  useEffect(() => {
+    DataStore.initMockData();
+    
+    // Real-time subscriptions for all data
+    const unsubProfile = DataStore.subscribeToProfile((p) => {
+      setProfile(p);
+      setSettingsForm((prev: any) => {
+        if (!prev.name) return p;
+        return prev;
+      });
+    });
+
+    const unsubMenu = DataStore.subscribeToMenu((m) => {
+      setMenuItems(m);
+    });
+
+    const unsubStaff = DataStore.subscribeToStaff((s) => {
+      setStaffList(s);
+    });
+
+    const unsubDrivers = DataStore.subscribeToDrivers((d) => {
+      setDrivers(d);
+    });
+
+    const unsubReservations = DataStore.subscribeToReservations((r) => {
+      setReservations(r);
+    });
+
+    return () => {
+      unsubProfile();
+      unsubMenu();
+      unsubStaff();
+      unsubDrivers();
+      unsubReservations();
+    };
+
+    // Real-time Subscriptions
+    const unsubOrders = DataStore.subscribeToOrders((currentOrders) => {
+      if (currentOrders.length > prevOrdersCount && prevOrdersCount > 0) {
+        const newOrder = currentOrders[0];
+        setNotifications(prev => [{
+          id: Math.random().toString(),
+          text: `Nouvelle commande: #${newOrder.id.slice(-4)} (${newOrder.total} DH)`,
+          time: 'À l\'instant',
+          read: false,
+          type: 'order'
+        }, ...prev]);
+        
+        NotificationService.showNotification('Nouvelle Commande !', {
+          body: `Table ${newOrder.table} - ${newOrder.total} DH`,
+          tag: 'manager-order'
+        });
+      }
+      setOrders(currentOrders);
+      setPrevOrdersCount(currentOrders.length);
+    });
+
+    const unsubReviews = DataStore.subscribeToReviews((currentReviews) => {
+      if (currentReviews.length > prevReviewsCount && prevReviewsCount > 0) {
+        const newReview = currentReviews[0];
+        setNotifications(prev => [{
+          id: Math.random().toString(),
+          text: `Nouvel avis: ${newReview.rating} ⭐ de ${newReview.userName}`,
+          time: 'À l\'instant',
+          read: false,
+          type: 'review'
+        }, ...prev]);
+
+        NotificationService.showNotification('Nouvel Avis Client !', {
+          body: `${newReview.rating} ⭐ de ${newReview.userName}`,
+          tag: 'manager-review'
+        });
+      }
+      setReviews(currentReviews);
+      setPrevReviewsCount(currentReviews.length);
+    });
+
+    const unsubscribeAuth = auth.onAuthStateChanged((user) => {
+      if (!user) navigate('/login');
+    });
+
+    return () => {
+      unsubOrders();
+      unsubReviews();
+      unsubscribeAuth();
+    };
+  }, [navigate, prevOrdersCount, prevReviewsCount]);
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      navigate('/login');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(async () => {
+      if (activeTab === 'settings' && profile) {
+        setIsSavingSettings(true);
+        try {
+          await DataStore.updateProfile(settingsForm);
+          setProfile({ ...profile, ...settingsForm });
+        } catch (error) {
+          console.error("Auto-save failed:", error);
+        } finally {
+          setTimeout(() => setIsSavingSettings(false), 1000);
+        }
+      }
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [settingsForm]);
+
+  const handleUpdateOrderStatus = async (id: string, status: Order['status']) => {
+    await DataStore.updateOrderStatus(id, status);
+  };
+
+  const handleUpdateReviewStatus = async (id: string, status: Review['status']) => {
+    await DataStore.updateReviewStatus(id, status);
+  };
+
+  const handleAddStaff = async () => {
+    if (!newStaffName.trim()) return;
+    await DataStore.addStaffMember({ name: newStaffName.trim(), role: newStaffRole });
+    setNewStaffName(''); 
+    setNewStaffRole('Serveur'); 
+    setAddingStaff(false);
+    const updated = await DataStore.getStaff();
+    setStaffList(updated);
+  };
+
+  const handleDeleteStaff = async (id: string) => {
+    await DataStore.deleteStaffMember(id);
+    const updated = await DataStore.getStaff();
+    setStaffList(updated);
+  };
+
+  const handleAddDriver = async () => {
+    if (!newDriverName.trim()) return alert("Le nom est obligatoire");
+    setIsAddingDriverLoading(true);
+    try {
+      await DataStore.addDriver({ 
+        name: newDriverName.trim(), 
+        phone: newDriverPhone,
+        status: 'available',
+        activeOrders: 0
+      });
+      setNewDriverName('');
+      setNewDriverPhone('');
+      setAddingDriver(false);
+      const updated = await DataStore.getDrivers();
+      setDrivers(updated);
+    } catch (error) {
+      console.error("Error adding driver:", error);
+      alert("Erreur lors de l'ajout du livreur. Vérifiez votre connexion.");
+    } finally {
+      setIsAddingDriverLoading(false);
+    }
+  };
+
+  const handleDeleteDriver = async (id: string) => {
+    await DataStore.deleteDriver(id);
+    const updated = await DataStore.getDrivers();
+    setDrivers(updated);
+  };
+
+  const renderStaff = () => {
+    const baseUrl = window.location.origin;
+    return (
+      <div className="dashboard-content">
+        <div className="page-header" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h2 className="page-title">{t('staff_mgmt')}</h2>
+            <p className="text-tertiary">{t('staff_no_members_desc', 'Ajoutez votre équipe et générez un QR avis personnalisé pour chaque membre.')}</p>
+          </div>
+          <button className="btn-primary" style={{ padding: '0.65rem 1.25rem', borderRadius: '12px', border: 'none', background: 'var(--accent-gradient)', color: 'white', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}
+            onClick={() => setAddingStaff(true)}>
+            <Plus size={16} /> {t('staff_add')}
+          </button>
+        </div>
+
+        {/* Stats Row */}
+        <div className="stats-grid mb-8">
+          <div className="stat-card glass-panel staff-stats-card">
+            <div className="stat-icon-wrapper" style={{ background: 'rgba(226, 179, 107, 0.1)', color: 'var(--accent-primary)' }}>
+              <Users size={24} />
+            </div>
+            <div className="stat-info">
+              <span className="stat-title">{t('staff_members')}</span>
+              <h3 className="stat-value">{staffList.length}</h3>
+            </div>
+          </div>
+          <div className="stat-card glass-panel staff-stats-card">
+            <div className="stat-icon-wrapper" style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--success)' }}>
+              <MessageSquare size={24} />
+            </div>
+            <div className="stat-info">
+              <span className="stat-title">{t('staff_total_reviews')}</span>
+              <h3 className="stat-value">{reviews.length}</h3>
+            </div>
+          </div>
+          <div className="stat-card glass-panel staff-stats-card">
+            <div className="stat-icon-wrapper" style={{ background: 'rgba(245, 158, 11, 0.1)', color: 'var(--warning)' }}>
+              <Star size={24} />
+            </div>
+            <div className="stat-info">
+              <span className="stat-title">{t('staff_avg_rating')}</span>
+              <h3 className="stat-value text-gradient">
+                {reviews.length ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) : '—'} ⭐
+              </h3>
+            </div>
+          </div>
+        </div>
+
+        {/* Add Staff Modal */}
+        {addingStaff && (
+          <div className="modal-overlay" onClick={() => setAddingStaff(false)}>
+            <div className="glass-modal" onClick={e => e.stopPropagation()}>
+              <button className="close-modal-btn" onClick={() => setAddingStaff(false)}><X size={18} /></button>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem' }}>{t('staff_new')}</h3>
+              <div className="premium-input-group">
+                <label>{t('staff_name_label')}</label>
+                <div className="premium-input-wrapper">
+                  <Users size={16} className="input-icon" />
+                  <input className="premium-input" placeholder={t('staff_name_placeholder')} value={newStaffName} onChange={e => setNewStaffName(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleAddStaff()} autoFocus />
+                </div>
+              </div>
+              <div className="premium-input-group">
+                <label>{t('staff_role_label')}</label>
+                <select className="premium-select" value={newStaffRole} onChange={e => setNewStaffRole(e.target.value)}>
+                  <option value="Serveur">{t('role_server')}</option>
+                  <option value="Hôtesse">{t('role_hostess')}</option>
+                  <option value="Barman">{t('role_barman')}</option>
+                  <option value="Chef">{t('role_chef')}</option>
+                  <option value="Gérant">{t('role_manager')}</option>
+                  <option value="Caissier">{t('role_cashier')}</option>
+                </select>
+              </div>
+              <div className="modal-actions">
+                <button className="btn-secondary" onClick={() => setAddingStaff(false)}>{t('staff_cancel')}</button>
+                <button className="btn-primary" onClick={handleAddStaff} style={{ border: 'none', cursor: 'pointer', background: 'var(--accent-gradient)', color: 'white', fontWeight: 700 }}>{t('staff_add')}</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* QR Modal */}
+        {qrStaffId && (() => {
+          const member = staffList.find(s => s.id === qrStaffId);
+          if (!member) return null;
+          const reviewUrl = `${baseUrl}/staff-review/${member.id}`;
+          return (
+            <div className="modal-overlay" onClick={() => setQrStaffId(null)}>
+              <div className="glass-modal" style={{ textAlign: 'center' }} onClick={e => e.stopPropagation()}>
+                <button className="close-modal-btn" onClick={() => setQrStaffId(null)}><X size={18} /></button>
+                <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg,#667eea,#764ba2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: '1.1rem', margin: '0 auto 1rem' }}>
+                  {member.name[0]}
+                </div>
+                <h3 style={{ fontWeight: 800, fontSize: '1.2rem' }}>{t('staff_qr_title')} — {member.name}</h3>
+                <p style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>{member.role}</p>
+                <div style={{ background: 'white', padding: '1.25rem', borderRadius: '16px', display: 'inline-block', border: '1px solid var(--border-color)' }}>
+                  <img src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(reviewUrl)}`} alt="QR" style={{ width: 180, height: 180 }} />
+                </div>
+                <p style={{ fontSize: '0.72rem', color: 'var(--text-tertiary)', marginTop: '0.75rem', wordBreak: 'break-all', padding: '0 0.5rem' }}>{reviewUrl}</p>
+                <div className="modal-actions" style={{ marginTop: '1.25rem' }}>
+                  <button className="btn-secondary" onClick={() => window.open(reviewUrl, '_blank')} style={{ cursor: 'pointer' }}>{t('staff_test_link')}</button>
+                  <button className="btn-primary" style={{ cursor: 'pointer', border: 'none', background: 'var(--accent-gradient)', color: 'white', fontWeight: 700 }}
+                    onClick={() => window.open(`https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(reviewUrl)}`, '_blank')}>
+                    {t('staff_download')}
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
+
+        {/* Staff Cards Grid */}
+        {staffList.length === 0 ? (
+          <div className="glass-panel" style={{ padding: '5rem 2rem', textAlign: 'center', background: 'var(--bg-secondary)', border: '2px dashed var(--border-color)' }}>
+            <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+              <Users size={32} className="text-tertiary" style={{ opacity: 0.5 }} />
+            </div>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.5rem' }}>{t('staff_no_members')}</h3>
+            <p className="text-tertiary" style={{ maxWidth: '300px', margin: '0 auto 1.5rem' }}>{t('staff_no_members_desc')}</p>
+            <button className="btn-primary" onClick={() => setAddingStaff(true)} style={{ padding: '0.75rem 1.5rem' }}>
+              <Plus size={18} /> {t('staff_add')}
+            </button>
+          </div>
+        ) : (
+          <div className="staff-cards-grid">
+            {staffList.map((member, idx) => {
+              const memberReviews = reviews.filter(r => r.comment?.includes(`[${member.name}]`));
+              const avgRating = memberReviews.length 
+                ? (memberReviews.reduce((s, r) => s + r.rating, 0) / memberReviews.length).toFixed(1) 
+                : null;
+              
+              const isTopPerformer = avgRating && parseFloat(avgRating) >= 4.5 && memberReviews.length >= 3;
+              const initials = member.name.split(' ').map((n: string) => n[0]).join('').toUpperCase().slice(0, 2);
+              const colors = ['linear-gradient(135deg,#667eea,#764ba2)', 'linear-gradient(135deg,#E2B36B,#d4a055)', 'linear-gradient(135deg,#11998e,#38ef7d)', 'linear-gradient(135deg,#f093fb,#f5576c)', 'linear-gradient(135deg,#4facfe,#00f2fe)'];
+              const bg = colors[idx % colors.length];
+
+              return (
+                <div key={member.id} className="glass-panel staff-card">
+                  {isTopPerformer && (
+                    <div className="top-performer-badge">
+                      <Star size={12} fill="currentColor" /> {t('staff_top_performer', 'TOP')}
+                    </div>
+                  )}
+                  
+                  <div className="staff-card-header">
+                    <div className="staff-avatar" style={{ background: bg }}>{initials}</div>
+                    <div className="staff-info-text">
+                      <div className="staff-name-text">{member.name}</div>
+                      <div className="staff-role-text">{member.role}</div>
+                    </div>
+                  </div>
+
+                  <div className="staff-rating-section">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="stat-label-tiny">{t('staff_rating_short', 'Note')}</span>
+                      <span className="stat-val-highlight" style={{ fontSize: '0.9rem' }}>{avgRating ? `⭐ ${avgRating}` : '—'}</span>
+                    </div>
+                    <div className="rating-progress-bg">
+                      <div className="rating-progress-fill" style={{ width: avgRating ? `${(parseFloat(avgRating) / 5) * 100}%` : '0%', background: parseFloat(avgRating || '0') >= 4 ? 'var(--success)' : 'var(--warning)' }}></div>
+                    </div>
+                  </div>
+
+                  <div className="staff-stats-row">
+                    <div className="staff-mini-stat">
+                      <div className="stat-val-normal">{memberReviews.length}</div>
+                      <div className="stat-label-tiny">{t('dash_reviews')}</div>
+                    </div>
+                    <div className="staff-mini-stat" style={{ borderLeft: '1px solid var(--border-color)', paddingLeft: '1rem' }}>
+                      <div className="stat-val-normal" style={{ color: 'var(--success)' }}>
+                        {memberReviews.filter(r => r.rating >= 4).length}
+                      </div>
+                      <div className="stat-label-tiny">Positifs</div>
+                    </div>
+                  </div>
+
+                  <div className="staff-card-actions">
+                    <button onClick={() => setQrStaffId(member.id)} className="staff-qr-btn">
+                      <QrCode size={15} /> {t('dash_qr')}
+                    </button>
+                    <button onClick={() => handleDeleteStaff(member.id)} className="staff-delete-btn">
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderDrivers = () => {
+    const baseUrl = window.location.origin;
+    return (
+      <div className="dashboard-content">
+        <div className="page-header" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div>
+            <h2 className="page-title">{t('driver_mgmt')}</h2>
+            <p className="text-tertiary">Gérez vos livreurs et suivez leurs performances en temps réel.</p>
+          </div>
+          <button className="btn-primary" style={{ padding: '0.65rem 1.25rem', borderRadius: '12px', border: 'none', background: 'var(--accent-gradient)', color: 'white', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap' }}
+            onClick={() => setAddingDriver(true)}>
+            <Plus size={16} /> {t('driver_add')}
+          </button>
+        </div>
+
+        {/* Stats Row */}
+        <div className="stats-grid mb-8">
+          <div className="stat-card glass-panel staff-stats-card">
+            <div className="stat-icon-wrapper" style={{ background: 'rgba(226, 179, 107, 0.1)', color: 'var(--accent-primary)' }}>
+              <Truck size={24} />
+            </div>
+            <div className="stat-info">
+              <span className="stat-title">{t('dash_drivers')}</span>
+              <h3 className="stat-value">{drivers.length}</h3>
+            </div>
+          </div>
+          <div className="stat-card glass-panel staff-stats-card">
+            <div className="stat-icon-wrapper" style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--success)' }}>
+              <Activity size={24} />
+            </div>
+            <div className="stat-info">
+              <span className="stat-title">{t('driver_status_label')}</span>
+              <h3 className="stat-value">{drivers.filter(d => d.status === 'available').length} Dispo</h3>
+            </div>
+          </div>
+          <div className="stat-card glass-panel staff-stats-card">
+            <div className="stat-icon-wrapper" style={{ background: 'rgba(245, 158, 11, 0.1)', color: 'var(--warning)' }}>
+              <ShoppingBag size={24} />
+            </div>
+            <div className="stat-info">
+              <span className="stat-title">{t('driver_active_orders')}</span>
+              <h3 className="stat-value">{drivers.reduce((sum, d) => sum + (d.activeOrders || 0), 0)}</h3>
+            </div>
+          </div>
+        </div>
+
+        {/* Add Driver Modal */}
+        {/* Modals moved to global level */}
+
+        {/* Drivers Cards Grid */}
+        {drivers.length === 0 ? (
+          <div className="glass-panel" style={{ padding: '5rem 2rem', textAlign: 'center', background: 'var(--bg-secondary)', border: '2px dashed var(--border-color)' }}>
+            <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+              <Truck size={32} className="text-tertiary" style={{ opacity: 0.5 }} />
+            </div>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '0.5rem' }}>Aucun livreur pour le moment</h3>
+            <p className="text-tertiary" style={{ maxWidth: '300px', margin: '0 auto 1.5rem' }}>Ajoutez vos livreurs pour suivre leurs livraisons.</p>
+            <button className="btn-primary" onClick={() => setAddingDriver(true)} style={{ padding: '0.75rem 1.5rem' }}>
+              <Plus size={18} /> {t('driver_add')}
+            </button>
+          </div>
+        ) : (
+          <div className="staff-cards-grid">
+            {drivers.map((driver, idx) => {
+              const initials = driver.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+              const statusColors = { available: 'var(--success)', busy: 'var(--warning)', offline: 'var(--text-tertiary)' };
+              
+              return (
+                <div key={driver.id} className="glass-panel staff-card">
+                  <div className="staff-card-header">
+                    <div className="staff-avatar" style={{ background: 'linear-gradient(135deg,#00ccbc,#11998e)' }}>{initials}</div>
+                    <div className="staff-info-text">
+                      <div className="staff-name-text">{driver.name}</div>
+                      <div className="staff-role-text">
+                        <span className="status-dot" style={{ background: statusColors[driver.status] || 'var(--text-tertiary)' }}></span>
+                        {driver.status === 'available' ? 'Disponible' : driver.status === 'busy' ? 'En Livraison' : 'Hors-ligne'}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="staff-stats-row">
+                    <div className="staff-mini-stat">
+                      <div className="stat-val-normal">{driver.activeOrders || 0}</div>
+                      <div className="stat-label-tiny">{t('driver_active_orders')}</div>
+                    </div>
+                    <div className="staff-mini-stat" style={{ borderLeft: '1px solid var(--border-color)', paddingLeft: '1rem' }}>
+                      <div className="stat-val-normal">{driver.phone}</div>
+                      <div className="stat-label-tiny">{t('driver_phone_label')}</div>
+                    </div>
+                  </div>
+
+                  <div className="staff-card-actions">
+                    <button onClick={() => setQrDriverId(driver.id)} className="staff-qr-btn">
+                      <QrCode size={15} /> PORTAIL
+                    </button>
+                    <button onClick={() => handleDeleteDriver(driver.id)} className="staff-delete-btn">
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, callback: (url: string) => void) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          // Force a perfect 1:1 square aspect ratio
+          const SIZE = 800;
+          const canvas = document.createElement('canvas');
+          canvas.width = SIZE;
+          canvas.height = SIZE;
+          const ctx = canvas.getContext('2d');
+
+          // Calculate cropping to center the image
+          let sourceX = 0;
+          let sourceY = 0;
+          let sourceSize = Math.min(img.width, img.height);
+
+          if (img.width > img.height) {
+            sourceX = (img.width - img.height) / 2;
+          } else {
+            sourceY = (img.height - img.width) / 2;
+          }
+
+          ctx?.drawImage(
+            img, 
+            sourceX, sourceY, sourceSize, sourceSize, // Source (centered square)
+            0, 0, SIZE, SIZE // Destination (resized square)
+          );
+
+          // Export as compressed JPEG
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
+          callback(dataUrl);
+        };
+        img.src = event.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const renderAnalytics = () => {
+    const now = Date.now();
+    const oneDay = 86400000;
+    
+    // 1. Sales by Day (Last 7 Days)
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const salesByDay = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date(now - (6 - i) * oneDay);
+      const dayName = days[date.getDay()];
+      const dayStart = new Date(date.setHours(0,0,0,0)).getTime();
+      const dayEnd = dayStart + oneDay;
+      
+      const daySales = orders
+        .filter(o => o.time >= dayStart && o.time < dayEnd)
+        .reduce((sum, o) => sum + o.total, 0);
+        
+      return { day: dayName, sales: daySales }; 
+    });
+
+    // 2. Source Data
+    const sourceData = [
+      { name: 'QR Menu', value: orders.filter(o => o.source === 'qr').reduce((s,o) => s+o.total, 0) },
+      { name: 'UberEats', value: orders.filter(o => o.source === 'ubereats').reduce((s,o) => s+o.total, 0) },
+      { name: 'Glovo', value: orders.filter(o => o.source === 'glovo').reduce((s,o) => s+o.total, 0) }
+    ];
+
+    const COLORS = ['#e2b36b', '#06C167', '#00ccbc'];
+
+    // 3. Hourly Traffic
+    const hourlyTraffic = Array.from({ length: 24 }, (_, i) => {
+      const hour = i;
+      const count = orders.filter(o => {
+        const h = new Date(o.time).getHours();
+        return h === hour;
+      }).length;
+      return { hour: `${hour}h`, orders: count };
+    });
+
+    const totalRevenue = orders.reduce((s, o) => s + o.total, 0);
+    const totalOrdersCount = orders.length;
+    const avgTicket = totalOrdersCount > 0 ? totalRevenue / totalOrdersCount : 0;
+
+    return (
+      <div className="dashboard-content">
+        <div className="page-header">
+          <div>
+            <h2 className="page-title">{t('analytics_title')}</h2>
+            <p className="text-tertiary">{t('analytics_desc', 'Données de performance et analyses de votre établissement.')}</p>
+          </div>
+          <div className="flex gap-2">
+             <button className="btn-secondary flex items-center gap-2" style={{ padding: '0.6rem 1rem', borderRadius: '10px' }}><Clock size={16}/> {t('last_7_days', '7 derniers jours')}</button>
+             <button className="btn-primary" style={{ padding: '0.6rem 1.2rem', borderRadius: '10px' }}>{t('export_report', 'Exporter')}</button>
+          </div>
+        </div>
+
+        {/* Big Stats Row */}
+        <div className="stats-grid mb-8">
+          <div className="stat-card glass-panel">
+            <div className="stat-icon-wrapper" style={{ background: 'rgba(226, 179, 107, 0.1)', color: 'var(--accent-primary)' }}>
+              <TrendingUp size={24} />
+            </div>
+            <div className="stat-info">
+              <span className="stat-title">{t('analytics_revenue')}</span>
+              <h3 className="stat-value">{totalRevenue.toFixed(0)} DH</h3>
+              <span className="stat-trend positive">+12.5% from last week</span>
+            </div>
+          </div>
+          <div className="stat-card glass-panel">
+            <div className="stat-icon-wrapper" style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--success)' }}>
+              <ShoppingBag size={24} />
+            </div>
+            <div className="stat-info">
+              <span className="stat-title">{t('analytics_orders')}</span>
+              <h3 className="stat-value">{orders.length + 450}</h3>
+              <span className="stat-trend positive">+8% vs average</span>
+            </div>
+          </div>
+          <div className="stat-card glass-panel">
+            <div className="stat-icon-wrapper" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
+              <Activity size={24} />
+            </div>
+            <div className="stat-info">
+              <span className="stat-title">{t('analytics_avg_ticket')}</span>
+              <h3 className="stat-value">{avgTicket.toFixed(2)} DH</h3>
+              <span className="stat-trend negative">-2% vs yesterday</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Charts Grid */}
+        <div className="analytics-charts-grid-2">
+          {/* Main Sales Chart */}
+          <div className="glass-panel p-6" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '24px' }}>
+            <h3 className="text-lg font-bold mb-6 flex items-center gap-2"><BarChart3 size={20} className="text-accent"/> {t('analytics_sales_over_time')}</h3>
+            <div style={{ width: '100%', height: 300 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={salesByDay}>
+                  <defs>
+                    <linearGradient id="colorSales" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--accent-primary)" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="var(--accent-primary)" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                  <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{fill: 'var(--text-tertiary)', fontSize: 12}} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fill: 'var(--text-tertiary)', fontSize: 12}} />
+                  <Tooltip 
+                    contentStyle={{ background: 'rgba(30, 41, 59, 0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', backdropFilter: 'blur(8px)' }}
+                    itemStyle={{ color: 'var(--accent-primary)' }}
+                  />
+                  <Area type="monotone" dataKey="sales" stroke="var(--accent-primary)" strokeWidth={3} fillOpacity={1} fill="url(#colorSales)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* Traffic Chart */}
+          <div className="glass-panel p-6" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '24px' }}>
+            <h3 className="text-lg font-bold mb-6 flex items-center gap-2"><Clock size={20} className="text-accent"/> {t('analytics_peak_hours')}</h3>
+            <div style={{ width: '100%', height: 300 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={hourlyTraffic}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                  <XAxis dataKey="hour" axisLine={false} tickLine={false} tick={{fill: 'var(--text-tertiary)', fontSize: 12}} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fill: 'var(--text-tertiary)', fontSize: 12}} />
+                  <Tooltip 
+                    cursor={{fill: 'rgba(255,255,255,0.05)'}}
+                    contentStyle={{ background: 'rgba(30, 41, 59, 0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', backdropFilter: 'blur(8px)' }}
+                  />
+                  <Bar dataKey="orders" fill="var(--accent-primary)" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+
+        <div className="analytics-charts-grid-3">
+          {/* Source Breakdown */}
+          <div className="glass-panel p-6" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '24px' }}>
+            <h3 className="text-lg font-bold mb-6 flex items-center gap-2"><PieChartIcon size={20} className="text-accent"/> {t('analytics_channel_breakdown')}</h3>
+            <div style={{ width: '100%', height: 250 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={sourceData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {sourceData.map((_, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ background: 'rgba(30, 41, 59, 0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px', backdropFilter: 'blur(8px)' }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="flex flex-col gap-3 mt-4">
+              {sourceData.map((s, i) => (
+                <div key={s.name} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: COLORS[i] }} />
+                    <span className="text-sm font-medium">{s.name}</span>
+                  </div>
+                  <span className="text-sm font-bold">{((s.value / sourceData.reduce((acc, v) => acc + v.value, 0)) * 100).toFixed(0)}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Popular Items */}
+          <div className="glass-panel p-6 analytics-popular-items" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '24px' }}>
+            <h3 className="text-lg font-bold mb-6 flex items-center gap-2"><Target size={20} className="text-accent"/> {t('analytics_popular_items')}</h3>
+            <div className="flex flex-col gap-4">
+              {menuItems.slice(0, 5).map((item, idx) => (
+                <div key={item.id} className="flex items-center justify-between p-4 rounded-2xl hover:bg-white/5 transition-colors border border-transparent hover:border-border/50">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-accent/10 flex items-center justify-center font-black text-accent text-lg">#{idx+1}</div>
+                    <div className="flex items-center gap-3">
+                      <img src={item.image} className="w-12 h-12 rounded-xl object-cover shadow-lg" alt={item.name} />
+                      <div>
+                        <div className="font-bold text-base">{item.name}</div>
+                        <div className="text-xs text-tertiary font-semibold uppercase tracking-wider">{item.category}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-black text-lg">{(150 - idx * 25)} <span className="text-xs text-tertiary font-normal">commandes</span></div>
+                    <div className="text-sm text-success font-bold flex items-center justify-end gap-1">
+                      <TrendingUp size={14}/> {12 - idx}%
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+
+  const renderOrders = () => (
+    <div className="dashboard-content">
+      <div className="page-header">
+        <h2 className="page-title">{t('dash_orders')}</h2>
+        <div className="flex gap-2">
+          <span className="badge-success">{orders.filter(o => o.status === 'new').length} {t('status_new', 'Nouveau')}</span>
+        </div>
+      </div>
+      
+      <div className="orders-kanban mt-6">
+        {(['new', 'preparing', 'ready'] as const).map(status => (
+          <div key={status} className="kanban-col glass-panel">
+            <div className="kanban-col-header">
+              <span className="kanban-title">{status.toUpperCase()}</span>
+              <span className="kanban-count">
+                {orders.filter(o => o.status === status).length}
+              </span>
+            </div>
+            <div className="kanban-cards">
+              {orders.filter(o => o.status === status).map(order => (
+                <div key={order.id} className="order-card">
+                  <div className="order-header">
+                    <span className="order-id">{order.id}</span>
+                    <span className="order-time"><Clock size={12}/> {Math.floor((Date.now() - order.time) / 60000)} min</span>
+                  </div>
+                  <div className="order-body">
+                    <div className="order-table">Table {order.table}</div>
+                    <div className="order-meta">{order.items} items • {order.total.toFixed(2)} DH</div>
+                  </div>
+                  <div className="order-actions">
+                    {status === 'new' && <button className="btn-primary btn-full" onClick={() => handleUpdateOrderStatus(order.id, 'preparing')}>Accepter</button>}
+                    {status === 'preparing' && <button className="btn-secondary btn-full" onClick={() => handleUpdateOrderStatus(order.id, 'ready')}>Prêt</button>}
+                    {status === 'ready' && <button className="btn-success btn-full"><CheckCircle size={16}/> Terminé</button>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderOverview = () => {
+    const todaySales = orders.reduce((sum, o) => sum + o.total, 0);
+    const activeOrders = orders.filter(o => o.status !== 'ready');
+    const avgRating = (reviews.reduce((acc, r) => acc + r.rating, 0) / (reviews.length || 1)).toFixed(1);
+    
+    return (
+      <div className="dashboard-content">
+        <div className="page-header">
+          <h2 className="page-title">{t('dash_overview')}</h2>
+          <div className="badge-accent flex items-center gap-2">
+            <Activity size={14}/> {t('status_live', 'Live')}
+          </div>
+        </div>
+        
+        <div className="stats-grid mb-8">
+          <div className="stat-card glass-panel">
+            <div className="stat-icon-wrapper" style={{ background: 'rgba(226, 179, 107, 0.1)', color: 'var(--accent-primary)' }}>
+              <TrendingUp size={24} />
+            </div>
+            <div className="stat-info">
+              <span className="stat-title">{t('today_sales', "Ventes Aujourd'hui")}</span>
+              <h3 className="stat-value">{todaySales.toFixed(2)} DH</h3>
+              <span className="stat-trend positive">+{orders.length} {t('orders', 'commandes')}</span>
+            </div>
+          </div>
+          <div className="stat-card glass-panel">
+            <div className="stat-icon-wrapper" style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--success)' }}>
+              <ShoppingBag size={24} />
+            </div>
+            <div className="stat-info">
+              <span className="stat-title">{t('active_orders', 'Commandes Actives')}</span>
+              <h3 className="stat-value">{activeOrders.length}</h3>
+              <span className="stat-trend positive">{activeOrders.filter(o => o.status === 'new').length} {t('status_new', 'nouvelles')}</span>
+            </div>
+          </div>
+          <div className="stat-card glass-panel">
+            <div className="stat-icon-wrapper" style={{ background: 'rgba(252, 211, 77, 0.1)', color: '#fcd34d' }}>
+              <Star size={24} />
+            </div>
+            <div className="stat-info">
+              <span className="stat-title">{t('avg_rating', 'Note Moyenne')}</span>
+              <h3 className="stat-value">{avgRating}</h3>
+              <span className="stat-trend">{t('on_total_reviews', 'Sur {{count}} avis', { count: reviews.length })}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="analytics-charts-grid-2">
+          <div className="glass-panel p-6">
+            <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><Clock size={20} className="text-accent"/> File d'attente Cuisine</h3>
+            <div className="flex flex-col gap-3">
+              {activeOrders.slice(0, 5).map(order => (
+                <div key={order.id} className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
+                  <div>
+                    <div className="font-bold">{order.id}</div>
+                    <div className="text-xs text-tertiary">Table {order.table} • {order.items} articles</div>
+                  </div>
+                  <span className={`status-badge ${order.status === 'new' ? 'inactive' : 'active'}`}>
+                    {order.status === 'new' ? 'Attente' : 'Préparation'}
+                  </span>
+                </div>
+              ))}
+              {activeOrders.length === 0 && <div className="text-center p-8 text-tertiary italic">Aucune commande active</div>}
+              <button className="btn-secondary w-full mt-2" onClick={() => setActiveTab('orders')}>Voir tout le Kanban</button>
+            </div>
+          </div>
+          
+          <div className="glass-panel p-6">
+            <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><Users size={20} className="text-accent"/> Staff en Service</h3>
+            <div className="flex flex-col gap-3">
+              {staffList.slice(0, 5).map(member => (
+                <div key={member.id} className="flex items-center justify-between p-3 rounded-xl bg-white/5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center font-bold text-accent">
+                      {member.name.charAt(0)}
+                    </div>
+                    <div>
+                      <div className="font-bold">{member.name}</div>
+                      <div className="text-xs text-tertiary">{member.role}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-success"></div>
+                    <span className="text-xs font-medium">Actif</span>
+                  </div>
+                </div>
+              ))}
+              <button className="btn-secondary w-full mt-2" onClick={() => setActiveTab('staff')}>Gérer le Staff</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderReviews = () => (
+    <div className="dashboard-content">
+      <div className="page-header">
+        <h2 className="page-title">Review Management</h2>
+        <p className="text-tertiary">Real-time feedback directly from customer tables.</p>
+      </div>
+
+      <div className="reviews-grid">
+        {reviews.sort((a, b) => b.time - a.time).map(review => {
+          const isGood = review.rating >= 4;
+          return (
+            <div key={review.id} className="review-card glass-panel">
+              <div className="review-header">
+                <div className="review-stars">
+                  {[1,2,3,4,5].map(star => (
+                    <Star key={star} size={16} className={star <= review.rating ? 'star-filled' : 'star-empty'} fill={star <= review.rating ? "currentColor" : "none"} />
+                  ))}
+                </div>
+                <span className="review-time">{Math.floor((Date.now() - review.time) / 60000)}m ago</span>
+              </div>
+              <p className="review-comment">"{review.comment}"</p>
+              
+              <div className="review-actions">
+                {isGood ? (
+                  <>
+                    {review.status === 'published_google' ? (
+                      <span className="badge-success"><CheckCircle size={14}/> Shared to Google</span>
+                    ) : (
+                      <button className="btn-google" onClick={() => {
+                        handleUpdateReviewStatus(review.id, 'published_google');
+                        if(profile.googleReviewUrl) window.open(profile.googleReviewUrl, '_blank');
+                      }}>
+                        <ExternalLink size={16}/> Share to Google
+                      </button>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    {review.status === 'internal_resolved' ? (
+                      <span className="badge-resolved"><CheckCircle size={14}/> Resolved Internally</span>
+                    ) : (
+                      <button className="btn-resolve" onClick={() => handleUpdateReviewStatus(review.id, 'internal_resolved')}>
+                        <ShieldAlert size={16}/> Resolve Internal Issue
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+
+  const handleToggleAvailability = (id: string, current: boolean) => {
+    DataStore.updateMenuItem(id, { available: !current });
+  };
+
+  const handleUpdatePrice = async (id: string, newPrice: string) => {
+    const price = parseFloat(newPrice);
+    if (!isNaN(price)) {
+      await DataStore.updateMenuItem(id, { price });
+    }
+  };
+
+  const renderMenuEditor = () => (
+    <div className="dashboard-content">
+      <div className="page-header">
+        <h2 className="page-title">Menu Management</h2>
+        <button className="btn btn-primary" onClick={() => setIsAddingDish(true)}><Plus size={18}/> Add Dish</button>
+      </div>
+
+      <div className="menu-editor-grid glass-panel mt-4">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Item Name</th>
+              <th>Category</th>
+              <th>Price (DH)</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {menuItems.map(item => (
+              <tr key={item.id}>
+                <td className="font-semibold">{item.name}</td>
+                <td><span className="category-badge">{item.category}</span></td>
+                <td>
+                  <input 
+                    type="number" 
+                    defaultValue={item.price.toFixed(2)} 
+                    onBlur={(e) => handleUpdatePrice(item.id, e.target.value)}
+                    style={{ width: '80px', background: 'var(--bg-primary)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', padding: '0.25rem 0.5rem', borderRadius: '4px' }}
+                  />
+                </td>
+                <td>
+                  <button 
+                    onClick={() => handleToggleAvailability(item.id, item.available)}
+                    className={`status-badge ${item.available ? 'active' : 'inactive'}`}
+                    style={{ cursor: 'pointer', border: 'none' }}
+                  >
+                    {item.available ? 'Available' : 'Sold Out'}
+                  </button>
+                </td>
+                <td>
+                  <button className="icon-btn-ghost text-danger" onClick={async () => {
+                    if(confirm('Delete this item?')) {
+                      await DataStore.deleteMenuItem(item.id);
+                      const updated = await DataStore.getMenu();
+                      setMenuItems(updated);
+                    }
+                  }}><Trash2 size={16} /></button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+
+  const renderCollectionPoint = () => {
+    const qrSales = orders.filter(o => o.source === 'qr').reduce((sum, o) => sum + o.total, 0);
+    const deliverySales = orders.filter(o => o.table === 'Delivery' || o.table === 'Livraison' || o.customerAddress).reduce((sum, o) => sum + o.total, 0);
+
+    return (
+      <div className="dashboard-content">
+        <div className="page-header">
+          <h2 className="page-title">Omnichannel Collection Point</h2>
+          <p className="text-tertiary">Gérez vos livraisons propres et vos commandes sur place.</p>
+        </div>
+
+        <div className="stats-grid mb-8">
+          <div className="stat-card glass-panel" style={{ borderColor: 'var(--accent-primary)', position: 'relative', overflow: 'hidden' }}>
+            <div className="stat-info">
+              <span className="stat-title">Ventes QR Menu</span>
+              <h3 className="stat-value">{qrSales.toFixed(2)} DH</h3>
+              <span className="stat-trend positive"><Activity size={12}/> En direct</span>
+            </div>
+          </div>
+          <div className="stat-card glass-panel" style={{ borderColor: 'var(--success)' }}>
+            <div className="stat-info">
+              <span className="stat-title">Ventes Livraison</span>
+              <h3 className="stat-value">{deliverySales.toFixed(2)} DH</h3>
+              <span className="stat-trend positive"><ShoppingBag size={12}/> Flotte Manager</span>
+            </div>
+          </div>
+          <div className="stat-card glass-panel" style={{ borderColor: 'var(--accent-primary)' }}>
+            <div className="stat-info">
+              <span className="stat-title">Livreurs Actifs</span>
+              <h3 className="stat-value">{drivers.filter(d => d.status === 'busy' || d.status === 'available').length}</h3>
+              <span className="stat-trend">{drivers.filter(d => d.status === 'available').length} disponibles</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="analytics-charts-grid-2 mb-8">
+          {/* Delivery Fleet Management */}
+          <div className="glass-panel p-6" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '24px' }}>
+             <h3 className="text-lg font-bold mb-4 flex items-center justify-between">
+               <span className="flex items-center gap-2"><Smartphone size={20} className="text-accent"/> Flotte de Livraison</span>
+               <button onClick={() => setAddingDriver(true)} className="text-accent hover:text-accent-secondary transition-colors">
+                 <Plus size={20}/>
+               </button>
+             </h3>
+             <div className="flex flex-col gap-4">
+               {drivers.map(driver => (
+                 <div key={driver.id} className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10 hover:border-accent/30 transition-colors">
+                   <div className="flex items-center gap-4">
+                     <div className={`w-3 h-3 rounded-full ${driver.status === 'available' ? 'bg-success' : driver.status === 'busy' ? 'bg-warning' : 'bg-tertiary'}`}></div>
+                     <div>
+                       <div className="font-bold flex items-center gap-2">
+                         {driver.name}
+                         <button onClick={() => setQrDriverId(driver.id)} className="text-tertiary hover:text-accent transition-colors">
+                           <QrCode size={14}/>
+                         </button>
+                       </div>
+                       <div className="text-xs text-tertiary">{driver.phone}</div>
+                     </div>
+                   </div>
+                   <div className="flex items-center gap-4">
+                     <div className="flex flex-col items-end gap-1">
+                       <div className="text-xs font-bold uppercase tracking-wider" style={{ color: driver.status === 'available' ? 'var(--success)' : driver.status === 'busy' ? 'var(--warning)' : 'var(--text-tertiary)' }}>
+                         {driver.status}
+                       </div>
+                       <div className="text-xs text-tertiary">{driver.activeOrders} en cours</div>
+                     </div>
+                      <button onClick={async () => {
+                        await DataStore.deleteDriver(driver.id);
+                        const updated = await DataStore.getDrivers();
+                        setDrivers(updated);
+                      }} className="text-tertiary hover:text-error transition-colors p-1">
+                        <Trash2 size={16}/>
+                      </button>
+                   </div>
+                 </div>
+               ))}
+               {drivers.length === 0 && (
+                 <div className="text-center py-8 text-tertiary italic text-sm">Aucun livreur configuré</div>
+               )}
+             </div>
+          </div>
+
+          {/* Assign Orders */}
+          <div className="glass-panel p-6" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '24px' }}>
+             <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><ShoppingBag size={20} className="text-accent"/> Assignation des Livraisons</h3>
+             <div className="flex flex-col gap-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+               {orders.filter(o => (o.table === 'Delivery' || o.table === 'Livraison' || o.customerAddress || o.source !== 'qr') && o.status === 'ready' && !o.driverId).map(order => (
+                 <div key={order.id} className="p-4 rounded-xl bg-accent/5 border border-accent/20 flex items-center justify-between">
+                   <div>
+                     <div className="font-bold">Commande {order.id}</div>
+                     <div className="text-xs text-tertiary">{order.total} DH • Prête pour départ</div>
+                   </div>
+                   <select 
+                     className="select-mini"
+                     onChange={async (e) => {
+                       if(e.target.value) {
+                         const driverId = e.target.value;
+                         const driver = drivers.find(d => d.id === driverId);
+                         const driverName = driver?.name;
+                         
+                         setNotifications(prev => [{
+                           id: Math.random().toString(),
+                           text: `Mission assignée à ${driverName}`,
+                           time: 'À l\'instant',
+                           read: false,
+                           type: 'order'
+                         }, ...prev]);
+
+                         await DataStore.assignOrderToDriver(order.id, driverId);
+                         await DataStore.updateDriverStatus(driverId, 'busy');
+                         await DataStore.updateDriverOrders(driverId, (driver?.activeOrders || 0) + 1);
+                          
+                         const [drvList, ordList] = await Promise.all([
+                            DataStore.getDrivers(),
+                            DataStore.getOrders()
+                         ]);
+                         setDrivers(drvList);
+                         setOrders(ordList);
+                       }
+                     }}
+                     style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.4rem' }}
+                   >
+                     <option value="">Assigner...</option>
+                     {drivers.filter(d => d.status === 'available').map(d => (
+                       <option key={d.id} value={d.id}>{d.name}</option>
+                     ))}
+                   </select>
+                 </div>
+               ))}
+               
+               {/* Show currently out for delivery */}
+               {orders.filter(o => o.driverId && o.status !== 'delivered').map(order => (
+                 <div key={order.id} className="p-4 rounded-xl bg-success/5 border border-success/20 flex items-center justify-between opacity-80">
+                   <div>
+                     <div className="font-bold flex items-center gap-2">
+                       {order.id} <span className="text-[10px] bg-success/20 text-success px-2 py-0.5 rounded">EN ROUTE</span>
+                     </div>
+                     <div className="text-xs text-tertiary">Assigné à: {drivers.find(d => d.id === order.driverId)?.name}</div>
+                   </div>
+                   <div className="text-xs text-tertiary italic">Livraison en cours</div>
+                 </div>
+               ))}
+
+               {orders.filter(o => (o.table === 'Delivery' || o.table === 'Livraison' || o.customerAddress || o.source !== 'qr') && o.status === 'ready').length === 0 && (
+                 <div className="text-center p-8 text-tertiary italic text-sm">Aucune commande en attente de livraison</div>
+               )}
+             </div>
+          </div>
+        </div>
+
+        <div className="section-header mt-8">
+          <h3 className="text-lg font-bold">Commandes Entrantes Unifiées</h3>
+          <span className="badge-success" style={{ padding: '0.5rem 1rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+            <CheckCircle size={16}/> Synchronisation POS Active
+          </span>
+        </div>
+
+        <div className="glass-panel mt-4">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>ID Commande</th>
+                <th>Source / Table</th>
+                <th>Articles</th>
+                <th>Total</th>
+                <th>Statut</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {orders.map(order => (
+                <tr key={order.id}>
+                  <td className="font-semibold">{order.id}</td>
+                  <td>
+                    <span 
+                      className="category-badge" 
+                      style={{ 
+                        backgroundColor: order.source === 'ubereats' ? 'rgba(6,193,103,0.1)' : order.source === 'glovo' ? 'rgba(0,204,188,0.1)' : 'rgba(var(--accent-primary-rgb),0.1)', 
+                        color: order.source === 'ubereats' ? '#06C167' : order.source === 'glovo' ? '#00ccbc' : 'var(--accent-primary)' 
+                      }}
+                    >
+                      {order.source === 'ubereats' ? 'UberEats' : order.source === 'glovo' ? 'Glovo' : (order.table === 'Livraison' || order.customerAddress) ? 'Livraison' : `Table ${order.table}`}
+                    </span>
+                  </td>
+                  <td>{order.items} articles</td>
+                  <td>{order.total.toFixed(2)} DH</td>
+                  <td>
+                    <span className={`status-badge ${order.status === 'new' ? 'inactive' : 'active'}`}>
+                      {order.status === 'new' ? t('status_new', 'Nouveau') : order.status === 'preparing' ? t('status_preparing', 'En cours') : order.status === 'ready' ? t('status_ready', 'Prêt') : 'Terminé'}
+                    </span>
+                  </td>
+                  <td>
+                    {order.status === 'new' ? (
+                      <button className="btn-primary" style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }} onClick={() => handleUpdateOrderStatus(order.id, 'preparing')}>Accepter</button>
+                    ) : order.status === 'preparing' ? (
+                      <button className="btn-secondary" style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }} onClick={() => handleUpdateOrderStatus(order.id, 'ready')}>Marquer Prêt</button>
+                    ) : order.status === 'ready' && (order.table === 'Delivery' || order.table === 'Livraison' || order.customerAddress || order.source !== 'qr') ? (
+                      <span className="text-warning text-xs font-bold">Attente Livreur</span>
+                    ) : (
+                      <span className="text-success text-xs font-bold">Terminé</span>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Modals removed from here as they are now global */}
+      </div>
+    );
+  };
+
+  const renderReservations = () => (
+    <div className="dashboard-content">
+      <div className="page-header">
+        <h2 className="page-title">Reservations Engine</h2>
+        <p className="text-tertiary">Real-time bookings, automated email reminders, and customer CRM.</p>
+      </div>
+
+      <div className="stats-grid mb-8">
+        <div className="stat-card glass-panel" style={{ borderColor: 'var(--accent-primary)' }}>
+          <div className="stat-info">
+            <span className="stat-title">Upcoming Bookings</span>
+            <h3 className="stat-value">{reservations.filter(r => r.status === 'confirmed').length}</h3>
+            <span className="stat-trend positive">No overbookings</span>
+          </div>
+        </div>
+        <div className="stat-card glass-panel">
+          <div className="stat-info">
+            <span className="stat-title">Pending Approvals</span>
+            <h3 className="stat-value text-accent">{reservations.filter(r => r.status === 'pending').length}</h3>
+            <span className="stat-trend">Action required</span>
+          </div>
+        </div>
+        <div className="stat-card glass-panel">
+          <div className="stat-info">
+            <span className="stat-title">CRM Database</span>
+            <h3 className="stat-value">{reservations.length + orders.length}</h3>
+            <span className="stat-trend">Emails & phones collected</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="glass-panel mt-4">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>Date & Time</th>
+              <th>Customer</th>
+              <th>Contact</th>
+              <th>Guests</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {reservations.sort((a,b) => new Date(`${a.date}T${a.time}`).getTime() - new Date(`${b.date}T${b.time}`).getTime()).map(res => (
+              <tr key={res.id}>
+                <td className="font-semibold">{res.date} at {res.time}</td>
+                <td>{res.name}</td>
+                <td className="text-tertiary" style={{ fontSize: '0.85rem' }}>{res.email}<br/>{res.phone}</td>
+                <td><Users size={14} className="inline mr-1 text-accent"/> {res.guests}</td>
+                <td>
+                  <span className={`status-badge ${res.status === 'confirmed' ? 'active' : res.status === 'pending' ? 'inactive' : ''}`} style={res.status === 'cancelled' ? { background: 'rgba(239,68,68,0.1)', color: 'var(--danger)' } : {}}>
+                    {res.status.charAt(0).toUpperCase() + res.status.slice(1)}
+                  </span>
+                </td>
+                <td>
+                  {res.status === 'pending' ? (
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button className="btn-primary" style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }} onClick={async () => {
+                        await DataStore.updateReservationStatus(res.id, 'confirmed');
+                        const updated = await DataStore.getReservations();
+                        setReservations(updated);
+                      }}>
+                        <CheckCircle size={14} className="mr-1 inline"/> Confirm
+                      </button>
+                    </div>
+                  ) : res.status === 'confirmed' ? (
+                    <span className="badge-success" style={{ fontSize: '0.8rem' }}><Mail size={12} className="inline mr-1"/> Reminder Sent</span>
+                  ) : (
+                    <span className="text-tertiary" style={{ fontSize: '0.8rem' }}>Cancelled</span>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const NAV_ITEMS = [
+    { id: 'overview', icon: <LayoutDashboard size={20}/>, label: t('dash_overview') },
+    { id: 'analytics', icon: <BarChart3 size={20}/>, label: t('dash_analytics') },
+    { id: 'orders', icon: <ShoppingBag size={20}/>, label: t('dash_orders') },
+    { id: 'collection', icon: <Smartphone size={20}/>, label: t('dash_collection') },
+    { id: 'reservations', icon: <Calendar size={20}/>, label: t('dash_reservations') },
+    { id: 'reviews', icon: <MessageSquare size={20}/>, label: t('dash_reviews') },
+    { id: 'staff', icon: <Users size={20}/>, label: t('dash_staff') },
+    { id: 'drivers', icon: <Truck size={20}/>, label: t('dash_drivers') },
+    { id: 'menu', icon: <Utensils size={20}/>, label: t('dash_menu') },
+    { id: 'qr', icon: <QrCode size={20}/>, label: t('dash_qr') },
+    { id: 'settings', icon: <Settings size={20}/>, label: t('dash_settings') },
+  ];
+  const handleNavClick = (id: string) => { setActiveTab(id); setMobileNavOpen(false); };
+
+  return (
+    <div className="dashboard-layout">
+
+      {/* ── Mobile Burger Overlay ── */}
+      <div className={`mobile-nav-overlay ${mobileNavOpen ? 'open' : ''}`} onClick={() => setMobileNavOpen(false)} />
+
+      {/* ── Mobile Slide-In Drawer ── */}
+      <div className={`mobile-nav-drawer ${mobileNavOpen ? 'open' : ''}`}>
+        <div className="mobile-drawer-header">
+          <div className="sidebar-brand" style={{ margin: 0 }}>
+            <div className="brand-logo"><QrCode size={20} color="white" /></div>
+            <h2>QR CRM</h2>
+          </div>
+          <button className="icon-btn-ghost" onClick={() => setMobileNavOpen(false)} style={{ border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.4rem' }}>
+            <X size={20} />
+          </button>
+        </div>
+        
+        <div className="mobile-drawer-body">
+          <nav className="mobile-nav-list">
+            {NAV_ITEMS.map(item => (
+              <button key={item.id}
+                className={`nav-item ${activeTab === item.id ? 'active' : ''}`}
+                onClick={() => handleNavClick(item.id)}>
+                {item.icon}<span>{item.label}</span>
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        <div className="mobile-drawer-footer">
+          <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => handleNavClick('settings')}>
+            <Settings size={20} /><span>{t('dash_settings')}</span>
+          </button>
+          <button className="nav-item text-error" onClick={handleLogout}>
+            <ExternalLink size={20} /><span>Déconnexion</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ── Desktop Sidebar ── */}
+      <aside className="dashboard-sidebar glass-panel">
+        <div className="sidebar-brand">
+          <div className="brand-logo"><QrCode size={24} color="white" /></div>
+          <h2>QR CRM</h2>
+        </div>
+        
+        <nav className="sidebar-nav">
+          <button className={`nav-item ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')}>
+            <LayoutDashboard size={18} /><span>{t('dash_overview')}</span>
+          </button>
+          <button className={`nav-item ${activeTab === 'analytics' ? 'active' : ''}`} onClick={() => setActiveTab('analytics')}>
+            <BarChart3 size={18} /><span>{t('dash_analytics')}</span>
+          </button>
+          <button className={`nav-item ${activeTab === 'orders' ? 'active' : ''}`} onClick={() => setActiveTab('orders')}>
+            <ShoppingBag size={18} /><span>{t('dash_orders')}</span>
+          </button>
+          <button className={`nav-item ${activeTab === 'collection' ? 'active' : ''}`} onClick={() => setActiveTab('collection')}>
+            <Smartphone size={18} /><span>{t('dash_collection')}</span>
+          </button>
+          <button className={`nav-item ${activeTab === 'reservations' ? 'active' : ''}`} onClick={() => setActiveTab('reservations')}>
+            <Calendar size={18} /><span>{t('dash_reservations')}</span>
+          </button>
+          <button className={`nav-item ${activeTab === 'reviews' ? 'active' : ''}`} onClick={() => setActiveTab('reviews')}>
+            <MessageSquare size={18} /><span>{t('dash_reviews')}</span>
+          </button>
+          <button className={`nav-item ${activeTab === 'staff' ? 'active' : ''}`} onClick={() => setActiveTab('staff')}>
+            <Users size={18} /><span>{t('dash_staff')}</span>
+          </button>
+          <button className={`nav-item ${activeTab === 'menu' ? 'active' : ''}`} onClick={() => setActiveTab('menu')}>
+            <Utensils size={18} /><span>{t('dash_menu')}</span>
+          </button>
+          <button className={`nav-item ${activeTab === 'qr' ? 'active' : ''}`} onClick={() => setActiveTab('qr')}>
+            <QrCode size={18} /><span>{t('dash_qr')}</span>
+          </button>
+        </nav>
+
+        <div className="sidebar-footer">
+          <button className="nav-item" onClick={() => {
+            const prompt = (window as any).deferredPrompt;
+            if (prompt) {
+              prompt.prompt();
+              (window as any).deferredPrompt = null;
+            } else {
+              alert(t('pwa_install_info', 'To install this app, please use your browser menu (e.g. "Add to Home Screen" or the Install icon in the address bar).'));
+            }
+          }} style={{ color: 'var(--accent-primary)', marginBottom: '0.5rem' }}>
+            <Smartphone size={18} /><span>Installer App</span>
+          </button>
+          <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>
+            <Settings size={18} /><span>{t('dash_settings')}</span>
+          </button>
+        </div>
+      </aside>
+
+
+      {/* Main Content */}
+      <main className="dashboard-main">
+        {/* Top Navbar */}
+        <header className="dashboard-header glass-panel">
+          {/* Burger button — mobile only */}
+          <button className="burger-btn mobile-only" onClick={() => setMobileNavOpen(true)} aria-label="Menu">
+            <span className="burger-line" />
+            <span className="burger-line" />
+            <span className="burger-line" />
+          </button>
+          <div className="search-bar">
+            <Search size={18} className="text-tertiary" />
+            <input type="text" placeholder={t('dash_search')} />
+          </div>
+          
+          <div className="header-actions">
+            <div className="notification-wrapper" style={{ position: 'relative' }}>
+              <button 
+                className="icon-btn-ghost" 
+                style={{ position: 'relative' }}
+                onClick={() => {
+                  setShowNotifications(!showNotifications);
+                  if (!showNotifications) {
+                    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+                  }
+                }}
+              >
+                <Bell size={20} />
+                {notifications.some(n => !n.read) && <span className="notification-dot"></span>}
+              </button>
+              
+              {showNotifications && (
+                <div className="notification-dropdown glass-panel">
+                  <div className="notification-header">
+                    <h3>Notifications</h3>
+                    <button className="text-xs text-accent" onClick={() => setNotifications([])}>Effacer tout</button>
+                  </div>
+                  <div className="notification-list">
+                    {notifications.length === 0 ? (
+                      <div className="p-8 text-center text-tertiary">Aucune nouvelle notification</div>
+                    ) : (
+                      notifications.map(n => (
+                        <div key={n.id} className="notification-item">
+                          <div className={`notif-icon ${n.type}`}>
+                            {n.type === 'order' ? <ShoppingBag size={14}/> : <MessageSquare size={14}/>}
+                          </div>
+                          <div className="notif-content">
+                            <p>{n.text}</p>
+                            <span>{n.time}</span>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </header>
+
+        {/* Dynamic View */}
+        <div className="dashboard-scroll-area">
+          {activeTab === 'overview' && renderOverview()}
+          {activeTab === 'analytics' && renderAnalytics()}
+          {activeTab === 'orders' && renderOrders()}
+          {activeTab === 'collection' && renderCollectionPoint()}
+          {activeTab === 'reservations' && renderReservations()}
+          {activeTab === 'reviews' && renderReviews()}
+          {activeTab === 'staff' && renderStaff()}
+          {activeTab === 'drivers' && renderDrivers()}
+          {activeTab === 'menu' && renderMenuEditor()}
+          {activeTab === 'qr' && (
+            <div className="dashboard-content">
+              <div className="page-header">
+                <h2 className="page-title">{t('dash_qr')}</h2>
+                <p className="text-tertiary">{t('qr_desc', 'Gérez et téléchargez tous les codes QR de votre établissement.')}</p>
+              </div>
+
+              <div className="qr-grid mt-8">
+                {/* Core QR Codes */}
+                <div className="glass-panel p-8 text-center qr-premium-card">
+                  <div className="qr-preview-container" style={{ minHeight: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <QRCodeSVG 
+                      value={`${window.location.origin}/menu/${profile?.id || 'demo'}`}
+                      size={180}
+                      level="H"
+                      includeMargin={true}
+                      fgColor="#000000"
+                      bgColor="#FFFFFF"
+                      style={{ width: 180, height: 180 }}
+                    />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2">QR Menu</h3>
+                  <p className="text-tertiary text-sm mb-6">{t('qr_menu_desc', 'Lien direct vers votre carte digitale.')}</p>
+                  <div className="flex gap-2 w-full">
+                    <button className="btn-primary flex-1" onClick={() => window.open(`${window.location.origin}/menu/${profile?.id || 'demo'}`, '_blank')}>
+                      {t('staff_test_link')}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="glass-panel p-8 text-center qr-premium-card">
+                  <div className="qr-preview-container" style={{ minHeight: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <QRCodeSVG 
+                      value={`${window.location.origin}/book/${profile?.id || 'demo'}`}
+                      size={180}
+                      level="H"
+                      includeMargin={true}
+                      fgColor="#000000"
+                      bgColor="#FFFFFF"
+                      style={{ width: 180, height: 180 }}
+                    />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2">QR Réservation</h3>
+                  <p className="text-tertiary text-sm mb-6">{t('qr_book_desc', 'Permettez à vos clients de réserver une table.')}</p>
+                  <div className="flex gap-2 w-full">
+                    <button className="btn-primary flex-1" onClick={() => window.open(`${window.location.origin}/book/${profile?.id || 'demo'}`, '_blank')}>
+                      {t('staff_test_link')}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="glass-panel p-8 text-center qr-premium-card">
+                  <div className="qr-preview-container" style={{ minHeight: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <QRCodeSVG 
+                      value={`${window.location.origin}/review/${profile?.id || 'demo'}`}
+                      size={180}
+                      level="H"
+                      includeMargin={true}
+                      fgColor="#000000"
+                      bgColor="#FFFFFF"
+                      style={{ width: 180, height: 180 }}
+                    />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2">QR Avis</h3>
+                  <p className="text-tertiary text-sm mb-6">{t('qr_review_desc', 'Récoltez des avis clients sur votre établissement.')}</p>
+                  <div className="flex gap-2 w-full">
+                    <button className="btn-primary flex-1" onClick={() => window.open(`${window.location.origin}/review/${profile?.id || 'demo'}`, '_blank')}>
+                      {t('staff_test_link')}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="glass-panel p-8 text-center qr-premium-card">
+                  <div className="qr-preview-container" style={{ minHeight: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <QRCodeSVG 
+                      value={`${window.location.origin}/chef`}
+                      size={180}
+                      level="H"
+                      includeMargin={true}
+                      fgColor="#000000"
+                      bgColor="#FFFFFF"
+                      style={{ width: 180, height: 180 }}
+                    />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2">{t('qr_chef_title', 'QR Cuisine')}</h3>
+                  <p className="text-tertiary text-sm mb-6">{t('qr_chef_desc', 'Accès direct au tableau de bord pour le Chef.')}</p>
+                  <div className="flex gap-2 w-full">
+                    <button className="btn-primary flex-1" onClick={() => window.open(`${window.location.origin}/chef`, '_blank')}>
+                      {t('staff_test_link')}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Personnel QR Codes */}
+              {staffList.length > 0 && (
+                <div className="mt-16">
+                  <h3 className="text-2xl font-black mb-8 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
+                      <Users size={20} />
+                    </div>
+                    Personnel
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    {staffList.map((staff, idx) => {
+                      const reviewUrl = `${window.location.origin}/staff-review/${staff.id}`;
+                      return (
+                        <div key={staff.id} className="glass-panel p-6 text-center qr-premium-card">
+                          <div className="qr-preview-container mb-4" style={{ padding: '1rem' }}>
+                            <QRCodeSVG 
+                              value={reviewUrl}
+                              size={120}
+                              level="H"
+                              includeMargin={true}
+                              fgColor="#000000"
+                              bgColor="#FFFFFF"
+                              style={{ width: 120, height: 120 }}
+                            />
+                          </div>
+                          <h4 className="font-bold text-sm mb-1">{staff.name}</h4>
+                          <p className="text-tertiary text-[10px] mb-4 truncate">{staff.role}</p>
+                          <div className="flex gap-2 w-full">
+                            <button className="btn-secondary flex-1 py-2 text-xs" onClick={() => window.open(reviewUrl, '_blank')}>
+                              {t('staff_test_link')}
+                            </button>
+                            <button className="btn-secondary px-2 py-2" title={t('staff_download')}>
+                              <ImageIcon size={14} />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Drivers QR Codes */}
+              {drivers.length > 0 && (
+                <div className="mt-16 mb-16">
+                  <h3 className="text-2xl font-black mb-8 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
+                      <ShoppingBag size={20} />
+                    </div>
+                    Livreurs
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    {drivers.map((driver, idx) => {
+                      const trackUrl = `${window.location.origin}/driver/${driver.id}`;
+                      return (
+                        <div key={driver.id} className="glass-panel p-6 text-center qr-premium-card">
+                          <div className="qr-preview-container mb-4" style={{ padding: '1rem', minHeight: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <QRCodeSVG 
+                              value={trackUrl}
+                              size={120}
+                              level="H"
+                              includeMargin={true}
+                              fgColor="#000000"
+                              bgColor="#FFFFFF"
+                              style={{ width: 120, height: 120 }}
+                            />
+                          </div>
+                          <h4 className="font-bold text-sm mb-1">{driver.name}</h4>
+                          <p className="text-tertiary text-[10px] mb-4 truncate">{driver.phone}</p>
+                          <div className="flex flex-col gap-2 w-full">
+                            <button className="btn-primary py-2 text-xs font-bold" onClick={() => window.open(trackUrl, '_blank')}>
+                              Ouvrir Portail Livreur
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'settings' && (
+            <div className="dashboard-content">
+              <div className="page-header">
+                <h2 className="page-title">{t('settings_title')}</h2>
+                <div className="flex items-center gap-3">
+                  {isSavingSettings && <span className="text-xs text-accent animate-pulse font-bold flex items-center gap-2"><Clock size={12}/> Sauvegarde automatique...</span>}
+                </div>
+              </div>
+
+              <div className="settings-layout mt-8">
+                <div className="glass-panel p-8">
+                  <h3 className="text-lg font-bold mb-6 flex items-center gap-2"><Utensils size={20} className="text-accent"/> {t('settings_profile')}</h3>
+                  <div className="premium-input-group">
+                    <label>{t('settings_name')}</label>
+                    <div className="premium-input-wrapper">
+                      <ImageIcon className="input-icon" size={18} />
+                      <input type="text" value={settingsForm.name} onChange={e => setSettingsForm({...settingsForm, name: e.target.value})} className="premium-input" />
+                    </div>
+                  </div>
+                  <div className="premium-input-group">
+                    <label>{t('settings_desc')}</label>
+                    <div className="premium-input-wrapper">
+                      <FileText className="input-icon" size={18} style={{ top: '12px' }} />
+                      <textarea value={settingsForm.description} onChange={e => setSettingsForm({...settingsForm, description: e.target.value})} className="premium-input" rows={3} style={{ paddingLeft: '2.75rem' }} />
+                    </div>
+                  </div>
+                  <div className="premium-input-group">
+                    <label>{t('settings_google')}</label>
+                    <div className="premium-input-wrapper">
+                      <LinkIcon className="input-icon" size={18} />
+                      <input type="text" value={settingsForm.googleReviewUrl || ''} onChange={e => setSettingsForm({...settingsForm, googleReviewUrl: e.target.value})} className="premium-input" placeholder="https://search.google.com/local/writereview?placeid=..." />
+                    </div>
+                  </div>
+                  <div className="premium-input-group">
+                    <label>{t('settings_hours')}</label>
+                    <div className="premium-input-wrapper">
+                      <Clock className="input-icon" size={18} />
+                      <input type="text" value={settingsForm.openingHours || ''} onChange={e => setSettingsForm({...settingsForm, openingHours: e.target.value})} className="premium-input" placeholder="Lun-Dim: 12:00 - 23:00" />
+                    </div>
+                  </div>
+                  <div className="premium-input-group">
+                    <label>{t('settings_about')}</label>
+                    <div className="premium-input-wrapper">
+                      <FileText className="input-icon" size={18} style={{ top: '12px' }} />
+                      <textarea value={settingsForm.aboutInfo || ''} onChange={e => setSettingsForm({...settingsForm, aboutInfo: e.target.value})} className="premium-input" rows={3} style={{ paddingLeft: '2.75rem' }} placeholder="Description détaillée..." />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="glass-panel p-8">
+                  <h3 className="text-lg font-bold mb-6 flex items-center gap-2"><Sparkles size={20} className="text-accent"/> {t('settings_branding')}</h3>
+                  <div className="branding-edit flex gap-8">
+                    <div className="logo-edit">
+                      <label className="block mb-2 text-sm text-tertiary">{t('settings_logo')}</label>
+                      <input 
+                        type="file" 
+                        id="logo-upload" 
+                        hidden 
+                        accept="image/*" 
+                        onChange={(e) => handleImageUpload(e, (url) => setSettingsForm({...settingsForm, logo: url}))}
+                      />
+                      <label htmlFor="logo-upload" className="relative group cursor-pointer inline-block">
+                        <img src={settingsForm.logo} className="w-24 h-24 rounded-full border-4 border-accent object-cover shadow-xl" alt="Logo" />
+                        <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span className="text-white text-xs font-bold">{t('settings_change')}</span>
+                        </div>
+                      </label>
+                      <p className="text-[10px] text-tertiary mt-2">{t('click_to_change')}</p>
+                    </div>
+                    <div className="cover-edit flex-1">
+                      <label className="block mb-2 text-sm text-tertiary">{t('settings_cover')}</label>
+                      <input 
+                        type="file" 
+                        id="cover-upload" 
+                        hidden 
+                        accept="image/*" 
+                        onChange={(e) => handleImageUpload(e, (url) => setSettingsForm({...settingsForm, coverImage: url}))}
+                      />
+                      <label htmlFor="cover-upload" className="relative group cursor-pointer block">
+                        <img src={settingsForm.coverImage} className="w-full h-24 rounded-xl object-cover border border-border shadow-lg mb-2" alt="Cover" />
+                        <div className="absolute inset-0 bg-black/20 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span className="text-white text-xs font-bold">{t('settings_change')}</span>
+                        </div>
+                      </label>
+                      <p className="text-[10px] text-tertiary">{t('recommended_size')} • {t('click_to_change')}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </main>
+
+      {/* Add Dish Modal */}
+      {isAddingDish && (
+        <div className="modal-overlay">
+          <div className="glass-modal">
+            <button onClick={() => setIsAddingDish(false)} className="close-modal-btn">
+              <X size={20}/>
+            </button>
+            <h2 className="text-3xl font-black mb-8 text-gradient">{t('menu_add_plat')}</h2>
+            
+            <div className="premium-input-group">
+              <label>{t('menu_dish_name')}</label>
+              <div className="premium-input-wrapper">
+                <Tag className="input-icon" size={18} />
+                <input type="text" placeholder="ex: Couscous Royal" value={newDish.name} onChange={e => setNewDish({...newDish, name: e.target.value})} className="premium-input" />
+              </div>
+            </div>
+
+            <div className="flex gap-6">
+              <div className="premium-input-group flex-1">
+                <label>{t('menu_category')}</label>
+                <select value={newDish.category} onChange={e => setNewDish({...newDish, category: e.target.value})} className="premium-select">
+                  <option value="Entrées">{t('cat_entrees')}</option>
+                  <option value="Plats">{t('cat_plats')}</option>
+                  <option value="Desserts">{t('cat_desserts')}</option>
+                  <option value="Boissons">{t('cat_boissons')}</option>
+                </select>
+              </div>
+              <div className="premium-input-group flex-1">
+                <label>{t('menu_price')} (DH)</label>
+                <div className="premium-input-wrapper">
+                  <span className="input-icon font-bold text-xs">DH</span>
+                  <input type="number" placeholder="85.00" value={newDish.price || ''} onChange={e => setNewDish({...newDish, price: parseFloat(e.target.value)})} className="premium-input" />
+                </div>
+              </div>
+            </div>
+
+            <div className="premium-input-group mb-10">
+              <label>{t('menu_image')}</label>
+              <input 
+                type="file" 
+                id="dish-image-upload" 
+                hidden 
+                accept="image/*" 
+                onChange={(e) => handleImageUpload(e, (url) => setNewDish({...newDish, image: url}))}
+              />
+              <div className="flex gap-4 items-center">
+                <label htmlFor="dish-image-upload" className="flex-1">
+                  <div className="premium-input-wrapper cursor-pointer group">
+                    <ImageIcon className="input-icon group-hover:text-accent transition-colors" size={18} />
+                    <div className="premium-input flex items-center text-tertiary">
+                      {newDish.image ? t('image_selected') : t('choose_photo')}
+                    </div>
+                  </div>
+                </label>
+                {newDish.image && (
+                  <img src={newDish.image} className="w-24 h-24 rounded-lg object-cover border border-accent shadow-lg" alt="Preview" />
+                )}
+              </div>
+            </div>
+
+            <div className="modal-actions">
+              <button className="btn-secondary" onClick={() => setIsAddingDish(false)}>{t('staff_cancel')}</button>
+              <button className="btn-primary" onClick={async () => {
+                if(!newDish.name || !newDish.price) return alert(t('error_name_price'));
+                await DataStore.addMenuItem(newDish);
+                const updatedMenu = await DataStore.getMenu();
+                setMenuItems(updatedMenu);
+                setIsAddingDish(false);
+                setNewDish({ name: '', category: 'Plats', description: '', price: 0, image: '', available: true, popular: false });
+              }}>{t('menu_save')}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Global Driver Modals */}
+      {addingDriver && (
+        <div className="modal-overlay" onClick={() => setAddingDriver(false)}>
+          <div className="glass-modal" onClick={e => e.stopPropagation()}>
+            <button className="close-modal-btn" onClick={() => setAddingDriver(false)}><X size={18} /></button>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem' }}>{t('driver_new')}</h3>
+            <div className="premium-input-group">
+              <label>{t('driver_name_label')}</label>
+              <div className="premium-input-wrapper">
+                <Users size={16} className="input-icon" />
+                <input className="premium-input" placeholder="Ex: Karim Delivery" value={newDriverName} onChange={e => setNewDriverName(e.target.value)} autoFocus />
+              </div>
+            </div>
+            <div className="premium-input-group">
+              <label>{t('driver_phone_label')}</label>
+              <div className="premium-input-wrapper">
+                <Phone size={16} className="input-icon" />
+                <input className="premium-input" placeholder={t('driver_phone_placeholder')} value={newDriverPhone} onChange={e => setNewDriverPhone(e.target.value)} />
+              </div>
+            </div>
+            <div className="modal-actions">
+              <button className="btn-secondary" onClick={() => setAddingDriver(false)}>{t('driver_cancel')}</button>
+              <button className="btn-primary" onClick={handleAddDriver} disabled={isAddingDriverLoading} style={{ border: 'none', cursor: isAddingDriverLoading ? 'not-allowed' : 'pointer', background: 'var(--accent-gradient)', color: 'white', fontWeight: 700, opacity: isAddingDriverLoading ? 0.7 : 1 }}>
+                {isAddingDriverLoading ? "Ajout en cours..." : t('driver_add')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {qrDriverId && (() => {
+        const driver = drivers.find(d => d.id === qrDriverId);
+        if (!driver) return null;
+        const driverUrl = `${window.location.origin}/driver/${driver.id}`;
+        return (
+          <div className="modal-overlay" onClick={() => setQrDriverId(null)}>
+            <div className="glass-modal" style={{ textAlign: 'center' }} onClick={e => e.stopPropagation()}>
+              <button className="close-modal-btn" onClick={() => setQrDriverId(null)}><X size={18} /></button>
+              <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg,#00ccbc,#11998e)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: '1.1rem', margin: '0 auto 1rem' }}>
+                {driver.name[0]}
+              </div>
+              <h3 style={{ fontWeight: 800, fontSize: '1.2rem' }}>Portail Livreur — {driver.name}</h3>
+              <p style={{ color: 'var(--text-tertiary)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>{driver.phone}</p>
+              <div style={{ background: 'white', padding: '1.25rem', borderRadius: '16px', display: 'inline-block', border: '1px solid var(--border-color)' }}>
+                <img src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(driverUrl)}`} alt="QR" style={{ width: 180, height: 180 }} />
+              </div>
+              <div className="modal-actions" style={{ marginTop: '1.25rem' }}>
+                <button className="btn-primary" style={{ cursor: 'pointer', border: 'none', background: 'var(--accent-gradient)', color: 'white', fontWeight: 700, width: '100%' }}
+                  onClick={() => window.open(`https://api.qrserver.com/v1/create-qr-code/?size=1000x1000&data=${encodeURIComponent(driverUrl)}`, '_blank')}>
+                  {t('staff_download')}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+    </div>
+  );
+}
