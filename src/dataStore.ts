@@ -86,7 +86,7 @@ export interface Driver {
 }
 
 // Fallback UID if no auth is set up yet
-const getRestaurantId = async () => {
+const getRestaurantId = () => {
   // In production with Convex, you would use auth.currentUser?.subject
   let id = localStorage.getItem('qr_restaurant_id');
   if (!id) {
@@ -121,31 +121,24 @@ export const DataStore = {
   },
 
   subscribeToOrders: (callback: (orders: Order[]) => void, restaurantId?: string) => {
-    let resId = restaurantId;
-    const setup = async () => {
-      if (!resId) resId = await getRestaurantId() || 'demo';
-      return convex.onUpdate(api.orders.getByRestaurant, { restaurantId: resId }, (results: any) => {
-        callback(results.map((d: any) => ({
-          id: d._id,
-          table: d.table,
-          items: d.items,
-          total: d.total,
-          status: d.status as any,
-          time: d.createdAt,
-          source: d.source as any,
-          orderItems: d.orderItems,
-          driverId: d.driverId,
-          customerName: d.customerName,
-          customerPhone: d.customerPhone,
-          customerAddress: d.customerAddress,
-          deliveryInstructions: d.deliveryInstructions
-        })));
-      });
-    };
-    
-    let unsubscribe: () => void = () => {};
-    setup().then(unsub => unsubscribe = unsub);
-    return () => unsubscribe();
+    const resId = restaurantId || getRestaurantId() || 'demo';
+    return convex.onUpdate(api.orders.getByRestaurant, { restaurantId: resId }, (results: any) => {
+      callback(results.map((d: any) => ({
+        id: d._id,
+        table: d.table,
+        items: d.items,
+        total: d.total,
+        status: d.status as any,
+        time: d.createdAt,
+        source: d.source as any,
+        orderItems: d.orderItems,
+        driverId: d.driverId,
+        customerName: d.customerName,
+        customerPhone: d.customerPhone,
+        customerAddress: d.customerAddress,
+        deliveryInstructions: d.deliveryInstructions
+      })));
+    });
   },
 
   addOrder: async (order: Omit<Order, 'id' | 'time' | 'status' | 'source'>, restaurantId?: string) => {
@@ -216,24 +209,17 @@ export const DataStore = {
   },
 
   subscribeToReviews: (callback: (reviews: Review[]) => void, restaurantId?: string) => {
-    let resId = restaurantId;
-    const setup = async () => {
-      if (!resId) resId = await getRestaurantId() || 'demo';
-      return convex.onUpdate(api.reviews.getReviews, { restaurantId: resId }, (results: any) => {
-        callback(results.map((d: any) => ({
-          id: d._id,
-          rating: d.rating,
-          comment: d.comment,
-          time: d.createdAt,
-          status: d.status as any,
-          userName: d.userName
-        })));
-      });
-    };
-    
-    let unsubscribe: () => void = () => {};
-    setup().then(unsub => unsubscribe = unsub);
-    return () => unsubscribe();
+    const resId = restaurantId || getRestaurantId() || 'demo';
+    return convex.onUpdate(api.reviews.getReviews, { restaurantId: resId }, (results: any) => {
+      callback(results.map((d: any) => ({
+        id: d._id,
+        rating: d.rating,
+        comment: d.comment,
+        time: d.createdAt,
+        status: d.status as any,
+        userName: d.userName
+      })));
+    });
   },
 
   addReview: async (rating: number, comment: string, userName?: string, restaurantId?: string) => {
@@ -275,31 +261,24 @@ export const DataStore = {
   },
 
   subscribeToMenu: (callback: (menu: MenuItem[]) => void, restaurantId?: string) => {
-    let resId = restaurantId;
-    const setup = async () => {
-      if (!resId) resId = await getRestaurantId() || 'demo';
-      console.log(`Setting up menu subscription for ${resId}`);
-      return convex.onUpdate(api.menu.getItems, { restaurantId: resId }, (results: any) => {
-        console.log(`Menu update for ${resId}:`, results.length, "items");
-        callback(results.map((d: any) => ({
-          id: d._id,
-          category: d.category,
-          name: d.name,
-          description: d.description,
-          price: d.price,
-          image: d.image,
-          available: d.available,
-          popular: d.popular,
-          calories: d.calories,
-          allergens: d.allergens,
-          ingredients: d.ingredients
-        })));
-      });
-    };
-    
-    let unsubscribe: () => void = () => {};
-    setup().then(unsub => unsubscribe = unsub);
-    return () => unsubscribe();
+    const resId = restaurantId || getRestaurantId() || 'demo';
+    console.log(`Setting up menu subscription for ${resId}`);
+    return convex.onUpdate(api.menu.getItems, { restaurantId: resId }, (results: any) => {
+      console.log(`Menu update for ${resId}:`, results.length, "items");
+      callback(results.map((d: any) => ({
+        id: d._id,
+        category: d.category,
+        name: d.name,
+        description: d.description,
+        price: d.price,
+        image: d.image,
+        available: d.available,
+        popular: d.popular,
+        calories: d.calories,
+        allergens: d.allergens,
+        ingredients: d.ingredients
+      })));
+    });
   },
 
   addMenuItem: async (item: Omit<MenuItem, 'id'>) => {
@@ -337,31 +316,24 @@ export const DataStore = {
   },
 
   subscribeToProfile: (callback: (profile: RestaurantProfile) => void, restaurantId?: string) => {
-    let resId = restaurantId;
-    const setup = async () => {
-      if (!resId) resId = await getRestaurantId() || 'demo';
-      console.log(`Setting up profile subscription for ${resId}`);
-      return convex.onUpdate(api.profiles.getByUserId, { userId: resId }, (p: any) => {
-        console.log(`Profile update for ${resId}:`, p ? p.name : "null");
-        if (p) {
-          callback({
-            id: p.userId,
-            name: p.name,
-            description: p.description,
-            coverImage: p.coverImage,
-            logo: p.logo,
-            aboutInfo: p.aboutInfo,
-            aboutImage: p.aboutImage,
-            openingHours: p.openingHours,
-            googleReviewUrl: p.googleReviewUrl
-          });
-        }
-      });
-    };
-    
-    let unsubscribe: () => void = () => {};
-    setup().then(unsub => unsubscribe = unsub);
-    return () => unsubscribe();
+    const resId = restaurantId || getRestaurantId() || 'demo';
+    console.log(`Setting up profile subscription for ${resId}`);
+    return convex.onUpdate(api.profiles.getByUserId, { userId: resId }, (p: any) => {
+      console.log(`Profile update for ${resId}:`, p ? p.name : "null");
+      if (p) {
+        callback({
+          id: p.userId,
+          name: p.name,
+          description: p.description,
+          coverImage: p.coverImage,
+          logo: p.logo,
+          aboutInfo: p.aboutInfo,
+          aboutImage: p.aboutImage,
+          openingHours: p.openingHours,
+          googleReviewUrl: p.googleReviewUrl
+        });
+      }
+    });
   },
 
   updateProfile: async (updates: any) => {
@@ -415,22 +387,15 @@ export const DataStore = {
   },
 
   subscribeToStaff: (callback: (staff: StaffMember[]) => void, restaurantId?: string) => {
-    let resId = restaurantId;
-    const setup = async () => {
-      if (!resId) resId = await getRestaurantId() || 'demo';
-      return convex.onUpdate(api.staff.getStaff, { restaurantId: resId }, (results: any) => {
-        callback(results.map((d: any) => ({
-          id: d._id,
-          name: d.name,
-          role: d.role,
-          createdAt: d.createdAt
-        })));
-      });
-    };
-    
-    let unsubscribe: () => void = () => {};
-    setup().then(unsub => unsubscribe = unsub);
-    return () => unsubscribe();
+    const resId = restaurantId || getRestaurantId() || 'demo';
+    return convex.onUpdate(api.staff.getStaff, { restaurantId: resId }, (results: any) => {
+      callback(results.map((d: any) => ({
+        id: d._id,
+        name: d.name,
+        role: d.role,
+        createdAt: d.createdAt
+      })));
+    });
   },
 
   addStaffMember: async (member: Omit<StaffMember, 'id' | 'createdAt'>) => {
@@ -459,23 +424,16 @@ export const DataStore = {
   },
 
   subscribeToDrivers: (callback: (drivers: Driver[]) => void, restaurantId?: string) => {
-    let resId = restaurantId;
-    const setup = async () => {
-      if (!resId) resId = await getRestaurantId() || 'demo';
-      return convex.onUpdate(api.drivers.getDrivers, { restaurantId: resId }, (results: any) => {
-        callback(results.map((d: any) => ({
-          id: d._id,
-          name: d.name,
-          status: d.status as any,
-          phone: d.phone,
-          activeOrders: d.activeOrders
-        })));
-      });
-    };
-    
-    let unsubscribe: () => void = () => {};
-    setup().then(unsub => unsubscribe = unsub);
-    return () => unsubscribe();
+    const resId = restaurantId || getRestaurantId() || 'demo';
+    return convex.onUpdate(api.drivers.getDrivers, { restaurantId: resId }, (results: any) => {
+      callback(results.map((d: any) => ({
+        id: d._id,
+        name: d.name,
+        status: d.status as any,
+        phone: d.phone,
+        activeOrders: d.activeOrders
+      })));
+    });
   },
 
   addDriver: async (driver: Omit<Driver, 'id'>) => {
@@ -522,27 +480,20 @@ export const DataStore = {
   },
 
   subscribeToReservations: (callback: (reservations: Reservation[]) => void, restaurantId?: string) => {
-    let resId = restaurantId;
-    const setup = async () => {
-      if (!resId) resId = await getRestaurantId() || 'demo';
-      return convex.onUpdate(api.reservations.getReservations, { restaurantId: resId }, (results: any) => {
-        callback(results.map((d: any) => ({
-          id: d._id,
-          name: d.name,
-          email: d.email,
-          phone: d.phone,
-          date: d.date,
-          time: d.time,
-          guests: d.guests,
-          status: d.status as any,
-          createdAt: d.createdAt
-        })));
-      });
-    };
-    
-    let unsubscribe: () => void = () => {};
-    setup().then(unsub => unsubscribe = unsub);
-    return () => unsubscribe();
+    const resId = restaurantId || getRestaurantId() || 'demo';
+    return convex.onUpdate(api.reservations.getReservations, { restaurantId: resId }, (results: any) => {
+      callback(results.map((d: any) => ({
+        id: d._id,
+        name: d.name,
+        email: d.email,
+        phone: d.phone,
+        date: d.date,
+        time: d.time,
+        guests: d.guests,
+        status: d.status as any,
+        createdAt: d.createdAt
+      })));
+    });
   },
 
   addReservation: async (res: Omit<Reservation, 'id' | 'status' | 'createdAt'>, restaurantId?: string) => {
