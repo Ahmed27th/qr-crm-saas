@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
   LayoutDashboard, ShoppingBag, Utensils, QrCode, Settings,
@@ -63,8 +63,6 @@ export function Dashboard() {
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const [updatingReviewId, setUpdatingReviewId] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
-  const cleanups = useRef<(() => void)[]>([]);
-
   useEffect(() => {
     const isAuthenticated = localStorage.getItem('qr_is_authenticated') === 'true';
     const restaurantId = localStorage.getItem('qr_restaurant_id');
@@ -74,12 +72,10 @@ export function Dashboard() {
       return;
     }
 
-    // Clear existing cleanups
-    cleanups.current.forEach((fn: () => void) => fn());
-    cleanups.current = [];
+    const activeCleanups: (() => void)[] = [];
 
     // Initialize subscriptions
-    cleanups.current.push(DataStore.subscribeToProfile((p) => {
+    activeCleanups.push(DataStore.subscribeToProfile((p) => {
       setProfile(p);
       setSettingsForm((prev: any) => {
         if (!prev.name) return p;
@@ -87,23 +83,23 @@ export function Dashboard() {
       });
     }, restaurantId));
 
-    cleanups.current.push(DataStore.subscribeToMenu((m) => {
+    activeCleanups.push(DataStore.subscribeToMenu((m) => {
       setMenuItems(m);
     }, restaurantId));
 
-    cleanups.current.push(DataStore.subscribeToStaff((s) => {
+    activeCleanups.push(DataStore.subscribeToStaff((s) => {
       setStaffList(s);
     }, restaurantId));
 
-    cleanups.current.push(DataStore.subscribeToDrivers((d) => {
+    activeCleanups.push(DataStore.subscribeToDrivers((d) => {
       setDrivers(d);
     }, restaurantId));
 
-    cleanups.current.push(DataStore.subscribeToReservations((r: Reservation[]) => {
+    activeCleanups.push(DataStore.subscribeToReservations((r: Reservation[]) => {
       setReservations(r);
     }, restaurantId));
 
-    cleanups.current.push(DataStore.subscribeToOrders((currentOrders) => {
+    activeCleanups.push(DataStore.subscribeToOrders((currentOrders) => {
       if (currentOrders.length > prevOrdersCount && prevOrdersCount > 0) {
         const latestOrder = currentOrders[0];
         NotificationService.showNotification(
@@ -115,7 +111,7 @@ export function Dashboard() {
       setPrevOrdersCount(currentOrders.length);
     }, restaurantId));
 
-    cleanups.current.push(DataStore.subscribeToReviews((currentReviews) => {
+    activeCleanups.push(DataStore.subscribeToReviews((currentReviews) => {
       if (currentReviews.length > prevReviewsCount && prevReviewsCount > 0) {
         NotificationService.showNotification(
           t('notifications.newReview'),
@@ -127,7 +123,7 @@ export function Dashboard() {
     }, restaurantId));
 
     return () => {
-      cleanups.current.forEach((fn: () => void) => fn());
+      activeCleanups.forEach((fn) => fn());
     };
   }, [navigate, prevOrdersCount, prevReviewsCount, t]);
 
