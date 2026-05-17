@@ -15,13 +15,16 @@ export const PublicReview = () => {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    DataStore.initMockData();
-    const loadData = async () => {
-      const p = await DataStore.getProfile(restaurantId);
+    // Real-time profile subscription
+    const unsubscribeProfile = DataStore.subscribeToProfile((p) => {
       setProfile(p);
-    };
-    loadData();
+    }, restaurantId);
+
     window.scrollTo(0, 0);
+
+    return () => {
+      unsubscribeProfile();
+    };
   }, [restaurantId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -68,11 +71,18 @@ export const PublicReview = () => {
     );
   };
 
+  const containerStyle = profile?.coverImage ? {
+    backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9)), url(${profile.coverImage})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundAttachment: 'fixed'
+  } : {};
+
   /* ── Success State ───────────────────────────────── */
   if (submitted) {
     const isPositive = rating >= 4;
     return (
-      <div className="review-container">
+      <div className="review-container" style={containerStyle}>
         <div className="review-background-overlay" />
         <div className="review-card-wrapper" style={{ display: 'flex', alignItems: 'center', minHeight: '100vh' }}>
           <div className="glass-panel p-10 w-full success-celebration">
@@ -117,7 +127,7 @@ export const PublicReview = () => {
 
   /* ── Review Form ─────────────────────────────────── */
   return (
-    <div className="review-container">
+    <div className="review-container" style={containerStyle}>
       <div className="review-background-overlay" />
 
       <div className="review-card-wrapper">

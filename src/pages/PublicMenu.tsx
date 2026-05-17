@@ -36,11 +36,12 @@ export function PublicMenu() {
 
   const [searchQuery, setSearchQuery] = useState('');
   const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
   const isRTL = i18n.language === 'ar' || i18n.language === 'ary';
 
   useEffect(() => {
-    DataStore.initMockData();
     
     // Real-time profile subscription
     const unsubscribeProfile = DataStore.subscribeToProfile((p) => {
@@ -73,7 +74,7 @@ export function PublicMenu() {
     return menuItems.filter(item => {
       const calStr = item.calories ? String(item.calories) : '';
       const allergenStr = item.allergens ? item.allergens.join(' ') : '';
-      const ingredientStr = item.ingredients ? item.ingredients.join(' ') : '';
+      const ingredientStr = item.ingredients ? item.ingredients : '';
       return (
         item.name.toLowerCase().includes(q) ||
         (item.description || '').toLowerCase().includes(q) ||
@@ -116,28 +117,39 @@ export function PublicMenu() {
   const finalTotal = cartTotalPrice + tipAmount;
 
   const handlePlaceOrder = async () => {
-    const orderId = '#' + Math.floor(1000 + Math.random() * 9000);
-    await DataStore.addOrder({ 
-      table: orderType === 'delivery' ? 'Livraison' : tableNumber, 
-      items: cartTotalItems, 
-      total: finalTotal,
-      customerName: orderType === 'delivery' ? customerName : undefined,
-      customerPhone: orderType === 'delivery' ? customerPhone : undefined,
-      customerAddress: orderType === 'delivery' ? `${deliveryAddress.street}, Bât: ${deliveryAddress.building}, Etage: ${deliveryAddress.floor}` : undefined,
-      deliveryInstructions: deliveryAddress.instructions,
-      orderItems: Object.entries(cart).map(([id, qty]) => {
-        const item = menuItems.find(m => m.id === id);
-        return { name: item?.name || 'Inconnu', qty, price: item?.price || 0 };
-      })
-    }, restaurantId);
-    setLastOrderId(orderId);
-    setModalState('success');
-    
-    // Simulate flow
-    if (orderType === 'delivery') {
-      setTimeout(() => setModalState('tracking'), 2500);
-    } else {
-      setTimeout(() => setModalState('review'), 2500);
+    setIsPlacingOrder(true);
+    try {
+      const orderId = '#' + Math.floor(1000 + Math.random() * 9000);
+      await DataStore.addOrder({ 
+        table: orderType === 'delivery' ? 'Livraison' : tableNumber, 
+        items: cartTotalItems, 
+        total: finalTotal,
+        customerName: orderType === 'delivery' ? customerName : undefined,
+        customerPhone: orderType === 'delivery' ? customerPhone : undefined,
+        customerAddress: orderType === 'delivery' ? `${deliveryAddress.street}, Bât: ${deliveryAddress.building}, Etage: ${deliveryAddress.floor}` : undefined,
+        deliveryInstructions: deliveryAddress.instructions,
+        orderItems: Object.entries(cart).map(([id, qty]) => {
+          const item = menuItems.find(m => m.id === id);
+          return { name: item?.name || 'Inconnu', qty, price: item?.price || 0 };
+        })
+      }, restaurantId);
+      setLastOrderId(orderId);
+      setModalState('success');
+      
+      // Clear cart
+      setCart({});
+
+      // Simulate flow
+      if (orderType === 'delivery') {
+        setTimeout(() => setModalState('tracking'), 2500);
+      } else {
+        setTimeout(() => setModalState('review'), 2500);
+      }
+    } catch (error) {
+      console.error("Error placing order:", error);
+      alert("Erreur lors de la validation de la commande. Veuillez réessayer.");
+    } finally {
+      setIsPlacingOrder(false);
     }
   };
 
@@ -178,8 +190,20 @@ export function PublicMenu() {
   ];
 
   const handleSubmitReview = async () => {
-    if (reviewRating > 0) await DataStore.addReview(reviewRating, reviewComment);
-    closeModal();
+    if (reviewRating > 0) {
+      setIsSubmittingReview(true);
+      try {
+        await DataStore.addReview(reviewRating, reviewComment, undefined, restaurantId);
+        closeModal();
+      } catch (error) {
+        console.error("Error submitting review:", error);
+        alert("Erreur lors de l'envoi de l'avis.");
+      } finally {
+        setIsSubmittingReview(false);
+      }
+    } else {
+      closeModal();
+    }
   };
 
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card'>('cash');
@@ -340,7 +364,14 @@ export function PublicMenu() {
                 {reviewRating > 0 && (
                   <div className="review-feedback">
                     <textarea placeholder={t('feedback_placeholder')} value={reviewComment} onChange={e => setReviewComment(e.target.value)} className="review-textarea" />
-                    <button className="btn btn-primary w-full mt-4" onClick={handleSubmitReview}>{t('submit_review')}</button>
+                    <button 
+                      className="btn btn-primary w-full mt-4" 
+                      onClick={handleSubmitReview}
+                      disabled={isSubmittingReview}
+                      style={{ opacity: isSubmittingReview ? 0.7 : 1 }}
+                    >
+                      {isSubmittingReview ? "Envoi..." : t('submit_review')}
+                    </button>
                   </div>
                 )}
               </div>
@@ -575,13 +606,16 @@ export function PublicMenu() {
                     <button 
                       className="btn btn-primary place-order-btn-swipe" 
                       onClick={handlePlaceOrder} 
-                      disabled={orderType === 'dine_in' ? !tableNumber : (!customerName || !customerPhone || !deliveryAddress.street)}
+                      disabled={isPlacingOrder || (orderType === 'dine_in' ? !tableNumber : (!customerName || !customerPhone || !deliveryAddress.street))}
+                      style={{ opacity: isPlacingOrder ? 0.7 : 1 }}
                     >
                       <div className="swipe-shimmer"></div>
                       <span className="btn-text">
-                        {orderType === 'dine_in' 
-                          ? (!tableNumber ? t('enter_table_to_order') : t('send_to_kitchen'))
-                          : (!customerName || !customerPhone || !deliveryAddress.street ? 'Informations manquantes' : 'Confirmer & Commander')
+                        {isPlacingOrder 
+                          ? "Traitement..."
+                          : orderType === 'dine_in' 
+                            ? (!tableNumber ? t('enter_table_to_order') : t('send_to_kitchen'))
+                            : (!customerName || !customerPhone || !deliveryAddress.street ? 'Informations manquantes' : 'Confirmer & Commander')
                         }
                       </span>
                       <ChevronRight className="swipe-icon" size={20} />
@@ -608,6 +642,9 @@ export function PublicMenu() {
             <div className="info-section mb-6">
               <h4 className="text-accent mb-2 flex items-center gap-2"><FileText size={16} /> {t('settings_desc')}</h4>
               <p className="text-primary leading-relaxed">{profile?.aboutInfo || profile?.description}</p>
+              {profile?.aboutImage && (
+                <img src={profile.aboutImage} alt="About" className="w-full h-48 object-cover rounded-xl mt-4 shadow-lg" />
+              )}
             </div>
 
             <button className="btn btn-primary w-full mt-4" onClick={() => setIsInfoOpen(false)}>Fermer</button>

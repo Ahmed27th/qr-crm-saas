@@ -113,3 +113,19 @@
   font-weight: 600;
   border-radius: 12px;
 }
+
+.booking-logo-placeholder {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+  background: linear-gradient(135deg, var(--accent-primary, #6366f1), var(--accent-secondary, #4f46e5));
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #fff;
+  border: 2px solid var(--border-color);
+}

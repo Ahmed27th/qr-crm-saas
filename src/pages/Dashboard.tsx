@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
   LayoutDashboard, ShoppingBag, Utensils, QrCode, Settings,
@@ -13,12 +13,8 @@ import { DataStore } from '../dataStore';
 import type { Order, Review, MenuItem, Reservation, Driver } from '../dataStore';
 import { QRCodeSVG } from 'qrcode.react';
 import { useNavigate } from 'react-router-dom';
-import { signOut } from 'firebase/auth';
-import { auth } from '../firebase';
 import { NotificationService } from '../utils/notifications';
 import './Dashboard.css';
-
-
 
 export function Dashboard() {
   const { t } = useTranslation();
@@ -33,12 +29,20 @@ export function Dashboard() {
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [drivers, setDrivers] = useState<Driver[]>([]);
-  const [profile, setProfile] = useState<any>({ name: 'Chargement...', description: '', coverImage: '', logo: '' });
+  const [profile, setProfile] = useState<any>({ 
+    id: localStorage.getItem('qr_restaurant_id') || 'demo',
+    name: 'Chargement...', 
+    description: '', 
+    coverImage: '', 
+    logo: '' 
+  });
   const [isAddingDish, setIsAddingDish] = useState(false);
   const [newDish, setNewDish] = useState<Omit<MenuItem, 'id'>>({
     name: '', category: 'Plats', description: '', price: 0, image: '', available: true, popular: false
   });
-  const [settingsForm, setSettingsForm] = useState<any>({ name: '', description: '', coverImage: '', logo: '' });
+  const [settingsForm, setSettingsForm] = useState<any>({ name: '', description: '', coverImage: '', logo: '', aboutImage: '' });
+  const [isEditingDish, setIsEditingDish] = useState(false);
+  const [editingDish, setEditingDish] = useState<MenuItem | null>(null);
   const [staffList, setStaffList] = useState<any[]>([]);
   const [addingStaff, setAddingStaff] = useState(false);
   const [newStaffName, setNewStaffName] = useState('');
@@ -51,102 +55,86 @@ export function Dashboard() {
   const [isAddingDriverLoading, setIsAddingDriverLoading] = useState(false);
   const [qrStaffId, setQrStaffId] = useState<string | null>(null);
   const [qrDriverId, setQrDriverId] = useState<string | null>(null);
+  const [isAddingDishLoading, setIsAddingDishLoading] = useState(false);
+  const [isAddingStaffLoading, setIsAddingStaffLoading] = useState(false);
+  const [deletingStaffId, setDeletingStaffId] = useState<string | null>(null);
+  const [deletingDriverId, setDeletingDriverId] = useState<string | null>(null);
+  const [deletingDishId, setDeletingDishId] = useState<string | null>(null);
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
+  const [updatingReviewId, setUpdatingReviewId] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const cleanups = useRef<(() => void)[]>([]);
 
   useEffect(() => {
-    DataStore.initMockData();
-    
-    // Real-time subscriptions for all data
-    const unsubProfile = DataStore.subscribeToProfile((p) => {
+    const isAuthenticated = localStorage.getItem('qr_is_authenticated') === 'true';
+    const restaurantId = localStorage.getItem('qr_restaurant_id');
+
+    if (!isAuthenticated || !restaurantId) {
+      navigate('/login');
+      return;
+    }
+
+    // Clear existing cleanups
+    cleanups.current.forEach((fn: () => void) => fn());
+    cleanups.current = [];
+
+    // Initialize subscriptions
+    cleanups.current.push(DataStore.subscribeToProfile((p) => {
       setProfile(p);
       setSettingsForm((prev: any) => {
         if (!prev.name) return p;
         return prev;
       });
-    });
+    }, restaurantId));
 
-    const unsubMenu = DataStore.subscribeToMenu((m) => {
+    cleanups.current.push(DataStore.subscribeToMenu((m) => {
       setMenuItems(m);
-    });
+    }, restaurantId));
 
-    const unsubStaff = DataStore.subscribeToStaff((s) => {
+    cleanups.current.push(DataStore.subscribeToStaff((s) => {
       setStaffList(s);
-    });
+    }, restaurantId));
 
-    const unsubDrivers = DataStore.subscribeToDrivers((d) => {
+    cleanups.current.push(DataStore.subscribeToDrivers((d) => {
       setDrivers(d);
-    });
+    }, restaurantId));
 
-    const unsubReservations = DataStore.subscribeToReservations((r) => {
+    cleanups.current.push(DataStore.subscribeToReservations((r: Reservation[]) => {
       setReservations(r);
-    });
+    }, restaurantId));
 
-    return () => {
-      unsubProfile();
-      unsubMenu();
-      unsubStaff();
-      unsubDrivers();
-      unsubReservations();
-    };
-
-    // Real-time Subscriptions
-    const unsubOrders = DataStore.subscribeToOrders((currentOrders) => {
+    cleanups.current.push(DataStore.subscribeToOrders((currentOrders) => {
       if (currentOrders.length > prevOrdersCount && prevOrdersCount > 0) {
-        const newOrder = currentOrders[0];
-        setNotifications(prev => [{
-          id: Math.random().toString(),
-          text: `Nouvelle commande: #${newOrder.id.slice(-4)} (${newOrder.total} DH)`,
-          time: 'À l\'instant',
-          read: false,
-          type: 'order'
-        }, ...prev]);
-        
-        NotificationService.showNotification('Nouvelle Commande !', {
-          body: `Table ${newOrder.table} - ${newOrder.total} DH`,
-          tag: 'manager-order'
-        });
+        const latestOrder = currentOrders[0];
+        NotificationService.showNotification(
+          t('notifications.newOrder'),
+          { body: `${t('notifications.table')} ${latestOrder.table} - ${latestOrder.total}€` }
+        );
       }
       setOrders(currentOrders);
       setPrevOrdersCount(currentOrders.length);
-    });
+    }, restaurantId));
 
-    const unsubReviews = DataStore.subscribeToReviews((currentReviews) => {
+    cleanups.current.push(DataStore.subscribeToReviews((currentReviews) => {
       if (currentReviews.length > prevReviewsCount && prevReviewsCount > 0) {
-        const newReview = currentReviews[0];
-        setNotifications(prev => [{
-          id: Math.random().toString(),
-          text: `Nouvel avis: ${newReview.rating} ⭐ de ${newReview.userName}`,
-          time: 'À l\'instant',
-          read: false,
-          type: 'review'
-        }, ...prev]);
-
-        NotificationService.showNotification('Nouvel Avis Client !', {
-          body: `${newReview.rating} ⭐ de ${newReview.userName}`,
-          tag: 'manager-review'
-        });
+        NotificationService.showNotification(
+          t('notifications.newReview'),
+          { body: t('notifications.checkNewReview') }
+        );
       }
       setReviews(currentReviews);
       setPrevReviewsCount(currentReviews.length);
-    });
-
-    const unsubscribeAuth = auth.onAuthStateChanged((user) => {
-      if (!user) navigate('/login');
-    });
+    }, restaurantId));
 
     return () => {
-      unsubOrders();
-      unsubReviews();
-      unsubscribeAuth();
+      cleanups.current.forEach((fn: () => void) => fn());
     };
-  }, [navigate, prevOrdersCount, prevReviewsCount]);
+  }, [navigate, prevOrdersCount, prevReviewsCount, t]);
 
   const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      navigate('/login');
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
+    localStorage.removeItem('qr_is_authenticated');
+    localStorage.removeItem('qr_restaurant_id');
+    navigate('/login');
   };
 
   useEffect(() => {
@@ -154,10 +142,12 @@ export function Dashboard() {
       if (activeTab === 'settings' && profile) {
         setIsSavingSettings(true);
         try {
+          setSaveError(null);
           await DataStore.updateProfile(settingsForm);
           setProfile({ ...profile, ...settingsForm });
-        } catch (error) {
-          console.error("Auto-save failed:", error);
+        } catch (err: any) {
+          console.error(err);
+          setSaveError(err.message || 'Erreur de sauvegarde');
         } finally {
           setTimeout(() => setIsSavingSettings(false), 1000);
         }
@@ -167,27 +157,56 @@ export function Dashboard() {
   }, [settingsForm]);
 
   const handleUpdateOrderStatus = async (id: string, status: Order['status']) => {
-    await DataStore.updateOrderStatus(id, status);
+    setUpdatingOrderId(id);
+    try {
+      await DataStore.updateOrderStatus(id, status);
+    } catch (error) {
+      console.error("Error updating order status:", error);
+      alert("Erreur lors de la mise à jour de la commande.");
+    } finally {
+      setUpdatingOrderId(null);
+    }
   };
 
   const handleUpdateReviewStatus = async (id: string, status: Review['status']) => {
-    await DataStore.updateReviewStatus(id, status);
+    setUpdatingReviewId(id);
+    try {
+      await DataStore.updateReviewStatus(id, status);
+    } catch (error) {
+      console.error("Error updating review status:", error);
+      alert("Erreur lors de la mise à jour de l'avis.");
+    } finally {
+      setUpdatingReviewId(null);
+    }
   };
 
   const handleAddStaff = async () => {
     if (!newStaffName.trim()) return;
-    await DataStore.addStaffMember({ name: newStaffName.trim(), role: newStaffRole });
-    setNewStaffName(''); 
-    setNewStaffRole('Serveur'); 
-    setAddingStaff(false);
-    const updated = await DataStore.getStaff();
-    setStaffList(updated);
+    setIsAddingStaffLoading(true);
+    try {
+      await DataStore.addStaffMember({ name: newStaffName.trim(), role: newStaffRole });
+      setNewStaffName(''); 
+      setNewStaffRole('Serveur'); 
+      setAddingStaff(false);
+    } catch (error) {
+      console.error("Error adding staff:", error);
+      alert("Erreur lors de l'ajout du membre. Veuillez réessayer.");
+    } finally {
+      setIsAddingStaffLoading(false);
+    }
   };
 
   const handleDeleteStaff = async (id: string) => {
-    await DataStore.deleteStaffMember(id);
-    const updated = await DataStore.getStaff();
-    setStaffList(updated);
+    if (!confirm(t('staff_delete_confirm') || 'Voulez-vous supprimer ce membre ?')) return;
+    setDeletingStaffId(id);
+    try {
+      await DataStore.deleteStaffMember(id);
+    } catch (error) {
+      console.error("Error deleting staff:", error);
+      alert("Erreur lors de la suppression du membre.");
+    } finally {
+      setDeletingStaffId(null);
+    }
   };
 
   const handleAddDriver = async () => {
@@ -196,15 +215,13 @@ export function Dashboard() {
     try {
       await DataStore.addDriver({ 
         name: newDriverName.trim(), 
-        phone: newDriverPhone,
+        phone: newDriverPhone.trim(),
         status: 'available',
         activeOrders: 0
       });
       setNewDriverName('');
       setNewDriverPhone('');
       setAddingDriver(false);
-      const updated = await DataStore.getDrivers();
-      setDrivers(updated);
     } catch (error) {
       console.error("Error adding driver:", error);
       alert("Erreur lors de l'ajout du livreur. Vérifiez votre connexion.");
@@ -214,10 +231,18 @@ export function Dashboard() {
   };
 
   const handleDeleteDriver = async (id: string) => {
-    await DataStore.deleteDriver(id);
-    const updated = await DataStore.getDrivers();
-    setDrivers(updated);
+    if (!confirm(t('driver_delete_confirm') || 'Voulez-vous supprimer ce livreur ?')) return;
+    setDeletingDriverId(id);
+    try {
+      await DataStore.deleteDriver(id);
+    } catch (error) {
+      console.error("Error deleting driver:", error);
+      alert("Erreur lors de la suppression du livreur.");
+    } finally {
+      setDeletingDriverId(null);
+    }
   };
+
 
   const renderStaff = () => {
     const baseUrl = window.location.origin;
@@ -293,7 +318,9 @@ export function Dashboard() {
               </div>
               <div className="modal-actions">
                 <button className="btn-secondary" onClick={() => setAddingStaff(false)}>{t('staff_cancel')}</button>
-                <button className="btn-primary" onClick={handleAddStaff} style={{ border: 'none', cursor: 'pointer', background: 'var(--accent-gradient)', color: 'white', fontWeight: 700 }}>{t('staff_add')}</button>
+                <button className="btn-primary" onClick={handleAddStaff} disabled={isAddingStaffLoading} style={{ border: 'none', cursor: isAddingStaffLoading ? 'not-allowed' : 'pointer', background: 'var(--accent-gradient)', color: 'white', fontWeight: 700, opacity: isAddingStaffLoading ? 0.7 : 1 }}>
+                  {isAddingStaffLoading ? "Ajout en cours..." : t('staff_add')}
+                </button>
               </div>
             </div>
           </div>
@@ -303,7 +330,7 @@ export function Dashboard() {
         {qrStaffId && (() => {
           const member = staffList.find(s => s.id === qrStaffId);
           if (!member) return null;
-          const reviewUrl = `${baseUrl}/staff-review/${member.id}`;
+          const reviewUrl = `${baseUrl}/staff-review/${profile?.id || 'demo'}/${member.id}`;
           return (
             <div className="modal-overlay" onClick={() => setQrStaffId(null)}>
               <div className="glass-modal" style={{ textAlign: 'center' }} onClick={e => e.stopPropagation()}>
@@ -397,8 +424,13 @@ export function Dashboard() {
                     <button onClick={() => setQrStaffId(member.id)} className="staff-qr-btn">
                       <QrCode size={15} /> {t('dash_qr')}
                     </button>
-                    <button onClick={() => handleDeleteStaff(member.id)} className="staff-delete-btn">
-                      <Trash2 size={15} />
+                    <button 
+                      onClick={() => handleDeleteStaff(member.id)} 
+                      className="staff-delete-btn"
+                      disabled={deletingStaffId === member.id}
+                      style={{ opacity: deletingStaffId === member.id ? 0.5 : 1 }}
+                    >
+                      {deletingStaffId === member.id ? <div className="animate-spin h-4 w-4 border-2 border-accent border-t-transparent rounded-full" /> : <Trash2 size={15} />}
                     </button>
                   </div>
                 </div>
@@ -411,7 +443,6 @@ export function Dashboard() {
   };
 
   const renderDrivers = () => {
-    const baseUrl = window.location.origin;
     return (
       <div className="dashboard-content">
         <div className="page-header" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -473,7 +504,7 @@ export function Dashboard() {
           </div>
         ) : (
           <div className="staff-cards-grid">
-            {drivers.map((driver, idx) => {
+              {drivers.map((driver) => {
               const initials = driver.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
               const statusColors = { available: 'var(--success)', busy: 'var(--warning)', offline: 'var(--text-tertiary)' };
               
@@ -505,8 +536,13 @@ export function Dashboard() {
                     <button onClick={() => setQrDriverId(driver.id)} className="staff-qr-btn">
                       <QrCode size={15} /> PORTAIL
                     </button>
-                    <button onClick={() => handleDeleteDriver(driver.id)} className="staff-delete-btn">
-                      <Trash2 size={15} />
+                    <button 
+                      onClick={() => handleDeleteDriver(driver.id)} 
+                      className="staff-delete-btn"
+                      disabled={deletingDriverId === driver.id}
+                      style={{ opacity: deletingDriverId === driver.id ? 0.5 : 1 }}
+                    >
+                      {deletingDriverId === driver.id ? <div className="animate-spin h-4 w-4 border-2 border-accent border-t-transparent rounded-full" /> : <Trash2 size={15} />}
                     </button>
                   </div>
                 </div>
@@ -623,7 +659,7 @@ export function Dashboard() {
             <div className="stat-info">
               <span className="stat-title">{t('analytics_revenue')}</span>
               <h3 className="stat-value">{totalRevenue.toFixed(0)} DH</h3>
-              <span className="stat-trend positive">+12.5% from last week</span>
+              <span className="stat-trend positive" style={{ opacity: totalRevenue > 0 ? 1 : 0.5 }}>{totalRevenue > 0 ? '+100% (New)' : 'Aucun revenu'}</span>
             </div>
           </div>
           <div className="stat-card glass-panel">
@@ -632,18 +668,18 @@ export function Dashboard() {
             </div>
             <div className="stat-info">
               <span className="stat-title">{t('analytics_orders')}</span>
-              <h3 className="stat-value">{orders.length + 450}</h3>
-              <span className="stat-trend positive">+8% vs average</span>
+              <h3 className="stat-value">{totalOrdersCount}</h3>
+              <span className="stat-trend positive" style={{ opacity: totalOrdersCount > 0 ? 1 : 0.5 }}>{totalOrdersCount > 0 ? '+100% (New)' : 'Aucune commande'}</span>
             </div>
           </div>
           <div className="stat-card glass-panel">
             <div className="stat-icon-wrapper" style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6' }}>
-              <Activity size={24} />
+              <Users size={24} />
             </div>
             <div className="stat-info">
               <span className="stat-title">{t('analytics_avg_ticket')}</span>
-              <h3 className="stat-value">{avgTicket.toFixed(2)} DH</h3>
-              <span className="stat-trend negative">-2% vs yesterday</span>
+              <h3 className="stat-value">{avgTicket.toFixed(0)} DH</h3>
+              <span className="stat-trend neutral">Moyenne globale</span>
             </div>
           </div>
         </div>
@@ -771,12 +807,12 @@ export function Dashboard() {
       <div className="page-header">
         <h2 className="page-title">{t('dash_orders')}</h2>
         <div className="flex gap-2">
-          <span className="badge-success">{orders.filter(o => o.status === 'new').length} {t('status_new', 'Nouveau')}</span>
+          <span className="badge-success">{orders.filter(o => o.status === 'pending').length} {t('status_new', 'Nouveau')}</span>
         </div>
       </div>
       
       <div className="orders-kanban mt-6">
-        {(['new', 'preparing', 'ready'] as const).map(status => (
+        {(['pending', 'preparing', 'ready'] as const).map(status => (
           <div key={status} className="kanban-col glass-panel">
             <div className="kanban-col-header">
               <span className="kanban-title">{status.toUpperCase()}</span>
@@ -796,8 +832,8 @@ export function Dashboard() {
                     <div className="order-meta">{order.items} items • {order.total.toFixed(2)} DH</div>
                   </div>
                   <div className="order-actions">
-                    {status === 'new' && <button className="btn-primary btn-full" onClick={() => handleUpdateOrderStatus(order.id, 'preparing')}>Accepter</button>}
-                    {status === 'preparing' && <button className="btn-secondary btn-full" onClick={() => handleUpdateOrderStatus(order.id, 'ready')}>Prêt</button>}
+                    {status === 'pending' && <button className="btn-primary btn-full" disabled={updatingOrderId === order.id} onClick={() => handleUpdateOrderStatus(order.id, 'preparing')}>{updatingOrderId === order.id ? "..." : "Accepter"}</button>}
+                    {status === 'preparing' && <button className="btn-secondary btn-full" disabled={updatingOrderId === order.id} onClick={() => handleUpdateOrderStatus(order.id, 'ready')}>{updatingOrderId === order.id ? "..." : "Prêt"}</button>}
                     {status === 'ready' && <button className="btn-success btn-full"><CheckCircle size={16}/> Terminé</button>}
                   </div>
                 </div>
@@ -812,7 +848,6 @@ export function Dashboard() {
   const renderOverview = () => {
     const todaySales = orders.reduce((sum, o) => sum + o.total, 0);
     const activeOrders = orders.filter(o => o.status !== 'ready');
-    const avgRating = (reviews.reduce((acc, r) => acc + r.rating, 0) / (reviews.length || 1)).toFixed(1);
     
     return (
       <div className="dashboard-content">
@@ -841,17 +876,14 @@ export function Dashboard() {
             <div className="stat-info">
               <span className="stat-title">{t('active_orders', 'Commandes Actives')}</span>
               <h3 className="stat-value">{activeOrders.length}</h3>
-              <span className="stat-trend positive">{activeOrders.filter(o => o.status === 'new').length} {t('status_new', 'nouvelles')}</span>
+              <span className="stat-trend positive">{activeOrders.filter(o => o.status === 'pending').length} {t('status_new', 'nouvelles')}</span>
             </div>
           </div>
-          <div className="stat-card glass-panel">
-            <div className="stat-icon-wrapper" style={{ background: 'rgba(252, 211, 77, 0.1)', color: '#fcd34d' }}>
-              <Star size={24} />
-            </div>
+          <div className="stat-card glass-panel" style={{ borderColor: 'var(--accent-primary)', position: 'relative', overflow: 'hidden' }}>
             <div className="stat-info">
-              <span className="stat-title">{t('avg_rating', 'Note Moyenne')}</span>
-              <h3 className="stat-value">{avgRating}</h3>
-              <span className="stat-trend">{t('on_total_reviews', 'Sur {{count}} avis', { count: reviews.length })}</span>
+              <span className="stat-title">Omnichannel Point</span>
+              <h3 className="stat-value">Actif</h3>
+              <span className="stat-trend positive"><Activity size={12}/> {t('status_live', 'Live')}</span>
             </div>
           </div>
         </div>
@@ -866,8 +898,8 @@ export function Dashboard() {
                     <div className="font-bold">{order.id}</div>
                     <div className="text-xs text-tertiary">Table {order.table} • {order.items} articles</div>
                   </div>
-                  <span className={`status-badge ${order.status === 'new' ? 'inactive' : 'active'}`}>
-                    {order.status === 'new' ? 'Attente' : 'Préparation'}
+                  <span className={`status-badge ${order.status === 'pending' ? 'inactive' : 'active'}`}>
+                    {order.status === 'pending' ? 'Attente' : 'Préparation'}
                   </span>
                 </div>
               ))}
@@ -932,11 +964,11 @@ export function Dashboard() {
                     {review.status === 'published_google' ? (
                       <span className="badge-success"><CheckCircle size={14}/> Shared to Google</span>
                     ) : (
-                      <button className="btn-google" onClick={() => {
+                      <button className="btn-google" disabled={updatingReviewId === review.id} onClick={() => {
                         handleUpdateReviewStatus(review.id, 'published_google');
                         if(profile.googleReviewUrl) window.open(profile.googleReviewUrl, '_blank');
                       }}>
-                        <ExternalLink size={16}/> Share to Google
+                        <ExternalLink size={16}/> {updatingReviewId === review.id ? "..." : "Share to Google"}
                       </button>
                     )}
                   </>
@@ -945,8 +977,8 @@ export function Dashboard() {
                     {review.status === 'internal_resolved' ? (
                       <span className="badge-resolved"><CheckCircle size={14}/> Resolved Internally</span>
                     ) : (
-                      <button className="btn-resolve" onClick={() => handleUpdateReviewStatus(review.id, 'internal_resolved')}>
-                        <ShieldAlert size={16}/> Resolve Internal Issue
+                      <button className="btn-resolve" disabled={updatingReviewId === review.id} onClick={() => handleUpdateReviewStatus(review.id, 'internal_resolved')}>
+                        <ShieldAlert size={16}/> {updatingReviewId === review.id ? "..." : "Resolve Internal Issue"}
                       </button>
                     )}
                   </>
@@ -959,14 +991,24 @@ export function Dashboard() {
     </div>
   );
 
-  const handleToggleAvailability = (id: string, current: boolean) => {
-    DataStore.updateMenuItem(id, { available: !current });
+  const handleToggleAvailability = async (id: string, current: boolean) => {
+    try {
+      await DataStore.updateMenuItem(id, { available: !current });
+    } catch (error) {
+      console.error("Error toggling availability:", error);
+      alert("Erreur lors du changement de disponibilité.");
+    }
   };
 
   const handleUpdatePrice = async (id: string, newPrice: string) => {
     const price = parseFloat(newPrice);
     if (!isNaN(price)) {
-      await DataStore.updateMenuItem(id, { price });
+      try {
+        await DataStore.updateMenuItem(id, { price });
+      } catch (error) {
+        console.error("Error updating price:", error);
+        alert("Erreur lors de la mise à jour du prix.");
+      }
     }
   };
 
@@ -1011,13 +1053,29 @@ export function Dashboard() {
                   </button>
                 </td>
                 <td>
-                  <button className="icon-btn-ghost text-danger" onClick={async () => {
-                    if(confirm('Delete this item?')) {
-                      await DataStore.deleteMenuItem(item.id);
-                      const updated = await DataStore.getMenu();
-                      setMenuItems(updated);
-                    }
-                  }}><Trash2 size={16} /></button>
+                  <button className="icon-btn-ghost text-accent mr-2" onClick={() => {
+                    setEditingDish(item);
+                    setIsEditingDish(true);
+                  }}><Settings size={16} /></button>
+                  <button 
+                    className="icon-btn-ghost text-danger" 
+                    disabled={deletingDishId === item.id}
+                    onClick={async () => {
+                      if(confirm(t('dish_delete_confirm') || 'Supprimer ce plat ?')) {
+                        setDeletingDishId(item.id);
+                        try {
+                          await DataStore.deleteMenuItem(item.id);
+                        } catch (error) {
+                          console.error("Error deleting dish:", error);
+                          alert("Erreur lors de la suppression du plat.");
+                        } finally {
+                          setDeletingDishId(null);
+                        }
+                      }
+                    }}
+                  >
+                    {deletingDishId === item.id ? <div className="animate-spin h-4 w-4 border-2 border-danger border-t-transparent rounded-full" /> : <Trash2 size={16} />}
+                  </button>
                 </td>
               </tr>
             ))}
@@ -1214,15 +1272,19 @@ export function Dashboard() {
                   <td>{order.items} articles</td>
                   <td>{order.total.toFixed(2)} DH</td>
                   <td>
-                    <span className={`status-badge ${order.status === 'new' ? 'inactive' : 'active'}`}>
-                      {order.status === 'new' ? t('status_new', 'Nouveau') : order.status === 'preparing' ? t('status_preparing', 'En cours') : order.status === 'ready' ? t('status_ready', 'Prêt') : 'Terminé'}
+                    <span className={`status-badge ${order.status === 'pending' ? 'inactive' : 'active'}`}>
+                      {order.status === 'pending' ? t('status_new', 'Nouveau') : order.status === 'preparing' ? t('status_preparing', 'En cours') : order.status === 'ready' ? t('status_ready', 'Prêt') : 'Terminé'}
                     </span>
                   </td>
                   <td>
-                    {order.status === 'new' ? (
-                      <button className="btn-primary" style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }} onClick={() => handleUpdateOrderStatus(order.id, 'preparing')}>Accepter</button>
+                    {order.status === 'pending' ? (
+                      <button className="btn-primary" style={{ padding: '0.4rem 1rem', fontSize: '0.8rem', opacity: updatingOrderId === order.id ? 0.7 : 1 }} disabled={updatingOrderId === order.id} onClick={() => handleUpdateOrderStatus(order.id, 'preparing')}>
+                        {updatingOrderId === order.id ? "..." : "Accepter"}
+                      </button>
                     ) : order.status === 'preparing' ? (
-                      <button className="btn-secondary" style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }} onClick={() => handleUpdateOrderStatus(order.id, 'ready')}>Marquer Prêt</button>
+                      <button className="btn-secondary" style={{ padding: '0.4rem 1rem', fontSize: '0.8rem', opacity: updatingOrderId === order.id ? 0.7 : 1 }} disabled={updatingOrderId === order.id} onClick={() => handleUpdateOrderStatus(order.id, 'ready')}>
+                        {updatingOrderId === order.id ? "..." : "Marquer Prêt"}
+                      </button>
                     ) : order.status === 'ready' && (order.table === 'Delivery' || order.table === 'Livraison' || order.customerAddress || order.source !== 'qr') ? (
                       <span className="text-warning text-xs font-bold">Attente Livreur</span>
                     ) : (
@@ -1578,7 +1640,7 @@ export function Dashboard() {
                 <div className="glass-panel p-8 text-center qr-premium-card">
                   <div className="qr-preview-container" style={{ minHeight: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <QRCodeSVG 
-                      value={`${window.location.origin}/chef`}
+                      value={`${window.location.origin}/chef/${profile?.id || 'demo'}`}
                       size={180}
                       level="H"
                       includeMargin={true}
@@ -1590,7 +1652,7 @@ export function Dashboard() {
                   <h3 className="text-xl font-bold mb-2">{t('qr_chef_title', 'QR Cuisine')}</h3>
                   <p className="text-tertiary text-sm mb-6">{t('qr_chef_desc', 'Accès direct au tableau de bord pour le Chef.')}</p>
                   <div className="flex gap-2 w-full">
-                    <button className="btn-primary flex-1" onClick={() => window.open(`${window.location.origin}/chef`, '_blank')}>
+                    <button className="btn-primary flex-1" onClick={() => window.open(`${window.location.origin}/chef/${profile?.id || 'demo'}`, '_blank')}>
                       {t('staff_test_link')}
                     </button>
                   </div>
@@ -1607,8 +1669,8 @@ export function Dashboard() {
                     Personnel
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    {staffList.map((staff, idx) => {
-                      const reviewUrl = `${window.location.origin}/staff-review/${staff.id}`;
+                    {staffList.map((staff) => {
+                      const reviewUrl = `${window.location.origin}/staff-review/${profile?.id || 'demo'}/${staff.id}`;
                       return (
                         <div key={staff.id} className="glass-panel p-6 text-center qr-premium-card">
                           <div className="qr-preview-container mb-4" style={{ padding: '1rem' }}>
@@ -1649,13 +1711,13 @@ export function Dashboard() {
                     Livreurs
                   </h3>
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                    {drivers.map((driver, idx) => {
-                      const trackUrl = `${window.location.origin}/driver/${driver.id}`;
+                    {drivers.map((driver) => {
+                      const driverUrl = `${window.location.origin}/driver/${profile?.id || 'demo'}/${driver.id}`;
                       return (
                         <div key={driver.id} className="glass-panel p-6 text-center qr-premium-card">
                           <div className="qr-preview-container mb-4" style={{ padding: '1rem', minHeight: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <QRCodeSVG 
-                              value={trackUrl}
+                              value={driverUrl}
                               size={120}
                               level="H"
                               includeMargin={true}
@@ -1667,7 +1729,7 @@ export function Dashboard() {
                           <h4 className="font-bold text-sm mb-1">{driver.name}</h4>
                           <p className="text-tertiary text-[10px] mb-4 truncate">{driver.phone}</p>
                           <div className="flex flex-col gap-2 w-full">
-                            <button className="btn-primary py-2 text-xs font-bold" onClick={() => window.open(trackUrl, '_blank')}>
+                            <button className="btn-primary py-2 text-xs font-bold" onClick={() => window.open(driverUrl, '_blank')}>
                               Ouvrir Portail Livreur
                             </button>
                           </div>
@@ -1690,6 +1752,12 @@ export function Dashboard() {
               </div>
 
               <div className="settings-layout mt-8">
+                {saveError && (
+                  <div className="error-message mb-6" style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '1rem', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <ShieldAlert size={20} />
+                    <span>{saveError}</span>
+                  </div>
+                )}
                 <div className="glass-panel p-8">
                   <h3 className="text-lg font-bold mb-6 flex items-center gap-2"><Utensils size={20} className="text-accent"/> {t('settings_profile')}</h3>
                   <div className="premium-input-group">
@@ -1725,6 +1793,30 @@ export function Dashboard() {
                     <div className="premium-input-wrapper">
                       <FileText className="input-icon" size={18} style={{ top: '12px' }} />
                       <textarea value={settingsForm.aboutInfo || ''} onChange={e => setSettingsForm({...settingsForm, aboutInfo: e.target.value})} className="premium-input" rows={3} style={{ paddingLeft: '2.75rem' }} placeholder="Description détaillée..." />
+                    </div>
+                  </div>
+
+                  <div className="premium-input-group mt-6">
+                    <label>{t('settings_about_image', 'Photo de l\'annonce / À propos')}</label>
+                    <input 
+                      type="file" 
+                      id="about-image-upload" 
+                      hidden 
+                      accept="image/*" 
+                      onChange={(e) => handleImageUpload(e, (url) => setSettingsForm({...settingsForm, aboutImage: url}))}
+                    />
+                    <div className="flex gap-4 items-center">
+                      <label htmlFor="about-image-upload" className="flex-1">
+                        <div className="premium-input-wrapper cursor-pointer group">
+                          <ImageIcon className="input-icon group-hover:text-accent transition-colors" size={18} />
+                          <div className="premium-input flex items-center text-tertiary">
+                            {settingsForm.aboutImage ? t('image_selected') : t('choose_photo')}
+                          </div>
+                        </div>
+                      </label>
+                      {settingsForm.aboutImage && (
+                        <img src={settingsForm.aboutImage} className="w-16 h-16 rounded-lg object-cover border border-accent shadow-md" alt="About Preview" />
+                      )}
                     </div>
                   </div>
                 </div>
@@ -1774,7 +1866,87 @@ export function Dashboard() {
         </div>
       </main>
 
-      {/* Add Dish Modal */}
+      {/* Edit Dish Modal */}
+      {isEditingDish && editingDish && (
+        <div className="modal-overlay">
+          <div className="glass-modal">
+            <button onClick={() => setIsEditingDish(false)} className="close-modal-btn">
+              <X size={20}/>
+            </button>
+            <h2 className="text-3xl font-black mb-8 text-gradient">Modifier {editingDish.name}</h2>
+            
+            <div className="premium-input-group">
+              <label>{t('menu_dish_name')}</label>
+              <div className="premium-input-wrapper">
+                <Tag className="input-icon" size={18} />
+                <input type="text" value={editingDish.name} onChange={e => setEditingDish({...editingDish, name: e.target.value})} className="premium-input" />
+              </div>
+            </div>
+
+            <div className="flex gap-6">
+              <div className="premium-input-group flex-1">
+                <label>{t('menu_category')}</label>
+                <select value={editingDish.category} onChange={e => setEditingDish({...editingDish, category: e.target.value})} className="premium-select">
+                  <option value="Entrées">{t('cat_entrees')}</option>
+                  <option value="Plats">{t('cat_plats')}</option>
+                  <option value="Desserts">{t('cat_desserts')}</option>
+                  <option value="Boissons">{t('cat_boissons')}</option>
+                </select>
+              </div>
+              <div className="premium-input-group flex-1">
+                <label>{t('menu_price')} (DH)</label>
+                <div className="premium-input-wrapper">
+                  <span className="input-icon font-bold text-xs">DH</span>
+                  <input type="number" value={editingDish.price} onChange={e => setEditingDish({...editingDish, price: parseFloat(e.target.value)})} className="premium-input" />
+                </div>
+              </div>
+            </div>
+
+            <div className="premium-input-group mb-10">
+              <label>{t('menu_image')}</label>
+              <input 
+                type="file" 
+                id="edit-dish-image-upload" 
+                hidden 
+                accept="image/*" 
+                onChange={(e) => handleImageUpload(e, (url) => setEditingDish({...editingDish, image: url}))}
+              />
+              <div className="flex gap-4 items-center">
+                <label htmlFor="edit-dish-image-upload" className="flex-1">
+                  <div className="premium-input-wrapper cursor-pointer group">
+                    <ImageIcon className="input-icon group-hover:text-accent transition-colors" size={18} />
+                    <div className="premium-input flex items-center text-tertiary">
+                      {editingDish.image ? t('image_selected') : t('choose_photo')}
+                    </div>
+                  </div>
+                </label>
+                {editingDish.image && (
+                  <img src={editingDish.image} className="w-24 h-24 rounded-lg object-cover border border-accent shadow-lg" alt="Preview" />
+                )}
+              </div>
+            </div>
+
+            <div className="modal-actions">
+              <button className="btn-secondary" onClick={() => setIsEditingDish(false)}>{t('staff_cancel')}</button>
+              <button className="btn-primary" onClick={async () => {
+                if(!editingDish.name || !editingDish.price) return alert(t('error_name_price'));
+                setIsAddingDishLoading(true); // Using the same loading state for simplicity or I could add isEditingDishLoading
+                try {
+                  await DataStore.updateMenuItem(editingDish.id, editingDish);
+                  setIsEditingDish(false);
+                } catch (error) {
+                  console.error("Error updating dish:", error);
+                  alert("Erreur lors de la mise à jour du plat.");
+                } finally {
+                  setIsAddingDishLoading(false);
+                }
+              }} disabled={isAddingDishLoading}>
+                {isAddingDishLoading ? "Mise à jour..." : t('menu_save')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {isAddingDish && (
         <div className="modal-overlay">
           <div className="glass-modal">
@@ -1810,6 +1982,20 @@ export function Dashboard() {
               </div>
             </div>
 
+            <div className="premium-input-group">
+              <label>{t('menu_description', 'Description')}</label>
+              <div className="premium-input-wrapper">
+                <FileText className="input-icon" size={18} />
+                <textarea 
+                  placeholder="ex: Ingrédients, préparation..." 
+                  value={newDish.description} 
+                  onChange={e => setNewDish({...newDish, description: e.target.value})} 
+                  className="premium-input"
+                  style={{ minHeight: '80px', paddingTop: '0.75rem' }}
+                />
+              </div>
+            </div>
+
             <div className="premium-input-group mb-10">
               <label>{t('menu_image')}</label>
               <input 
@@ -1838,12 +2024,20 @@ export function Dashboard() {
               <button className="btn-secondary" onClick={() => setIsAddingDish(false)}>{t('staff_cancel')}</button>
               <button className="btn-primary" onClick={async () => {
                 if(!newDish.name || !newDish.price) return alert(t('error_name_price'));
-                await DataStore.addMenuItem(newDish);
-                const updatedMenu = await DataStore.getMenu();
-                setMenuItems(updatedMenu);
-                setIsAddingDish(false);
-                setNewDish({ name: '', category: 'Plats', description: '', price: 0, image: '', available: true, popular: false });
-              }}>{t('menu_save')}</button>
+                setIsAddingDishLoading(true);
+                try {
+                  await DataStore.addMenuItem(newDish);
+                  setIsAddingDish(false);
+                  setNewDish({ name: '', category: 'Plats', description: '', price: 0, image: '', available: true, popular: false });
+                } catch (error) {
+                  console.error("Error adding dish:", error);
+                  alert("Erreur lors de l'ajout du plat. Veuillez réessayer.");
+                } finally {
+                  setIsAddingDishLoading(false);
+                }
+              }} disabled={isAddingDishLoading}>
+                {isAddingDishLoading ? "Ajout en cours..." : t('menu_save')}
+              </button>
             </div>
           </div>
         </div>
@@ -1882,7 +2076,7 @@ export function Dashboard() {
       {qrDriverId && (() => {
         const driver = drivers.find(d => d.id === qrDriverId);
         if (!driver) return null;
-        const driverUrl = `${window.location.origin}/driver/${driver.id}`;
+        const driverUrl = `${window.location.origin}/driver/${profile?.id || 'demo'}/${driver.id}`;
         return (
           <div className="modal-overlay" onClick={() => setQrDriverId(null)}>
             <div className="glass-modal" style={{ textAlign: 'center' }} onClick={e => e.stopPropagation()}>

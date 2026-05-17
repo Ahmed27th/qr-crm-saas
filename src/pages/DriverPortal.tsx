@@ -9,7 +9,7 @@ import type { Order, Driver } from '../dataStore';
 import './Dashboard.css'; // Reuse some styles or add specific ones
 
 export function DriverPortal() {
-  const { driverId } = useParams<{ driverId: string }>();
+  const { restaurantId, driverId } = useParams<{ restaurantId: string; driverId: string }>();
   const [driver, setDriver] = useState<Driver | null>(null);
   const [assignedOrders, setAssignedOrders] = useState<Order[]>([]);
   const [availableOrders, setAvailableOrders] = useState<Order[]>([]);
@@ -18,16 +18,16 @@ export function DriverPortal() {
   const [showNewOrderAlert, setShowNewOrderAlert] = useState(false);
 
   useEffect(() => {
-    DataStore.initMockData();
+    // We removed initMockData from here to prevent overwriting user data
     const loadData = async () => {
-      const drivers = await DataStore.getDrivers();
+      const drivers = await DataStore.getDrivers(restaurantId);
       const currentDriver = drivers.find(d => d.id === driverId);
       
       if (currentDriver) {
         setDriver(currentDriver);
-        const orders = await DataStore.getOrders();
+        const orders = await DataStore.getOrders(restaurantId);
         const currentAssigned = orders.filter(o => o.driverId === driverId && o.status !== 'delivered');
-        const currentAvailable = await DataStore.getAvailableDeliveryOrders();
+        const currentAvailable = await DataStore.getAvailableDeliveryOrders(restaurantId);
         
         setAvailableOrders(currentAvailable);
         
@@ -48,14 +48,14 @@ export function DriverPortal() {
     const interval = setInterval(loadData, 5000); // Poll as fallback, or replace with onSnapshot if needed
 
     return () => clearInterval(interval);
-  }, [driverId]);
+  }, [restaurantId, driverId]);
 
   const [missionSteps, setMissionSteps] = useState<Record<string, number>>({});
 
   const handleToggleStatus = async () => {
     if (!driver) return;
     const nextStatus: Driver['status'] = driver.status === 'available' ? 'busy' : driver.status === 'busy' ? 'offline' : 'available';
-    await DataStore.updateDriverStatus(driver.id, nextStatus);
+    await DataStore.updateDriverStatus(driver.id, nextStatus, restaurantId);
   };
 
   const handleStepForward = (orderId: string) => {
@@ -75,15 +75,15 @@ export function DriverPortal() {
   };
 
   const handleCompleteOrder = async (orderId: string) => {
-    await DataStore.updateOrderStatus(orderId, 'delivered');
+    await DataStore.updateOrderStatus(orderId, 'delivered', restaurantId);
     if (driver) {
-      await DataStore.updateDriverOrders(driver.id, Math.max(0, driver.activeOrders - 1));
+      await DataStore.updateDriverOrders(driver.id, Math.max(0, driver.activeOrders - 1), restaurantId);
     }
   };
 
   const handleAcceptOrder = async (orderId: string) => {
     if (!driverId) return;
-    await DataStore.assignOrderToDriver(orderId, driverId);
+    await DataStore.assignOrderToDriver(orderId, driverId, restaurantId);
   };
 
   if (loading) return <div className="flex items-center justify-center h-screen bg-primary">Chargement...</div>;

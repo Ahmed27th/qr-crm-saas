@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useParams } from 'react-router-dom';
 import { 
   ChefHat, 
   Clock, 
@@ -15,29 +16,31 @@ import { NotificationService } from '../utils/notifications';
 import './ChefDashboard.css';
 
 export function ChefDashboard() {
+  const { restaurantId } = useParams<{ restaurantId: string }>();
   const { t } = useTranslation();
   const [orders, setOrders] = useState<Order[]>([]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
+    if (!restaurantId) return;
+
     // Real-time synchronization with Firestore
     const unsubscribe = DataStore.subscribeToOrders((currentOrders) => {
-      const newOrders = currentOrders.filter(o => o.status === 'new');
+      const newOrders = currentOrders.filter(o => o.status === 'pending');
       
-      // If there are more 'new' orders than before, play notification
-      // (Using a ref for lastOrderCount inside the sub to avoid stale closures if needed, 
-      // but state setter is usually fine if we only care about the delta)
       setOrders(prevOrders => {
-        const prevNewCount = prevOrders.filter(o => o.status === 'new').length;
+        const prevNewCount = prevOrders.filter(o => o.status === 'pending').length;
         if (newOrders.length > prevNewCount && prevNewCount !== 0) {
           playNotification();
         }
         return currentOrders;
       });
-    });
+    }, restaurantId);
 
-    return () => unsubscribe();
-  }, []);
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, [restaurantId]);
 
 
   const playNotification = () => {
@@ -55,7 +58,7 @@ export function ChefDashboard() {
   };
 
   const updateStatus = async (id: string, status: Order['status']) => {
-    await DataStore.updateOrderStatus(id, status);
+    await DataStore.updateOrderStatus(id, status, restaurantId);
   };
 
   const getTimerInfo = (time: number) => {
@@ -102,7 +105,7 @@ export function ChefDashboard() {
         </div>
 
         <div className="order-footer">
-          {order.status === 'new' && (
+          {order.status === 'pending' && (
             <button 
               className="chef-action-btn start"
               onClick={() => updateStatus(order.id, 'preparing')}
@@ -147,7 +150,7 @@ export function ChefDashboard() {
 
         <div className="chef-stats">
           <div className="chef-stat-item">
-            <span className="chef-stat-value">{filterOrders('new').length}</span>
+            <span className="chef-stat-value">{filterOrders('pending').length}</span>
             <span className="chef-stat-label">{t('chef_orders_new')}</span>
           </div>
           <div className="chef-stat-item separator">
@@ -175,11 +178,11 @@ export function ChefDashboard() {
             <h2 className="chef-column-title status-new">
               <Bell size={20} /> {t('chef_orders_new').toUpperCase()}
             </h2>
-            <span className="chef-column-count">{filterOrders('new').length}</span>
+            <span className="chef-column-count">{filterOrders('pending').length}</span>
           </div>
           <div className="chef-orders-list">
-            {filterOrders('new').length > 0 ? (
-              filterOrders('new').map(renderOrderCard)
+            {filterOrders('pending').length > 0 ? (
+              filterOrders('pending').map(renderOrderCard)
             ) : (
               <div className="empty-state">
                 <AlertCircle className="empty-icon" size={48} />

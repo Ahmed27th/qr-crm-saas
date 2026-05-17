@@ -24,12 +24,14 @@ export function PublicBooking() {
   const [isSuccess, setIsSuccess] = useState(false);
 
   useEffect(() => {
-    DataStore.initMockData();
-    const loadData = async () => {
-      const p = await DataStore.getProfile(restaurantId);
+    // Real-time profile subscription
+    const unsubscribeProfile = DataStore.subscribeToProfile((p) => {
       setProfile(p);
+    }, restaurantId);
+
+    return () => {
+      unsubscribeProfile();
     };
-    loadData();
   }, [restaurantId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -38,9 +40,16 @@ export function PublicBooking() {
     setIsSuccess(true);
   };
 
+  const containerStyle = profile?.coverImage ? {
+    backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.85)), url(${profile.coverImage})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundAttachment: 'fixed'
+  } : {};
+
   if (isSuccess) {
     return (
-      <div className="booking-container">
+      <div className="booking-container" style={containerStyle}>
         <div className="booking-card success-card">
           <CheckCircle size={64} className="text-success mb-4 mx-auto" />
           <h2>{t('booking_success_title')}</h2>
@@ -64,10 +73,16 @@ export function PublicBooking() {
   }
 
   return (
-    <div className="booking-container">
+    <div className="booking-container" style={containerStyle}>
       <div className="booking-card">
         <div className="booking-header">
-          <img src={profile?.logo} alt="Logo" className="booking-logo" />
+          {profile?.logo ? (
+            <img src={profile.logo} alt="Logo" className="booking-logo" />
+          ) : (
+            <div className="booking-logo-placeholder">
+              {profile?.name?.[0] ?? 'R'}
+            </div>
+          )}
           <h1>{t('booking_title')}</h1>
           <p className="text-tertiary">{profile?.name}</p>
         </div>

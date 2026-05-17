@@ -34,10 +34,10 @@ function App() {
         <Route path="/menu/:restaurantId" element={<PublicMenu />} />
         <Route path="/book/:restaurantId" element={<PublicBooking />} />
         <Route path="/review/:restaurantId" element={<PublicReview />} />
-        <Route path="/staff-review/:staffId" element={<StaffReview />} />
-        <Route path="/driver/:driverId" element={<DriverPortal />} />
+        <Route path="/staff-review/:restaurantId/:staffId" element={<StaffReview />} />
+        <Route path="/driver/:restaurantId/:driverId" element={<DriverPortal />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/chef" element={<ChefDashboard />} />
+        <Route path="/chef/:restaurantId" element={<ChefDashboard />} />
       </Routes>
     </Router>
   );

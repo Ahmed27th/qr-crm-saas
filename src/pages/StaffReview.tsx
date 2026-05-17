@@ -6,28 +6,40 @@ import { DataStore } from '../dataStore';
 import './StaffReview.css';
 
 export function StaffReview() {
-  const { staffId } = useParams<{ staffId: string }>();
-  const [staff, setStaff] = useState<any>(null);
-  const [profile, setProfile] = useState<any>(null);
+  const { restaurantId, staffId } = useParams<{ restaurantId: string; staffId: string }>();
   const [rating, setRating] = useState(0);
   const [hovered, setHovered] = useState(0);
   const [comment, setComment] = useState('');
   const [step, setStep] = useState<'rate' | 'comment' | 'done'>('rate');
   const [copied, setCopied] = useState(false);
+  const [staff, setStaff] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
   const { t } = useTranslation();
 
   useEffect(() => {
-    const loadData = async () => {
-      const [sList, prof] = await Promise.all([
-        DataStore.getStaff(),
-        DataStore.getProfile()
-      ]);
+    const loadStaff = async () => {
+      const sList = await DataStore.getStaff(restaurantId);
       const foundStaff = sList.find(s => s.id === staffId);
       setStaff(foundStaff);
-      setProfile(prof);
     };
-    loadData();
-  }, [staffId]);
+    loadStaff();
+
+    // Subscribe to profile in real-time
+    const unsubscribeProfile = DataStore.subscribeToProfile((p) => {
+      setProfile(p);
+    }, restaurantId);
+
+    return () => {
+      unsubscribeProfile();
+    };
+  }, [restaurantId, staffId]);
+
+  const containerStyle = profile?.coverImage ? {
+    backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.85)), url(${profile.coverImage})`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundAttachment: 'fixed'
+  } : {};
 
   const isGoodReview = rating >= 4;
 
@@ -38,7 +50,7 @@ export function StaffReview() {
 
   const handleSubmit = async () => {
     if (rating > 0) {
-      await DataStore.addReview(rating, `[${staff?.name || 'Staff'}] ${comment}`);
+      await DataStore.addReview(rating, `[${staff?.name || 'Staff'}] ${comment}`, undefined, restaurantId);
     }
     setStep('done');
   };
@@ -61,7 +73,7 @@ export function StaffReview() {
 
   if (!staff) {
     return (
-      <div className="sr-container">
+      <div className="sr-container" style={containerStyle}>
         <div className="sr-card">
           <p style={{ color: 'var(--text-tertiary)', textAlign: 'center' }}>{t('review_member_not_found')}</p>
         </div>
@@ -79,7 +91,7 @@ export function StaffReview() {
   };
 
   return (
-    <div className="sr-container">
+    <div className="sr-container" style={containerStyle}>
 
       <div className="sr-card animate-scale-up">
 
