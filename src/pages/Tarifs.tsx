@@ -44,7 +44,8 @@ export function Tarifs() {
     if (!userId) { navigate('/login'); return; }
     const baseUrl = plan.checkoutUrl[billingCycle];
     const separator = baseUrl.includes('?') ? '&' : '?';
-    const checkoutUrl = `${baseUrl}${separator}checkout[custom][user_id]=${encodeURIComponent(userId)}&checkout[custom][plan]=${plan.id}&checkout[custom][billing]=${billingCycle}`;
+    const origin = window.location.origin;
+    const checkoutUrl = `${baseUrl}${separator}checkout[custom][user_id]=${encodeURIComponent(userId)}&checkout[custom][plan]=${plan.id}&checkout[custom][billing]=${billingCycle}&checkout[success_url]=${encodeURIComponent(origin + '/dashboard')}&checkout[cancel_url]=${encodeURIComponent(origin + '/tarifs')}`;
     window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
   };
 
