@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { 
   LayoutDashboard, ShoppingBag, Utensils, QrCode, Settings,
   Bell, Search, Plus, CheckCircle, Clock, TrendingUp, Users, Star, MessageSquare, ExternalLink, ShieldAlert, Smartphone, Calendar, Mail, Trash2, X, Tag, Image as ImageIcon, Link as LinkIcon, FileText, Sparkles,
-  BarChart3, Activity, PieChart as PieChartIcon, Target, Phone, Truck
+  BarChart3, Activity, PieChart as PieChartIcon, Target, Phone, Truck, Crown
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
@@ -24,6 +24,9 @@ export function Dashboard() {
   const navigate = useNavigate();
   const { isAuthenticated: isAuth } = useConvexAuth();
   const authUser = useQuery(api.users.me);
+  const accessLevel = useQuery(api.subscriptions.getUserAccessLevel, { 
+    userId: localStorage.getItem('qr_restaurant_id') || 'demo' 
+  });
   const [activeTab, setActiveTab] = useState('overview');
   const [notifications, setNotifications] = useState<{id: string, text: string, time: string, read: boolean, type: 'order' | 'review'}[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -254,6 +257,18 @@ export function Dashboard() {
 
 
   const renderStaff = () => {
+    if (!accessLevel?.isPremium) {
+      return (
+        <div className="dashboard-content" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center' }}>
+          <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+            <Crown size={32} className="text-accent" />
+          </div>
+          <h2 className="text-2xl font-bold mb-4">Fonctionnalité Premium</h2>
+          <p className="text-tertiary max-w-md mx-auto mb-8">La gestion du personnel et les QR codes personnalisés pour les avis sont réservés aux abonnés Pro et Ultimate.</p>
+          <button className="btn-primary" style={{ padding: '0.75rem 1.5rem', borderRadius: '12px' }} onClick={() => navigate('/tarifs')}>Découvrir les offres</button>
+        </div>
+      );
+    }
     const baseUrl = window.location.origin;
     return (
       <div className="dashboard-content">
@@ -604,6 +619,18 @@ export function Dashboard() {
   };
 
   const renderAnalytics = () => {
+    if (!accessLevel?.isPremium) {
+      return (
+        <div className="dashboard-content" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center' }}>
+          <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+            <Crown size={32} className="text-accent" />
+          </div>
+          <h2 className="text-2xl font-bold mb-4">Fonctionnalité Premium</h2>
+          <p className="text-tertiary max-w-md mx-auto mb-8">Les statistiques et analyses de performances détaillées sont réservées aux abonnés Pro et Ultimate.</p>
+          <button className="btn-primary" style={{ padding: '0.75rem 1.5rem', borderRadius: '12px' }} onClick={() => navigate('/tarifs')}>Découvrir les offres</button>
+        </div>
+      );
+    }
     const now = Date.now();
     const oneDay = 86400000;
     

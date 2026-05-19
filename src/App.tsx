@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { LandingPage } from './pages/LandingPage';
 import { PublicMenu } from './pages/PublicMenu';
 import { Dashboard } from './pages/Dashboard';
@@ -14,6 +14,25 @@ import { ChefDashboard } from './pages/ChefDashboard';
 import { useEffect } from 'react';
 import { NotificationService } from './utils/notifications';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { useConvexAuth } from 'convex/react';
+
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isLoading } = useConvexAuth();
+
+  if (isLoading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg-primary, #0a0a0a)' }}>
+        <div className="btn-spinner" style={{ width: '40px', height: '40px', borderWidth: '4px' }}></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
+}
 
 function App() {
   useEffect(() => {
@@ -38,7 +57,7 @@ function App() {
           <Route path="/review/:restaurantId" element={<PublicReview />} />
           <Route path="/staff-review/:restaurantId/:staffId" element={<StaffReview />} />
           <Route path="/driver/:restaurantId/:driverId" element={<DriverPortal />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/chef/:restaurantId" element={<ChefDashboard />} />
         </Routes>
       </Router>

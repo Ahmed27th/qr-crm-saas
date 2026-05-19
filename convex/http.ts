@@ -11,16 +11,41 @@ http.route({
   path: "/lemon-squeezy-webhook",
   method: "POST",
   handler: httpAction(async (ctx, request) => {
-    const body = await request.text();
-
     const signature = request.headers.get("X-Signature");
     if (!signature) {
       return new Response("Missing signature", { status: 401 });
     }
 
+    const bodyText = await request.text();
+    const secret = process.env.LEMON_SQUEEZY_WEBHOOK_SECRET;
+
+    if (!secret) {
+      console.error("LEMON_SQUEEZY_WEBHOOK_SECRET is not configured");
+      return new Response("Webhook secret not configured", { status: 500 });
+    }
+
+    // Verify HMAC-SHA256 signature using Web Crypto API
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      "raw",
+      encoder.encode(secret),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+    const mac = await crypto.subtle.sign("HMAC", key, encoder.encode(bodyText));
+    const hexMac = Array.from(new Uint8Array(mac))
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+
+    if (hexMac !== signature) {
+      console.error("Invalid Lemon Squeezy webhook signature");
+      return new Response("Invalid signature", { status: 401 });
+    }
+
     let payload: any;
     try {
-      payload = JSON.parse(body);
+      payload = JSON.parse(bodyText);
     } catch {
       return new Response("Invalid JSON", { status: 400 });
     }
@@ -35,8 +60,8 @@ http.route({
     const planId = customData.plan;
     const billing = customData.billing;
 
-    if (!userId || !planId || !billing) {
-      return new Response("Missing custom data (user_id, plan, billing)", { status: 400 });
+    if (!userId) {
+      return new Response("Missing user_id in custom data", { status: 400 });
     }
 
     const attributes = payload.data?.attributes;
@@ -53,8 +78,8 @@ http.route({
       await ctx.runMutation(api.subscriptions.upsertSubscription, {
         userId,
         email,
-        planId,
-        billingPeriod: billing,
+        planId: planId || "pro",
+        billingPeriod: billing || "monthly",
         status: "active",
         lemonSqueezyOrderId: orderId,
         currentPeriodStart: now,
@@ -67,8 +92,8 @@ http.route({
       await ctx.runMutation(api.subscriptions.upsertSubscription, {
         userId,
         email,
-        planId,
-        billingPeriod: billing,
+        planId: planId || "pro",
+        billingPeriod: billing || "monthly",
         status: "active",
         lemonSqueezyOrderId: orderId,
         lemonSqueezySubscriptionId: subId,
@@ -82,8 +107,8 @@ http.route({
       await ctx.runMutation(api.subscriptions.upsertSubscription, {
         userId,
         email,
-        planId,
-        billingPeriod: billing,
+        planId: planId || "pro",
+        billingPeriod: billing || "monthly",
         status,
         lemonSqueezyOrderId: orderId,
         currentPeriodStart: now,
@@ -95,8 +120,8 @@ http.route({
       await ctx.runMutation(api.subscriptions.upsertSubscription, {
         userId,
         email,
-        planId,
-        billingPeriod: billing,
+        planId: planId || "pro",
+        billingPeriod: billing || "monthly",
         status: "cancelled",
         lemonSqueezyOrderId: orderId,
         currentPeriodStart: now,

@@ -11,6 +11,26 @@ export const getSubscription = query({
   },
 });
 
+export const getUserAccessLevel = query({
+  args: { userId: v.string() },
+  handler: async (ctx, args) => {
+    const sub = await ctx.db
+      .query("subscriptions")
+      .withIndex("by_userId", (q) => q.eq("userId", args.userId))
+      .first();
+
+    // Starter plan could also have some access. We just check if they are active and have a plan.
+    const isActive = sub?.status === "active";
+    
+    return {
+      isActive,
+      isPremium: isActive && (sub?.planId === "pro" || sub?.planId === "ultimate"),
+      planId: sub?.planId || "none",
+      status: sub?.status || "none",
+    };
+  },
+});
+
 export const upsertSubscription = mutation({
   args: {
     userId: v.string(),

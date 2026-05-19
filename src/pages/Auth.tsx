@@ -101,26 +101,10 @@ export function Auth() {
     setLoading(true);
 
     try {
-      // SIMULATED AUTH FOR CONVEX DEMO
-      const userId = email.replace(/[^a-zA-Z0-9]/g, '_');
-      
-      if (!isLogin) {
-        await createProfile({
-          userId: userId,
-          name: name || 'Mon Restaurant',
-          description: 'Cuisine de qualité',
-          coverImage: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=1600&q=80',
-          logo: 'https://images.unsplash.com/photo-1583394838336-acd977730f90?auto=format&fit=crop&w=200&q=80'
-        });
-      }
-
-      localStorage.setItem('qr_restaurant_id', userId);
-      localStorage.setItem('qr_is_authenticated', 'true');
-      
-      navigate('/tarifs');
+      const flow = isLogin ? "login" : "register";
+      await signIn("password", { email, password, name: isLogin ? undefined : name, flow, redirectTo: "/tarifs" });
     } catch (err: any) {
       setError(err.message || 'Une erreur est survenue');
-    } finally {
       setLoading(false);
     }
   };
@@ -129,7 +113,7 @@ export function Auth() {
     setError('');
     setLoading(true);
     try {
-      await signIn("google", { redirectTo: "/dashboard" });
+      await signIn("google", { redirectTo: "/tarifs" });
     } catch (err: any) {
       setError(err.message || 'Erreur lors de la connexion Google');
       setLoading(false);
