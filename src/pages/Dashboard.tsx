@@ -27,11 +27,9 @@ export function Dashboard() {
   const accessLevel = useQuery(api.subscriptions.getUserAccessLevel, { 
     userId: localStorage.getItem('qr_restaurant_id') || 'demo' 
   });
-  const [searchParams] = useSearchParams();
-  const demoPlan = searchParams.get('demo');
   const subscription = authUser?.subscription;
-  const isSubActive = (subscription?.status === 'active') || !!demoPlan;
-  const planId = isSubActive ? (demoPlan || subscription?.planId || 'none') : 'none';
+  const isSubActive = subscription?.status === 'active';
+  const planId = isSubActive ? subscription.planId : 'none';
 
   const PLAN_TABS: Record<string, Set<string>> = {
     starter: new Set(['overview', 'reviews', 'collection', 'qr', 'settings']),
