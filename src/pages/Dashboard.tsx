@@ -883,90 +883,187 @@ export function Dashboard() {
   const renderOverview = () => {
     const todaySales = orders.reduce((sum, o) => sum + o.total, 0);
     const activeOrders = orders.filter(o => o.status !== 'ready');
+    const avgRating = reviews.length ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) : '—';
     
     return (
       <div className="dashboard-content">
-        <div className="page-header">
-          <h2 className="page-title">{t('dash_overview')}</h2>
-          <div className="badge-accent flex items-center gap-2">
-            <Activity size={14}/> {t('status_live', 'Live')}
-          </div>
-        </div>
-        
-        <div className="stats-grid mb-8">
-          <div className="stat-card glass-panel">
-            <div className="stat-icon-wrapper" style={{ background: 'rgba(226, 179, 107, 0.1)', color: 'var(--accent-primary)' }}>
-              <TrendingUp size={24} />
+        {/* Welcome Banner */}
+        <div className="overview-welcome glass-panel" style={{ padding: '2rem 2.5rem', marginBottom: '2rem', background: 'linear-gradient(135deg, rgba(var(--accent-primary-rgb), 0.08), rgba(var(--accent-primary-rgb), 0.02))', border: '1px solid rgba(var(--accent-primary-rgb), 0.15)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <div>
+              <h2 className="page-title" style={{ marginBottom: '0.25rem' }}>
+                {t('dash_welcome', 'Bienvenue')} 👋
+              </h2>
+              <p className="text-tertiary" style={{ fontSize: '0.95rem' }}>
+                {t('dash_welcome_desc', 'Voici un aperçu de votre activité en temps réel.')}
+              </p>
             </div>
-            <div className="stat-info">
-              <span className="stat-title">{t('today_sales', "Ventes Aujourd'hui")}</span>
-              <h3 className="stat-value">{todaySales.toFixed(2)} DH</h3>
-              <span className="stat-trend positive">+{orders.length} {t('orders', 'commandes')}</span>
-            </div>
-          </div>
-          <div className="stat-card glass-panel">
-            <div className="stat-icon-wrapper" style={{ background: 'rgba(16, 185, 129, 0.1)', color: 'var(--success)' }}>
-              <ShoppingBag size={24} />
-            </div>
-            <div className="stat-info">
-              <span className="stat-title">{t('active_orders', 'Commandes Actives')}</span>
-              <h3 className="stat-value">{activeOrders.length}</h3>
-              <span className="stat-trend positive">{activeOrders.filter(o => o.status === 'pending').length} {t('status_new', 'nouvelles')}</span>
-            </div>
-          </div>
-          <div className="stat-card glass-panel" style={{ borderColor: 'var(--accent-primary)', position: 'relative', overflow: 'hidden' }}>
-            <div className="stat-info">
-              <span className="stat-title">Omnichannel Point</span>
-              <h3 className="stat-value">Actif</h3>
-              <span className="stat-trend positive"><Activity size={12}/> {t('status_live', 'Live')}</span>
+            <div className="badge-accent flex items-center gap-2" style={{ fontSize: '0.8rem' }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--success)', display: 'inline-block', animation: 'logoPulse 2s ease-in-out infinite' }}></span>
+              {t('status_live', 'Live')}
             </div>
           </div>
         </div>
 
+        {/* 4-card Stats */}
+        <div className="overview-stats-grid">
+          <div className="stat-card glass-panel">
+            <div className="stat-icon-wrapper" style={{ background: 'rgba(226, 179, 107, 0.12)', color: 'var(--accent-primary)' }}>
+              <TrendingUp size={22} />
+            </div>
+            <div className="stat-info">
+              <span className="stat-title">{t('today_sales', "Ventes")}</span>
+              <h3 className="stat-value">{todaySales.toFixed(0)} <span style={{ fontSize: '0.85rem', fontWeight: 600, opacity: 0.6 }}>DH</span></h3>
+              <span className="stat-trend positive">+{orders.length} {t('orders', 'commandes')}</span>
+            </div>
+          </div>
+          <div className="stat-card glass-panel">
+            <div className="stat-icon-wrapper" style={{ background: 'rgba(16, 185, 129, 0.12)', color: 'var(--success)' }}>
+              <ShoppingBag size={22} />
+            </div>
+            <div className="stat-info">
+              <span className="stat-title">{t('active_orders', 'Commandes')}</span>
+              <h3 className="stat-value">{activeOrders.length}</h3>
+              <span className="stat-trend positive">{activeOrders.filter(o => o.status === 'pending').length} {t('status_new', 'en attente')}</span>
+            </div>
+          </div>
+          <div className="stat-card glass-panel">
+            <div className="stat-icon-wrapper" style={{ background: 'rgba(245, 158, 11, 0.12)', color: 'var(--warning)' }}>
+              <Utensils size={22} />
+            </div>
+            <div className="stat-info">
+              <span className="stat-title">{t('dash_menu', 'Menu')}</span>
+              <h3 className="stat-value">{menuItems.length}</h3>
+              <span className="stat-trend">{menuItems.filter(i => i.available).length} {t('available', 'disponibles')}</span>
+            </div>
+          </div>
+          <div className="stat-card glass-panel">
+            <div className="stat-icon-wrapper" style={{ background: 'rgba(139, 92, 246, 0.12)', color: '#8B5CF6' }}>
+              <Star size={22} />
+            </div>
+            <div className="stat-info">
+              <span className="stat-title">{t('dash_reviews', 'Avis')}</span>
+              <h3 className="stat-value">{avgRating} <span style={{ fontSize: '0.85rem' }}>⭐</span></h3>
+              <span className="stat-trend">{reviews.length} {t('total', 'total')}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
+          <button className="btn-primary" style={{ padding: '0.6rem 1.25rem', borderRadius: '12px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', border: 'none' }} onClick={() => setActiveTab('menu')}>
+            <Plus size={16} /> {t('menu_add_plat', 'Ajouter un plat')}
+          </button>
+          <button className="btn-secondary" style={{ padding: '0.6rem 1.25rem', borderRadius: '12px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }} onClick={() => setActiveTab('qr')}>
+            <QrCode size={16} /> {t('qr_view', 'QR Codes')}
+          </button>
+          <button className="btn-secondary" style={{ padding: '0.6rem 1.25rem', borderRadius: '12px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }} onClick={() => window.open(`${window.location.origin}/menu/${profile?.id || 'demo'}`, '_blank')}>
+            <ExternalLink size={16} /> {t('view_menu', 'Voir mon menu')}
+          </button>
+        </div>
+
+        {/* Main Content Grid */}
         <div className="analytics-charts-grid-2">
           <div className="glass-panel p-6">
-            <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><Clock size={20} className="text-accent"/> File d'attente Cuisine</h3>
+            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+              <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(var(--accent-primary-rgb), 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Clock size={18} className="text-accent"/>
+              </div>
+              File d'attente Cuisine
+            </h3>
             <div className="flex flex-col gap-3">
               {activeOrders.slice(0, 5).map(order => (
-                <div key={order.id} className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/10">
+                <div key={order.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.85rem 1rem', borderRadius: '12px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', transition: 'all 0.2s' }}>
                   <div>
-                    <div className="font-bold">{order.id}</div>
+                    <div className="font-bold" style={{ fontSize: '0.9rem' }}>{order.id}</div>
                     <div className="text-xs text-tertiary">Table {order.table} • {order.items} articles</div>
                   </div>
                   <span className={`status-badge ${order.status === 'pending' ? 'inactive' : 'active'}`}>
-                    {order.status === 'pending' ? 'Attente' : 'Préparation'}
+                    {order.status === 'pending' ? '⏳ Attente' : '🍳 Préparation'}
                   </span>
                 </div>
               ))}
-              {activeOrders.length === 0 && <div className="text-center p-8 text-tertiary italic">Aucune commande active</div>}
-              <button className="btn-secondary w-full mt-2" onClick={() => setActiveTab('orders')}>Voir tout le Kanban</button>
+              {activeOrders.length === 0 && (
+                <div style={{ textAlign: 'center', padding: '2.5rem 1rem' }}>
+                  <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', fontSize: '1.5rem' }}>🍽️</div>
+                  <p className="text-tertiary" style={{ fontSize: '0.9rem' }}>Aucune commande active</p>
+                  <p className="text-tertiary" style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>Les commandes apparaîtront ici en temps réel</p>
+                </div>
+              )}
+              <button className="btn-secondary" style={{ width: '100%', marginTop: '0.5rem', padding: '0.65rem', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }} onClick={() => setActiveTab('orders')}>
+                Voir tout le Kanban →
+              </button>
             </div>
           </div>
           
           <div className="glass-panel p-6">
-            <h3 className="text-lg font-bold mb-4 flex items-center gap-2"><Users size={20} className="text-accent"/> Staff en Service</h3>
+            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+              <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Users size={18} style={{ color: 'var(--success)' }}/>
+              </div>
+              Staff en Service
+            </h3>
             <div className="flex flex-col gap-3">
-              {staffList.slice(0, 5).map(member => (
-                <div key={member.id} className="flex items-center justify-between p-3 rounded-xl bg-white/5">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center font-bold text-accent">
-                      {member.name.charAt(0)}
+              {staffList.slice(0, 5).map((member, idx) => {
+                const colors = ['#667eea', '#E2B36B', '#11998e', '#f093fb', '#4facfe'];
+                return (
+                  <div key={member.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.7rem 1rem', borderRadius: '12px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', transition: 'all 0.2s' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <div style={{ width: 38, height: 38, borderRadius: '50%', background: colors[idx % colors.length], display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: '0.85rem' }}>
+                        {member.name.charAt(0)}
+                      </div>
+                      <div>
+                        <div className="font-bold" style={{ fontSize: '0.9rem' }}>{member.name}</div>
+                        <div className="text-xs text-tertiary">{member.role}</div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="font-bold">{member.name}</div>
-                      <div className="text-xs text-tertiary">{member.role}</div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--success)', boxShadow: '0 0 6px rgba(16, 185, 129, 0.5)' }}></div>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>Actif</span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-success"></div>
-                    <span className="text-xs font-medium">Actif</span>
-                  </div>
+                );
+              })}
+              {staffList.length === 0 && (
+                <div style={{ textAlign: 'center', padding: '2.5rem 1rem' }}>
+                  <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', fontSize: '1.5rem' }}>👥</div>
+                  <p className="text-tertiary" style={{ fontSize: '0.9rem' }}>Aucun staff ajouté</p>
+                  <p className="text-tertiary" style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>Ajoutez votre équipe pour commencer</p>
                 </div>
-              ))}
-              <button className="btn-secondary w-full mt-2" onClick={() => setActiveTab('staff')}>Gérer le Staff</button>
+              )}
+              <button className="btn-secondary" style={{ width: '100%', marginTop: '0.5rem', padding: '0.65rem', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }} onClick={() => setActiveTab('staff')}>
+                Gérer le Staff →
+              </button>
             </div>
           </div>
         </div>
+
+        {/* Recent Reviews Section */}
+        {reviews.length > 0 && (
+          <div style={{ marginTop: '2rem' }}>
+            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+              <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(139, 92, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <MessageSquare size={18} style={{ color: '#8B5CF6' }}/>
+              </div>
+              Derniers Avis
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+              {reviews.slice(0, 3).map(review => (
+                <div key={review.id} className="glass-panel" style={{ padding: '1.25rem', borderRadius: '14px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                    <div style={{ display: 'flex', gap: '2px' }}>
+                      {[1,2,3,4,5].map(star => (
+                        <Star key={star} size={14} fill={star <= review.rating ? '#f59e0b' : 'none'} color={star <= review.rating ? '#f59e0b' : 'var(--border-color)'} />
+                      ))}
+                    </div>
+                    <span className="text-xs text-tertiary">{Math.floor((Date.now() - review.time) / 60000)}m</span>
+                  </div>
+                  <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden' }}>"{review.comment}"</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     );
   };
