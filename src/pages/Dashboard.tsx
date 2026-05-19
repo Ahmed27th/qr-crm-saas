@@ -15,7 +15,7 @@ import { api } from '../../convex/_generated/api';
 import { DataStore } from '../dataStore';
 import type { Order, Review, MenuItem, Reservation, Driver } from '../dataStore';
 import { QRCodeSVG } from 'qrcode.react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { NotificationService } from '../utils/notifications';
 import './Dashboard.css';
 
@@ -1392,9 +1392,11 @@ export function Dashboard() {
 
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
+  const [searchParams] = useSearchParams();
+  const demoPlan = searchParams.get('demo');
   const subscription = authUser?.subscription;
-  const isSubActive = subscription?.status === 'active';
-  const planId = isSubActive ? subscription.planId : 'none';
+  const isSubActive = (subscription?.status === 'active') || !!demoPlan;
+  const planId = isSubActive ? (demoPlan || subscription?.planId || 'none') : 'none';
 
   const PLAN_TABS: Record<string, Set<string>> = {
     starter: new Set(['overview', 'reviews', 'collection', 'qr', 'settings']),
