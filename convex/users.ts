@@ -11,11 +11,22 @@ export const me = query({
       .withIndex("by_userId", (q) => q.eq("userId", identity.subject))
       .first();
 
+    if (!subscription) return {
+      subject: identity.subject,
+      email: identity.email,
+      name: identity.name,
+      subscription: null,
+    };
+
+    const now = Date.now();
+    const isExpired = subscription.currentPeriodEnd < now;
+    const effectiveStatus = isExpired ? 'expired' : subscription.status;
+
     return {
       subject: identity.subject,
       email: identity.email,
       name: identity.name,
-      subscription: subscription ?? null,
+      subscription: { ...subscription, status: effectiveStatus },
     };
   },
 });
