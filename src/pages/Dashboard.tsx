@@ -79,6 +79,7 @@ export function Dashboard() {
       isAuthenticated = true;
     }
 
+    if (isAuth && authUser === undefined) return;
     if (!isAuthenticated || !restaurantId) {
       navigate('/login');
       return;

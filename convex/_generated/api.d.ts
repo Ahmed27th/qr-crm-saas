@@ -18,6 +18,7 @@ import type * as reservations from "../reservations.js";
 import type * as reviews from "../reviews.js";
 import type * as staff from "../staff.js";
 import type * as subscriptions from "../subscriptions.js";
+import type * as testSubscriptions from "../testSubscriptions.js";
 import type * as users from "../users.js";
 
 import type {
@@ -37,6 +38,7 @@ declare const fullApi: ApiFromModules<{
   reviews: typeof reviews;
   staff: typeof staff;
   subscriptions: typeof subscriptions;
+  testSubscriptions: typeof testSubscriptions;
   users: typeof users;
 }>;
 

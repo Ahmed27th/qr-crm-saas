@@ -129,7 +129,7 @@ export function Auth() {
     setError('');
     setLoading(true);
     try {
-      await signIn("google", { redirectTo: "/tarifs" });
+      await signIn("google", { redirectTo: "/dashboard" });
     } catch (err: any) {
       setError(err.message || 'Erreur lors de la connexion Google');
       setLoading(false);
