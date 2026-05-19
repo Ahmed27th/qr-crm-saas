@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { 
   LayoutDashboard, ShoppingBag, Utensils, QrCode, Settings,
   Bell, Search, Plus, CheckCircle, Clock, TrendingUp, Users, Star, MessageSquare, ExternalLink, ShieldAlert, Smartphone, Calendar, Mail, Trash2, X, Tag, Image as ImageIcon, Link as LinkIcon, FileText, Sparkles,
-  BarChart3, Activity, PieChart as PieChartIcon, Target, Phone, Truck, Crown
+  BarChart3, Activity, PieChart as PieChartIcon, Target, Phone, Truck, Crown, Lock
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
@@ -75,6 +75,15 @@ export function Dashboard() {
     let isAuthenticated = localStorage.getItem('qr_is_authenticated') === 'true';
     let restaurantId = localStorage.getItem('qr_restaurant_id');
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const demoPlan = urlParams.get('demo');
+    if (demoPlan) {
+      isAuthenticated = true;
+      if (!restaurantId) {
+        restaurantId = 'demo';
+      }
+    }
+
     if (!isAuthenticated && isAuth && authUser?.subject) {
       restaurantId = authUser.subject;
       localStorage.setItem('qr_restaurant_id', restaurantId);
@@ -82,9 +91,9 @@ export function Dashboard() {
       isAuthenticated = true;
     }
 
-    if (isAuth && authUser === undefined) return;
+    if (isAuth && authUser === undefined && !demoPlan) return;
     if (!isAuthenticated || !restaurantId) {
-      navigate('/login');
+      navigate('/login' + window.location.search);
       return;
     }
 
@@ -1536,11 +1545,14 @@ export function Dashboard() {
     }
   }, [isAuth, authUser, isSubActive, navigate]);
 
+  // Redirect hook removed to allow users to view locked tabs with premium overlays
+  /*
   useEffect(() => {
     if (activeTab && !allowedTabs.has(activeTab)) {
       setActiveTab('overview');
     }
   }, [activeTab, allowedTabs]);
+  */
 
   const NAV_ITEMS = [
     { id: 'overview', icon: <LayoutDashboard size={20}/>, label: t('dash_overview') },
@@ -1554,8 +1566,151 @@ export function Dashboard() {
     { id: 'menu', icon: <Utensils size={20}/>, label: t('dash_menu') },
     { id: 'qr', icon: <QrCode size={20}/>, label: t('dash_qr') },
     { id: 'settings', icon: <Settings size={20}/>, label: t('dash_settings') },
-  ].filter(item => allowedTabs.has(item.id));
+  ];
   const handleNavClick = (id: string) => { setActiveTab(id); setMobileNavOpen(false); };
+
+  const renderLockedFeaturePlaceholder = (tabId: string) => {
+    let requiredPlan = 'Pro';
+    let title = '';
+    let description = '';
+    let benefits: string[] = [];
+    let mockupBg = null;
+
+    if (tabId === 'drivers') {
+      requiredPlan = 'Ultimate';
+      title = t('locked_drivers_title', 'Flotte de Livrateurs & Suivi en Direct');
+      description = t('locked_drivers_desc', 'Gérez vos propres livreurs et suivez leurs trajets en temps réel.');
+      benefits = [
+        t('locked_drivers_benefit_1', 'Géolocalisation en direct et répartition intelligente des commandes'),
+        t('locked_drivers_benefit_2', 'Portail mobile optimisé pour les livreurs'),
+        t('locked_drivers_benefit_3', 'Preuves de livraison et statistiques de temps de trajet'),
+      ];
+      mockupBg = (
+        <div className="locked-mockup-preview">
+          <div className="mock-map">
+            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', display: 'flex', flexDirection: 'column', gap: '1rem', alignItems: 'center' }}>
+              <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--accent-primary)', opacity: 0.6 }} />
+              <div style={{ width: '80px', height: '12px', borderRadius: '6px', backgroundColor: 'var(--text-tertiary)', opacity: 0.3 }} />
+            </div>
+          </div>
+        </div>
+      );
+    } else {
+      requiredPlan = 'Pro';
+      if (tabId === 'analytics') {
+        title = t('locked_analytics_title', 'Analyses de Performance en Temps Réel');
+        description = t('locked_analytics_desc', 'Prenez des décisions basées sur les données pour maximiser vos revenus.');
+        benefits = [
+          t('locked_analytics_benefit_1', 'Suivi en direct du chiffre d\'affaires et volumes de commandes'),
+          t('locked_analytics_benefit_2', 'Classement des plats les plus populaires et les plus rentables'),
+          t('locked_analytics_benefit_3', 'Analyse approfondie des heures d\'affluence et des avis clients'),
+        ];
+        mockupBg = (
+          <div className="locked-mockup-preview">
+            <div className="mock-grid">
+              <div className="mock-card" />
+              <div className="mock-card" />
+              <div className="mock-card" />
+            </div>
+            <div className="mock-chart-container" />
+          </div>
+        );
+      } else if (tabId === 'orders') {
+        title = t('locked_orders_title', 'Gestion des Commandes Intelligente');
+        description = t('locked_orders_desc', 'Gérez, suivez et traitez les commandes sur place, à emporter ou en livraison.');
+        benefits = [
+          t('locked_orders_benefit_1', 'Réception des commandes en temps réel avec notifications sonores'),
+          t('locked_orders_benefit_2', 'Suivi des statuts de préparation et historique complet'),
+          t('locked_orders_benefit_3', 'Statistiques quotidiennes et impression de tickets simplifiée'),
+        ];
+        mockupBg = (
+          <div className="locked-mockup-preview" style={{ gap: '1rem' }}>
+            <div className="mock-order-row" />
+            <div className="mock-order-row" />
+            <div className="mock-order-row" />
+            <div className="mock-order-row" />
+          </div>
+        );
+      } else if (tabId === 'reservations') {
+        title = t('locked_reservations_title', 'Module de Réservation & Plan de Salle');
+        description = t('locked_reservations_desc', 'Optimisez l\'occupation de vos tables et évitez les doublons.');
+        benefits = [
+          t('locked_reservations_benefit_1', 'Prise de réservation en ligne automatisée via code QR'),
+          t('locked_reservations_benefit_2', 'Gestion des statuts de table et de la capacité de la salle'),
+          t('locked_reservations_benefit_3', 'Rappels automatiques envoyés aux clients par email/SMS'),
+        ];
+        mockupBg = (
+          <div className="locked-mockup-preview">
+            <div className="mock-calendar" />
+          </div>
+        );
+      } else if (tabId === 'staff') {
+        title = t('locked_staff_title', 'Gestion d\'Équipe & Performance');
+        description = t('locked_staff_desc', 'Coordonnez votre personnel de salle et de cuisine efficacement.');
+        benefits = [
+          t('locked_staff_benefit_1', 'Comptes d\'accès sécurisés pour vos serveurs et chefs'),
+          t('locked_staff_benefit_2', 'Suivi de la satisfaction et avis spécifiques par serveur'),
+          t('locked_staff_benefit_3', 'Attribution des tâches et rôles personnalisés'),
+        ];
+        mockupBg = (
+          <div className="locked-mockup-preview">
+            <div className="mock-staff-grid">
+              <div className="mock-staff-card" />
+              <div className="mock-staff-card" />
+              <div className="mock-staff-card" />
+            </div>
+          </div>
+        );
+      } else if (tabId === 'menu') {
+        title = t('locked_menu_title', 'Éditeur de Carte Dynamique & Illimité');
+        description = t('locked_menu_desc', 'Mettez à jour vos prix, plats et allergènes en une fraction de seconde.');
+        benefits = [
+          t('locked_menu_benefit_1', 'Nombre de catégories et de plats illimité'),
+          t('locked_menu_benefit_2', 'Mise à jour instantanée sans réimpression des codes QR'),
+          t('locked_menu_benefit_3', 'Mise en avant des plats populaires et gestion de la disponibilité'),
+        ];
+        mockupBg = (
+          <div className="locked-mockup-preview">
+            <div className="mock-menu-grid">
+              <div className="mock-menu-item" />
+              <div className="mock-menu-item" />
+              <div className="mock-menu-item" />
+            </div>
+          </div>
+        );
+      }
+    }
+
+    return (
+      <div className="locked-feature-container">
+        <div className="locked-mockup-bg">
+          {mockupBg}
+        </div>
+        <div className="upgrade-overlay-card">
+          <div className="upgrade-card-glow" />
+          <div className="upgrade-icon-badge">
+            <Crown size={32} color="#ffb800" />
+          </div>
+          <span className="required-plan-badge">
+            Plan {requiredPlan} requis
+          </span>
+          <h3 className="upgrade-title">{title}</h3>
+          <p className="upgrade-description">{description}</p>
+          <div className="upgrade-benefits-list">
+            {benefits.map((benefit, idx) => (
+              <div key={idx} className="upgrade-benefit-item">
+                <CheckCircle size={16} style={{ flexShrink: 0 }} />
+                <span>{benefit}</span>
+              </div>
+            ))}
+          </div>
+          <button className="btn-primary upgrade-cta-btn w-full py-4 text-sm font-bold flex items-center justify-center gap-2" onClick={() => navigate('/tarifs')}>
+            <Sparkles size={16} /> Débloquer maintenant
+          </button>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="dashboard-layout">
@@ -1584,13 +1739,21 @@ export function Dashboard() {
         
         <div className="mobile-drawer-body">
           <nav className="mobile-nav-list">
-            {NAV_ITEMS.map(item => (
-              <button key={item.id}
-                className={`nav-item ${activeTab === item.id ? 'active' : ''}`}
-                onClick={() => handleNavClick(item.id)}>
-                {item.icon}<span>{item.label}</span>
-              </button>
-            ))}
+            {NAV_ITEMS.map(item => {
+              const isLocked = !allowedTabs.has(item.id);
+              return (
+                <button key={item.id}
+                  className={`nav-item ${activeTab === item.id ? 'active' : ''} ${isLocked ? 'locked-nav-item' : ''}`}
+                  onClick={() => handleNavClick(item.id)}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    {item.icon}
+                    <span>{item.label}</span>
+                  </div>
+                  {isLocked && <Lock size={14} style={{ opacity: 0.8, color: '#ffb800' }} />}
+                </button>
+              );
+            })}
           </nav>
         </div>
 
@@ -1619,13 +1782,21 @@ export function Dashboard() {
         )}
 
         <nav className="sidebar-nav">
-          {NAV_ITEMS.map(item => (
-            <button key={item.id}
-              className={`nav-item ${activeTab === item.id ? 'active' : ''}`}
-              onClick={() => handleNavClick(item.id)}>
-              {item.icon}<span>{item.label}</span>
-            </button>
-          ))}
+          {NAV_ITEMS.map(item => {
+            const isLocked = !allowedTabs.has(item.id);
+            return (
+              <button key={item.id}
+                className={`nav-item ${activeTab === item.id ? 'active' : ''} ${isLocked ? 'locked-nav-item' : ''}`}
+                onClick={() => handleNavClick(item.id)}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  {item.icon}
+                  <span>{item.label}</span>
+                </div>
+                {isLocked && <Lock size={14} style={{ opacity: 0.8, color: '#ffb800' }} />}
+              </button>
+            );
+          })}
         </nav>
 
         <div className="sidebar-footer">
@@ -1709,6 +1880,10 @@ export function Dashboard() {
 
         {/* Dynamic View */}
         <div className="dashboard-scroll-area">
+          {!allowedTabs.has(activeTab) ? (
+            renderLockedFeaturePlaceholder(activeTab)
+          ) : (
+            <>
           {activeTab === 'overview' && renderOverview()}
           {activeTab === 'analytics' && renderAnalytics()}
           {activeTab === 'orders' && renderOrders()}
@@ -2015,6 +2190,8 @@ export function Dashboard() {
                 </div>
               </div>
             </div>
+          )}
+            </>
           )}
         </div>
       </main>

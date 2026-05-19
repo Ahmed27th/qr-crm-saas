@@ -3,6 +3,10 @@ import { httpAction } from "./_generated/server";
 import { api } from "./_generated/api";
 import { auth } from "./auth";
 
+declare const process: {
+  env: Record<string, string | undefined>;
+};
+
 const http = httpRouter();
 
 auth.addHttpRoutes(http);

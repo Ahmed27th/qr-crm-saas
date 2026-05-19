@@ -1,9 +1,9 @@
 import { useState, useEffect, type FormEvent } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { Mail, Lock, User, AlertCircle, QrCode, Zap, Star, ArrowRight, Eye, EyeOff, Users, ArrowLeft, CheckCircle2 } from 'lucide-react';
-import { useMutation } from 'convex/react';
+
 import { useAuthActions } from "@convex-dev/auth/react";
-import { api } from '../../convex/_generated/api';
+
 import './Auth.css';
 
 export function Auth() {
@@ -19,9 +19,6 @@ export function Auth() {
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
-
-  const createProfile = useMutation(api.profiles.create);
   const { signIn } = useAuthActions();
 
   // Mouse coordinate tracker for spotlight effect
@@ -102,7 +99,7 @@ export function Auth() {
 
     try {
       const flow = isLogin ? "login" : "register";
-      await signIn("password", { email, password, name: isLogin ? undefined : name, flow, redirectTo: "/tarifs" });
+      await signIn("password", { email, password, name: isLogin ? "" : name, flow, redirectTo: "/tarifs" });
     } catch (err: any) {
       setError(err.message || 'Une erreur est survenue');
       setLoading(false);
