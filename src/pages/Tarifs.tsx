@@ -72,7 +72,7 @@ export function Tarifs() {
     {
       id: 'pro', name: t('pricing_pro_name'), badge: t('pricing_pro_badge'),
       monthlyPrice: monthlyPrices.pro, yearlyPrice: 5000, savings: 988,
-      checkoutUrl: { monthly: 'https://saasprojectreview.lemonsqueezy.com/checkout/buy/96c4bcaf-a41e-425f-a87e-60d43e0dc3d3?discount=0', yearly: 'https://saasprojectreview.lemonsqueezy.com/checkout/buy/39d74bf6-7d6a-45fe-8b1f-63949fcfbe42' },
+      checkoutUrl: { monthly: 'https://saasprojectreview.lemonsqueezy.com/checkout/buy/96c4bcaf-a41e-425f-a87e-60d43e0dc3d3', yearly: 'https://saasprojectreview.lemonsqueezy.com/checkout/buy/39d74bf6-7d6a-45fe-8b1f-63949fcfbe42' },
       desc: t('pricing_pro_desc'), icon: <Zap size={22} />, popular: true,
       features: [
         { text: t('pricing_feature_menu'), included: true },
@@ -85,7 +85,7 @@ export function Tarifs() {
     {
       id: 'ultimate', name: t('pricing_ultimate_name'), badge: t('pricing_ultimate_badge'),
       monthlyPrice: monthlyPrices.ultimate, yearlyPrice: 11000, savings: 988,
-      checkoutUrl: { monthly: 'https://saasprojectreview.lemonsqueezy.com/checkout/buy/2c46c199-3fd3-4223-b63b-d06a1056d544', yearly: 'https://saasprojectreview.lemonsqueezy.com/checkout/buy/8aab7afb-e0e6-4862-afa3-626ce1fae247' },
+      checkoutUrl: { monthly: 'https://saasprojectreview.lemonsqueezy.com/checkout/buy/2c46c199-3fd3-4223-b63b-d06a1056d544', yearly: 'https://saasprojectreview.lemonsqueezy.com/checkout/buy/2c46c199-3fd3-4223-b63b-d06a1056d544' },
       desc: t('pricing_ultimate_desc'), icon: <Crown size={22} />,
       features: [
         { text: t('pricing_feature_menu'), included: true },
