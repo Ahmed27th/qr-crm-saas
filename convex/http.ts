@@ -76,18 +76,6 @@ http.route({
     const email = attributes.user_email || "";
     const orderId = String(payload.data?.id || "");
 
-    // Verify email matches the account owner
-    const authAccount = await ctx.db.system.query("_auth_account")
-      .withIndex("by_userId", (q) => q.eq("userId", userId))
-      .first();
-    const registeredEmail = authAccount?.email?.toLowerCase();
-    const paidEmail = email.toLowerCase();
-
-    if (registeredEmail && registeredEmail !== paidEmail) {
-      console.error(`Email mismatch: registered=${registeredEmail}, paid=${paidEmail}`);
-      return new Response("Email mismatch: payment email does not match account email", { status: 400 });
-    }
-
     const now = Date.now();
 
     if (eventName === "order_created") {
