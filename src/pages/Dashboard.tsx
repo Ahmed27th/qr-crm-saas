@@ -27,6 +27,19 @@ export function Dashboard() {
   const accessLevel = useQuery(api.subscriptions.getUserAccessLevel, { 
     userId: localStorage.getItem('qr_restaurant_id') || 'demo' 
   });
+  const [searchParams] = useSearchParams();
+  const demoPlan = searchParams.get('demo');
+  const subscription = authUser?.subscription;
+  const isSubActive = (subscription?.status === 'active') || !!demoPlan;
+  const planId = isSubActive ? (demoPlan || subscription?.planId || 'none') : 'none';
+
+  const PLAN_TABS: Record<string, Set<string>> = {
+    starter: new Set(['overview', 'reviews', 'collection', 'qr', 'settings']),
+    pro: new Set(['overview', 'analytics', 'orders', 'collection', 'reservations', 'reviews', 'staff', 'menu', 'qr', 'settings']),
+    ultimate: new Set(['overview', 'analytics', 'orders', 'collection', 'reservations', 'reviews', 'staff', 'drivers', 'menu', 'qr', 'settings']),
+  };
+  const allowedTabs = PLAN_TABS[planId] ?? new Set<string>();
+
   const [activeTab, setActiveTab] = useState('overview');
   const [notifications, setNotifications] = useState<{id: string, text: string, time: string, read: boolean, type: 'order' | 'review'}[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -266,7 +279,8 @@ export function Dashboard() {
 
 
   const renderStaff = () => {
-    if (!accessLevel?.isPremium) {
+    const isPremium = planId === 'pro' || planId === 'ultimate' || accessLevel?.isPremium;
+    if (!isPremium) {
       return (
         <div className="dashboard-content" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center' }}>
           <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
@@ -628,7 +642,8 @@ export function Dashboard() {
   };
 
   const renderAnalytics = () => {
-    if (!accessLevel?.isPremium) {
+    const isPremium = planId === 'pro' || planId === 'ultimate' || accessLevel?.isPremium;
+    if (!isPremium) {
       return (
         <div className="dashboard-content" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center' }}>
           <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
@@ -1524,19 +1539,6 @@ export function Dashboard() {
   );
 
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-
-  const [searchParams] = useSearchParams();
-  const demoPlan = searchParams.get('demo');
-  const subscription = authUser?.subscription;
-  const isSubActive = (subscription?.status === 'active') || !!demoPlan;
-  const planId = isSubActive ? (demoPlan || subscription?.planId || 'none') : 'none';
-
-  const PLAN_TABS: Record<string, Set<string>> = {
-    starter: new Set(['overview', 'reviews', 'collection', 'qr', 'settings']),
-    pro: new Set(['overview', 'analytics', 'orders', 'collection', 'reservations', 'reviews', 'staff', 'menu', 'qr', 'settings']),
-    ultimate: new Set(['overview', 'analytics', 'orders', 'collection', 'reservations', 'reviews', 'staff', 'drivers', 'menu', 'qr', 'settings']),
-  };
-  const allowedTabs = PLAN_TABS[planId] ?? new Set<string>();
 
   useEffect(() => {
     if (isAuth && authUser && !authUser.subject) return;
