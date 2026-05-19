@@ -3,7 +3,7 @@
   min-height: 100vh;
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  font-family: 'Inter', sans-serif;
+  font-family: 'DM Sans', sans-serif;
   position: relative;
   overflow-x: hidden;
 }

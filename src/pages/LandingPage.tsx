@@ -195,6 +195,9 @@ export function LandingPage() {
               <span className={`toggle-label ${billingCycle === 'yearly' ? 'active' : ''}`}>
                 {t('pricing_yearly')} <span className="promo-badge">{t('pricing_promo')}</span>
               </span>
+              {billingCycle === 'yearly' && (
+                <span className="landing-best-value">Best Value</span>
+              )}
             </div>
           </div>
 
@@ -214,11 +217,10 @@ export function LandingPage() {
               </div>
               <p className="plan-desc">{t('pricing_starter_desc')}</p>
               <ul className="plan-features">
-                <li><CheckCircle2 size={16} /> {t('pricing_feature_menu')}</li>
                 <li><CheckCircle2 size={16} /> {t('pricing_feature_reviews')}</li>
-                <li><CheckCircle2 size={16} /> {t('pricing_feature_languages')}</li>
+                <li className="disabled"><Clock size={16} /> {t('pricing_feature_menu')}</li>
                 <li className="disabled"><Clock size={16} /> {t('pricing_feature_orders')}</li>
-                <li className="disabled"><Clock size={16} /> {t('pricing_feature_delivery')}</li>
+                <li className="disabled"><Clock size={16} /> {t('pricing_feature_reservation')}</li>
               </ul>
               <button className="btn btn-secondary w-full">
                 {t('pricing_choose', { plan: t('pricing_starter_name') })}
@@ -244,7 +246,6 @@ export function LandingPage() {
                 <li><CheckCircle2 size={16} /> {t('pricing_feature_orders')}</li>
                 <li><CheckCircle2 size={16} /> {t('pricing_feature_reservation')}</li>
                 <li><CheckCircle2 size={16} /> {t('pricing_feature_analytics')}</li>
-                <li className="disabled"><Clock size={16} /> {t('pricing_feature_mobile')}</li>
               </ul>
               <button className="btn btn-primary w-full glow-effect">
                 {t('pricing_choose', { plan: t('pricing_pro_name') })}
@@ -267,9 +268,6 @@ export function LandingPage() {
               <p className="plan-desc">{t('pricing_ultimate_desc')}</p>
               <ul className="plan-features">
                 <li><CheckCircle2 size={16} /> <strong>{t('pricing_pro_name')}</strong></li>
-                <li><CheckCircle2 size={16} /> {t('pricing_feature_delivery')}</li>
-                <li><CheckCircle2 size={16} /> Tablette Point de Collecte</li>
-                <li><CheckCircle2 size={16} /> {t('pricing_feature_mobile')}</li>
                 <li><CheckCircle2 size={16} /> {t('pricing_feature_support')}</li>
               </ul>
               <button className="btn btn-secondary w-full">

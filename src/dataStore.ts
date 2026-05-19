@@ -85,6 +85,16 @@ export interface Driver {
   activeOrders: number;
 }
 
+export interface Subscription {
+  id?: string;
+  userId: string;
+  email?: string;
+  planId: 'starter' | 'pro' | 'ultimate';
+  billingPeriod: 'monthly' | 'yearly';
+  status: 'active' | 'cancelled' | 'expired' | 'past_due';
+  currentPeriodEnd: number;
+}
+
 // Fallback UID if no auth is set up yet
 const getRestaurantId = () => {
   // In production with Convex, you would use auth.currentUser?.subject
@@ -521,5 +531,39 @@ export const DataStore = {
 
   updateReservationStatus: async (id: string, status: Reservation['status']) => {
     await convex.mutation(api.reservations.updateStatus, { id: id as any, status });
-  }
+  },
+
+  // --- SUBSCRIPTIONS ---
+  getSubscription: async (userId: string): Promise<Subscription | null> => {
+    const sub = await convex.query(api.subscriptions.getSubscription, { userId });
+    if (!sub) return null;
+    return {
+      id: sub._id,
+      userId: sub.userId,
+      email: sub.email,
+      planId: sub.planId as any,
+      billingPeriod: sub.billingPeriod as any,
+      status: sub.status as any,
+      currentPeriodEnd: sub.currentPeriodEnd,
+    };
+  },
+
+  subscribeToSubscription: (callback: (sub: Subscription | null) => void, userId: string) => {
+    const unsub = convex.onUpdate(api.subscriptions.getSubscription, { userId }, (result: any) => {
+      if (!result) {
+        callback(null);
+        return;
+      }
+      callback({
+        id: result._id,
+        userId: result.userId,
+        email: result.email,
+        planId: result.planId as any,
+        billingPeriod: result.billingPeriod as any,
+        status: result.status as any,
+        currentPeriodEnd: result.currentPeriodEnd,
+      });
+    });
+    return makeSafeUnsubscribe(unsub);
+  },
 };

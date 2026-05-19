@@ -16,6 +16,16 @@
   ],
   "start_url": ".",
   "display": "standalone",
+  "orientation": "portrait",
   "theme_color": "#6366f1",
-  "background_color": "#0f172a"
+  "background_color": "#0a0a1a",
+  "description": "Digital menus, QR ordering, reservations, delivery, and reviews all in one platform.",
+  "categories": ["business", "food", "productivity"],
+  "lang": "fr",
+  "dir": "ltr",
+  "screenshots": [],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "scope": "/",
+  "id": "/"
 }

@@ -6,19 +6,19 @@ import { PublicBooking } from './pages/PublicBooking';
 import { PublicReview } from './pages/PublicReview';
 import { StaffReview } from './pages/StaffReview';
 import { Auth } from './pages/Auth';
+import { Tarifs } from './pages/Tarifs';
 
 import { DriverPortal } from './pages/DriverPortal';
 import { ChefDashboard } from './pages/ChefDashboard';
 
 import { useEffect } from 'react';
 import { NotificationService } from './utils/notifications';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 function App() {
   useEffect(() => {
-    // Request notification permission on app mount
     NotificationService.requestPermission();
 
-    // Store install prompt for later use
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       (window as any).deferredPrompt = e;
@@ -26,20 +26,23 @@ function App() {
   }, []);
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<Auth />} />
-        <Route path="/signup" element={<Auth />} />
-        <Route path="/menu/:restaurantId" element={<PublicMenu />} />
-        <Route path="/book/:restaurantId" element={<PublicBooking />} />
-        <Route path="/review/:restaurantId" element={<PublicReview />} />
-        <Route path="/staff-review/:restaurantId/:staffId" element={<StaffReview />} />
-        <Route path="/driver/:restaurantId/:driverId" element={<DriverPortal />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/chef/:restaurantId" element={<ChefDashboard />} />
-      </Routes>
-    </Router>
+    <ErrorBoundary>
+      <Router>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/login" element={<Auth />} />
+          <Route path="/signup" element={<Auth />} />
+          <Route path="/tarifs" element={<Tarifs />} />
+          <Route path="/menu/:restaurantId" element={<PublicMenu />} />
+          <Route path="/book/:restaurantId" element={<PublicBooking />} />
+          <Route path="/review/:restaurantId" element={<PublicReview />} />
+          <Route path="/staff-review/:restaurantId/:staffId" element={<StaffReview />} />
+          <Route path="/driver/:restaurantId/:driverId" element={<DriverPortal />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/chef/:restaurantId" element={<ChefDashboard />} />
+        </Routes>
+      </Router>
+    </ErrorBoundary>
   );
 }
 

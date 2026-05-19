@@ -1,7 +1,9 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { authTables } from "@convex-dev/auth/server";
 
 export default defineSchema({
+  ...authTables,
   profiles: defineTable({
     userId: v.string(), // The clerk user ID or unique identifier
     name: v.string(),
@@ -83,4 +85,20 @@ export default defineSchema({
     status: v.string(), // pending, published_google, internal_resolved
     createdAt: v.number(),
   }).index("by_restaurantId", ["restaurantId"]),
+
+  subscriptions: defineTable({
+    userId: v.string(),
+    email: v.optional(v.string()),
+    planId: v.string(), // 'starter' | 'pro' | 'ultimate'
+    billingPeriod: v.string(), // 'monthly' | 'yearly'
+    status: v.string(), // 'active' | 'cancelled' | 'expired' | 'past_due'
+    lemonSqueezyOrderId: v.optional(v.string()),
+    lemonSqueezySubscriptionId: v.optional(v.string()),
+    currentPeriodStart: v.number(),
+    currentPeriodEnd: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("by_userId", ["userId"])
+    .index("by_lemonSqueezyOrderId", ["lemonSqueezyOrderId"])
+    .index("by_lemonSqueezySubscriptionId", ["lemonSqueezySubscriptionId"]),
 });

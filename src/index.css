@@ -26,10 +26,46 @@
 
   --border-color:        #e2e8f0;
 
-  --success:   #10b981;
-  --warning:   #f59e0b;
-  --error:     #ef4444;
-  --danger:    #ef4444;
+  --success:       #10b981;
+  --success-rgb:   16, 185, 129;
+  --warning:       #f59e0b;
+  --warning-rgb:   245, 158, 11;
+  --error:         #ef4444;
+  --error-rgb:     239, 68, 68;
+  --danger:        #ef4444;
+  --danger-rgb:    239, 68, 68;
+}
+
+/* ─── Dark Theme ──────────────────────────────────────────────────────── */
+[data-theme="dark"] {
+  --bg-primary-rgb:      10, 10, 26;
+  --accent-primary-rgb:  226, 179, 107;
+  --bg-primary:          #0a0a1a;
+  --bg-secondary:        #12122a;
+  --bg-tertiary:         #1a1a3e;
+
+  --text-primary:        #f1f5f9;
+  --text-secondary:      #cbd5e1;
+  --text-tertiary:       #94a3b8;
+
+  --accent-primary:      var(--gold);
+  --accent-secondary:    var(--gold-dark);
+  --accent-gradient:     linear-gradient(135deg, var(--gold), var(--gold-dark));
+
+  --glass-bg:            rgba(15, 15, 40, 0.75);
+  --glass-border:        rgba(255, 255, 255, 0.08);
+  --glass-shadow:        0 8px 32px 0 rgba(0, 0, 0, 0.3);
+
+  --border-color:        rgba(255, 255, 255, 0.08);
+
+  --success:       #34d399;
+  --success-rgb:   52, 211, 153;
+  --warning:       #fbbf24;
+  --warning-rgb:   251, 191, 36;
+  --error:         #f87171;
+  --error-rgb:     248, 113, 113;
+  --danger:        #f87171;
+  --danger-rgb:    248, 113, 113;
 }
 
 /* ─── Glass Panel ─────────────────────────────────────────────────────── */
@@ -50,7 +86,7 @@
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
   background-color: var(--bg-primary);
   color: var(--text-primary);
   line-height: 1.5;
@@ -87,9 +123,9 @@ a:hover { color: var(--accent-secondary); }
   font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: color 0.2s, background-color 0.2s, transform 0.2s, opacity 0.2s;
   border: none;
-  font-family: 'Inter', sans-serif;
+  font-family: 'DM Sans', sans-serif;
 }
 
 .btn-primary {
@@ -124,7 +160,7 @@ a:hover { color: var(--accent-secondary); }
   border: 1px solid var(--border-color);
   color: var(--text-primary);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: color 0.2s, background-color 0.2s, transform 0.2s, opacity 0.2s;
 }
 .btn-icon:hover { background: var(--bg-tertiary); }
 
@@ -230,8 +266,8 @@ a:hover { color: var(--accent-secondary); }
 .bg-accent     { background-color: var(--accent-primary); }
 .bg-accent\/10  { background-color: rgba(var(--accent-primary-rgb), 0.1); }
 .bg-white\/20   { background-color: rgba(255, 255, 255, 0.2); }
-.bg-success\/20 { background-color: rgba(16, 185, 129, 0.2); }
-.bg-warning\/20 { background-color: rgba(245, 158, 11, 0.2); }
+.bg-success\/20 { background-color: rgba(var(--success-rgb), 0.2); }
+.bg-warning\/20 { background-color: rgba(var(--warning-rgb), 0.2); }
 .bg-tertiary\/20 { background-color: rgba(100, 116, 139, 0.2); }
 
 /* ─── Animations ──────────────────────────────────────────────────────── */
@@ -303,7 +339,7 @@ a:hover { color: var(--accent-secondary); }
 
 /* ─── RTL Support ──────────────────────────────────────────────────────── */
 [dir="rtl"] {
-  font-family: 'Tajawal', 'Inter', system-ui, sans-serif;
+  font-family: 'Tajawal', 'DM Sans', system-ui, sans-serif;
 }
 [dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3,
 [dir="rtl"] h4, [dir="rtl"] h5, [dir="rtl"] h6 {
@@ -383,9 +419,9 @@ a:hover { color: var(--accent-secondary); }
 .bg-secondary { background-color: var(--bg-secondary); }
 .bg-white { background-color: #ffffff; }
 .bg-white\/5 { background-color: rgba(255, 255, 255, 0.05); }
-.bg-accent\/5 { background-color: rgba(226, 179, 107, 0.05); }
-.bg-success\/20 { background-color: rgba(16, 185, 129, 0.2); }
-.bg-warning\/20 { background-color: rgba(245, 158, 11, 0.2); }
+.bg-accent\/5 { background-color: rgba(var(--accent-primary-rgb), 0.05); }
+.bg-success\/20 { background-color: rgba(var(--success-rgb), 0.2); }
+.bg-warning\/20 { background-color: rgba(var(--warning-rgb), 0.2); }
 .bg-tertiary\/20 { background-color: rgba(100, 116, 139, 0.2); }
 
 .border { border: 1px solid var(--border-color); }

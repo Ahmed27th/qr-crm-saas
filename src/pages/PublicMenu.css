@@ -2,7 +2,7 @@
   min-height: 100vh;
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'DM Sans', system-ui, sans-serif;
   padding-bottom: 100px; /* Space for floating cart */
   position: relative;
   /* Responsiveness: center content on large screens like a mobile app */

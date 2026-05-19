@@ -9,6 +9,9 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   PieChart, Pie, Cell, AreaChart, Area 
 } from 'recharts';
+import { useQuery } from 'convex/react';
+import { useConvexAuth } from '@convex-dev/auth/react';
+import { api } from '../../convex/_generated/api';
 import { DataStore } from '../dataStore';
 import type { Order, Review, MenuItem, Reservation, Driver } from '../dataStore';
 import { QRCodeSVG } from 'qrcode.react';
@@ -19,6 +22,8 @@ import './Dashboard.css';
 export function Dashboard() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { isAuthenticated: isAuth } = useConvexAuth();
+  const authUser = useQuery(api.users.me);
   const [activeTab, setActiveTab] = useState('overview');
   const [notifications, setNotifications] = useState<{id: string, text: string, time: string, read: boolean, type: 'order' | 'review'}[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -64,8 +69,15 @@ export function Dashboard() {
   const [updatingReviewId, setUpdatingReviewId] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   useEffect(() => {
-    const isAuthenticated = localStorage.getItem('qr_is_authenticated') === 'true';
-    const restaurantId = localStorage.getItem('qr_restaurant_id');
+    let isAuthenticated = localStorage.getItem('qr_is_authenticated') === 'true';
+    let restaurantId = localStorage.getItem('qr_restaurant_id');
+
+    if (!isAuthenticated && isAuth && authUser?.subject) {
+      restaurantId = authUser.subject;
+      localStorage.setItem('qr_restaurant_id', restaurantId);
+      localStorage.setItem('qr_is_authenticated', 'true');
+      isAuthenticated = true;
+    }
 
     if (!isAuthenticated || !restaurantId) {
       navigate('/login');
@@ -125,7 +137,7 @@ export function Dashboard() {
     return () => {
       activeCleanups.forEach((fn) => fn());
     };
-  }, [navigate, prevOrdersCount, prevReviewsCount, t]);
+  }, [navigate, prevOrdersCount, prevReviewsCount, t, isAuth, authUser]);
 
   const handleLogout = async () => {
     localStorage.removeItem('qr_is_authenticated');
@@ -292,8 +304,7 @@ export function Dashboard() {
         {addingStaff && (
           <div className="modal-overlay" onClick={() => setAddingStaff(false)}>
             <div className="glass-modal" onClick={e => e.stopPropagation()}>
-              <button className="close-modal-btn" onClick={() => setAddingStaff(false)}><X size={18} /></button>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem' }}>{t('staff_new')}</h3>
+              <button className="close-modal-btn" onClick={() => setAddingStaff(false)} aria-label={t('close')}><X size={18} /></button>
               <div className="premium-input-group">
                 <label>{t('staff_name_label')}</label>
                 <div className="premium-input-wrapper">
@@ -330,7 +341,7 @@ export function Dashboard() {
           return (
             <div className="modal-overlay" onClick={() => setQrStaffId(null)}>
               <div className="glass-modal" style={{ textAlign: 'center' }} onClick={e => e.stopPropagation()}>
-                <button className="close-modal-btn" onClick={() => setQrStaffId(null)}><X size={18} /></button>
+                <button className="close-modal-btn" onClick={() => setQrStaffId(null)} aria-label={t('close')}><X size={18} /></button>
                 <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg,#667eea,#764ba2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: '1.1rem', margin: '0 auto 1rem' }}>
                   {member.name[0]}
                 </div>
@@ -1379,6 +1390,31 @@ export function Dashboard() {
   );
 
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
+  const subscription = authUser?.subscription;
+  const isSubActive = subscription?.status === 'active';
+  const planId = isSubActive ? subscription.planId : 'none';
+
+  const PLAN_TABS: Record<string, Set<string>> = {
+    starter: new Set(['overview', 'reviews', 'collection', 'qr', 'settings']),
+    pro: new Set(['overview', 'analytics', 'orders', 'collection', 'reservations', 'reviews', 'staff', 'menu', 'qr', 'settings']),
+    ultimate: new Set(['overview', 'analytics', 'orders', 'collection', 'reservations', 'reviews', 'staff', 'drivers', 'menu', 'qr', 'settings']),
+  };
+  const allowedTabs = PLAN_TABS[planId] ?? new Set<string>();
+
+  useEffect(() => {
+    if (isAuth && authUser && !authUser.subject) return;
+    if (isAuth && authUser?.subject && !isSubActive) {
+      navigate('/tarifs');
+    }
+  }, [isAuth, authUser, isSubActive, navigate]);
+
+  useEffect(() => {
+    if (activeTab && !allowedTabs.has(activeTab)) {
+      setActiveTab('overview');
+    }
+  }, [activeTab, allowedTabs]);
+
   const NAV_ITEMS = [
     { id: 'overview', icon: <LayoutDashboard size={20}/>, label: t('dash_overview') },
     { id: 'analytics', icon: <BarChart3 size={20}/>, label: t('dash_analytics') },
@@ -1391,7 +1427,7 @@ export function Dashboard() {
     { id: 'menu', icon: <Utensils size={20}/>, label: t('dash_menu') },
     { id: 'qr', icon: <QrCode size={20}/>, label: t('dash_qr') },
     { id: 'settings', icon: <Settings size={20}/>, label: t('dash_settings') },
-  ];
+  ].filter(item => allowedTabs.has(item.id));
   const handleNavClick = (id: string) => { setActiveTab(id); setMobileNavOpen(false); };
 
   return (
@@ -1407,10 +1443,17 @@ export function Dashboard() {
             <div className="brand-logo"><QrCode size={20} color="white" /></div>
             <h2>QR CRM</h2>
           </div>
-          <button className="icon-btn-ghost" onClick={() => setMobileNavOpen(false)} style={{ border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.4rem' }}>
+          <button className="icon-btn-ghost" onClick={() => setMobileNavOpen(false)} aria-label={t('close')} style={{ border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.4rem' }}>
             <X size={20} />
           </button>
         </div>
+
+        {isSubActive && subscription && (
+          <div className="sidebar-plan-badge" style={{ margin: '0.5rem 1rem' }}>
+            <span className="plan-badge-dot" />
+            <span className="plan-badge-label">{subscription.planId === 'ultimate' ? 'Ultimate' : subscription.planId === 'pro' ? 'Pro' : 'Starter'}</span>
+          </div>
+        )}
         
         <div className="mobile-drawer-body">
           <nav className="mobile-nav-list">
@@ -1440,35 +1483,22 @@ export function Dashboard() {
           <div className="brand-logo"><QrCode size={24} color="white" /></div>
           <h2>QR CRM</h2>
         </div>
-        
+
+        {isSubActive && subscription && (
+          <div className="sidebar-plan-badge">
+            <span className="plan-badge-dot" />
+            <span className="plan-badge-label">{subscription.planId === 'ultimate' ? 'Ultimate' : subscription.planId === 'pro' ? 'Pro' : 'Starter'}</span>
+          </div>
+        )}
+
         <nav className="sidebar-nav">
-          <button className={`nav-item ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')}>
-            <LayoutDashboard size={18} /><span>{t('dash_overview')}</span>
-          </button>
-          <button className={`nav-item ${activeTab === 'analytics' ? 'active' : ''}`} onClick={() => setActiveTab('analytics')}>
-            <BarChart3 size={18} /><span>{t('dash_analytics')}</span>
-          </button>
-          <button className={`nav-item ${activeTab === 'orders' ? 'active' : ''}`} onClick={() => setActiveTab('orders')}>
-            <ShoppingBag size={18} /><span>{t('dash_orders')}</span>
-          </button>
-          <button className={`nav-item ${activeTab === 'collection' ? 'active' : ''}`} onClick={() => setActiveTab('collection')}>
-            <Smartphone size={18} /><span>{t('dash_collection')}</span>
-          </button>
-          <button className={`nav-item ${activeTab === 'reservations' ? 'active' : ''}`} onClick={() => setActiveTab('reservations')}>
-            <Calendar size={18} /><span>{t('dash_reservations')}</span>
-          </button>
-          <button className={`nav-item ${activeTab === 'reviews' ? 'active' : ''}`} onClick={() => setActiveTab('reviews')}>
-            <MessageSquare size={18} /><span>{t('dash_reviews')}</span>
-          </button>
-          <button className={`nav-item ${activeTab === 'staff' ? 'active' : ''}`} onClick={() => setActiveTab('staff')}>
-            <Users size={18} /><span>{t('dash_staff')}</span>
-          </button>
-          <button className={`nav-item ${activeTab === 'menu' ? 'active' : ''}`} onClick={() => setActiveTab('menu')}>
-            <Utensils size={18} /><span>{t('dash_menu')}</span>
-          </button>
-          <button className={`nav-item ${activeTab === 'qr' ? 'active' : ''}`} onClick={() => setActiveTab('qr')}>
-            <QrCode size={18} /><span>{t('dash_qr')}</span>
-          </button>
+          {NAV_ITEMS.map(item => (
+            <button key={item.id}
+              className={`nav-item ${activeTab === item.id ? 'active' : ''}`}
+              onClick={() => handleNavClick(item.id)}>
+              {item.icon}<span>{item.label}</span>
+            </button>
+          ))}
         </nav>
 
         <div className="sidebar-footer">
@@ -1502,7 +1532,7 @@ export function Dashboard() {
           </button>
           <div className="search-bar">
             <Search size={18} className="text-tertiary" />
-            <input type="text" placeholder={t('dash_search')} />
+            <input type="text" placeholder={t('dash_search')} aria-label={t('dash_search')} />
           </div>
           
           <div className="header-actions">
@@ -1866,7 +1896,7 @@ export function Dashboard() {
       {isEditingDish && editingDish && (
         <div className="modal-overlay">
           <div className="glass-modal">
-            <button onClick={() => setIsEditingDish(false)} className="close-modal-btn">
+            <button onClick={() => setIsEditingDish(false)} className="close-modal-btn" aria-label={t('close')}>
               <X size={20}/>
             </button>
             <h2 className="text-3xl font-black mb-8 text-gradient">Modifier {editingDish.name}</h2>
@@ -1946,7 +1976,7 @@ export function Dashboard() {
       {isAddingDish && (
         <div className="modal-overlay">
           <div className="glass-modal">
-            <button onClick={() => setIsAddingDish(false)} className="close-modal-btn">
+            <button onClick={() => setIsAddingDish(false)} className="close-modal-btn" aria-label={t('close')}>
               <X size={20}/>
             </button>
             <h2 className="text-3xl font-black mb-8 text-gradient">{t('menu_add_plat')}</h2>
@@ -2043,7 +2073,7 @@ export function Dashboard() {
       {addingDriver && (
         <div className="modal-overlay" onClick={() => setAddingDriver(false)}>
           <div className="glass-modal" onClick={e => e.stopPropagation()}>
-            <button className="close-modal-btn" onClick={() => setAddingDriver(false)}><X size={18} /></button>
+            <button className="close-modal-btn" onClick={() => setAddingDriver(false)} aria-label={t('close')}><X size={18} /></button>
             <h3 style={{ fontSize: '1.25rem', fontWeight: 800, marginBottom: '1.5rem' }}>{t('driver_new')}</h3>
             <div className="premium-input-group">
               <label>{t('driver_name_label')}</label>
@@ -2076,7 +2106,7 @@ export function Dashboard() {
         return (
           <div className="modal-overlay" onClick={() => setQrDriverId(null)}>
             <div className="glass-modal" style={{ textAlign: 'center' }} onClick={e => e.stopPropagation()}>
-              <button className="close-modal-btn" onClick={() => setQrDriverId(null)}><X size={18} /></button>
+              <button className="close-modal-btn" onClick={() => setQrDriverId(null)} aria-label={t('close')}><X size={18} /></button>
               <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg,#00ccbc,#11998e)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: '1.1rem', margin: '0 auto 1rem' }}>
                 {driver.name[0]}
               </div>
