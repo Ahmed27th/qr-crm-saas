@@ -11,7 +11,6 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { DataStore, type Order } from '../dataStore';
-import { ThemeToggle } from '../components/ThemeToggle';
 import { NotificationService } from '../utils/notifications';
 import './ChefDashboard.css';
 
@@ -160,7 +159,6 @@ export function ChefDashboard() {
         </div>
 
         <div className="chef-actions">
-           <ThemeToggle />
            <button 
              className="chef-icon-btn sound-test-btn" 
              onClick={playNotification}

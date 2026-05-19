@@ -1,0 +1,82 @@
+<h2>Dark Immersive — Design Concept</h2>
+<p class="subtitle">Pushing the current dark SaaS look further with more drama and polish</p>
+
+<div class="section">
+  <h3>Typography</h3>
+  <div class="options" style="grid-template-columns:1fr">
+    <div class="option" style="width:100%;cursor:default;opacity:1">
+      <div class="content">
+        <p><strong>Headings:</strong> <span style="font-family:'Outfit',sans-serif;font-weight:800;font-size:1.4rem">Outfit (keep) — bold, geometric, modern</span></p>
+        <p><strong>Body:</strong> <span style="font-family:'DM Sans',sans-serif">DM Sans (keep) — clean, readable</span></p>
+        <p><strong>Accent/Display:</strong> <span style="font-family:'Clash Display',sans-serif;font-weight:600">Clash Display — for hero emphasis, large stats</span></p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Color System</h3>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+    <div style="background:#0A0A0F;border-radius:12px;padding:20px;border:1px solid #ffffff14;text-align:center;color:#fff">#0A0A0F<br><span style="font-size:0.75rem;color:#ffffff80">BG Primary</span></div>
+    <div style="background:#12121A;border-radius:12px;padding:20px;border:1px solid #ffffff14;text-align:center;color:#fff">#12121A<br><span style="font-size:0.75rem;color:#ffffff80">BG Secondary</span></div>
+    <div style="background:#1A1A2E;border-radius:12px;padding:20px;border:1px solid #ffffff14;text-align:center;color:#fff">#1A1A2E<br><span style="font-size:0.75rem;color:#ffffff80">BG Tertiary</span></div>
+    <div style="background:#E2B36B;border-radius:12px;padding:20px;text-align:center;color:#0A0A0F;font-weight:700">#E2B36B<br><span style="font-size:0.75rem;color:#0A0A0F">Gold Accent</span></div>
+  </div>
+  <p style="margin-top:12px">Subtle gold gradient: <code>linear-gradient(135deg, #E2B36B, #C99A5E)</code></p>
+</div>
+
+<div class="section">
+  <h3>Layout & Sections</h3>
+  <div class="mockup">
+    <div class="mockup-header">Page Structure</div>
+    <div class="mockup-body" style="padding:20px;display:flex;flex-direction:column;gap:12px">
+      <div class="mock-nav" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 20px;display:flex;justify-content:space-between">
+        <span style="font-weight:700">QR CRM</span>
+        <span>How it works · Features · Pricing</span>
+        <span><span class="mock-button" style="padding:4px 16px;font-size:0.75rem">Connexion</span></span>
+      </div>
+      <div style="height:120px;background:linear-gradient(135deg,transparent 0%,rgba(226,179,107,0.08) 100%);border-radius:16px;border:1px solid rgba(226,179,107,0.15);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px">
+        <span style="font-size:1.5rem;font-weight:800;color:#E2B36B">Hero</span>
+        <span style="font-size:0.75rem;color:rgba(255,255,255,0.5)">Bold headline · 3D mockup · Stats bar</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div style="height:80px;background:rgba(255,255,255,0.03);border-radius:12px;border:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:0.85rem;color:rgba(255,255,255,0.5)">Features Grid</div>
+        <div style="height:80px;background:rgba(255,255,255,0.03);border-radius:12px;border:1px solid rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:0.85rem;color:rgba(255,255,255,0.5)">How it Works</div>
+      </div>
+      <div style="height:100px;background:linear-gradient(135deg,transparent 0%,rgba(226,179,107,0.05) 100%);border-radius:16px;border:1px solid rgba(226,179,107,0.12);display:flex;align-items:center;justify-content:center;font-size:0.85rem;color:rgba(255,255,255,0.5)">Pricing (3 cards)</div>
+      <div style="height:60px;background:rgba(255,255,255,0.02);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:0.85rem;color:rgba(255,255,255,0.4)">Footer</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Key Changes from Current</h3>
+  <ul style="line-height:2;padding-left:20px">
+    <li><strong>Hero:</strong> Replace glow orbs with animated <strong>mesh gradient + 3D floating phone mockup</strong> showing the actual app</li>
+    <li><strong>Navigation:</strong> Sticky glass nav with <strong>blur increase on scroll</strong>, subtle gold border-bottom on scroll</li>
+    <li><strong>Features:</strong> Switch from vertical stack → <strong>bento grid</strong> (asymmetric layout, different card sizes)</li>
+    <li><strong>How it works:</strong> Add <strong>animated step connector</strong> with flowing gradient line, numbered badges</li>
+    <li><strong>Pricing:</strong> Darker cards with <strong>gold featured card</strong> that has subtle pulse glow, toggle animation</li>
+    <li><strong>Animations:</strong> <strong>Scroll-triggered reveals</strong> (intersection observer), staggered card entries, parallax on hero</li>
+    <li><strong>Background:</strong> Subtle <strong>animated noise/grain texture</strong> overlay, gold accent border on hero section</li>
+  </ul>
+</div>
+
+<div class="section" style="text-align:center;padding-top:20px;border-top:1px solid var(--border-color)">
+  <h3>Sound good?</h3>
+  <p class="subtitle">If yes, I'll write the design spec and start implementing.</p>
+  <div class="options" style="justify-content:center">
+    <div class="option" data-choice="approve" onclick="toggleSelect(this)" style="max-width:300px">
+      <div class="content" style="text-align:center">
+        <h3>✅ Let's go!</h3>
+        <p>Approve and proceed to implementation</p>
+      </div>
+    </div>
+    <div class="option" data-choice="refine" onclick="toggleSelect(this)" style="max-width:300px">
+      <div class="content" style="text-align:center">
+        <h3>🔄 Refine</h3>
+        <p>I have changes to suggest</p>
+      </div>
+    </div>
+  </div>
+</div>
