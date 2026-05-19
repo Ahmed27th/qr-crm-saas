@@ -1736,6 +1736,9 @@ export function Dashboard() {
           <div className="sidebar-plan-badge" style={{ margin: '0.5rem 1rem' }}>
             <span className="plan-badge-dot" />
             <span className="plan-badge-label">{subscription.planId === 'ultimate' ? 'Ultimate' : subscription.planId === 'pro' ? 'Pro' : 'Starter'}</span>
+            <span className="plan-badge-expiry" style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', marginTop: '0.15rem', display: 'block' }}>
+              Expires {new Date(subscription.currentPeriodEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+            </span>
           </div>
         )}
         
@@ -1780,6 +1783,9 @@ export function Dashboard() {
           <div className="sidebar-plan-badge">
             <span className="plan-badge-dot" />
             <span className="plan-badge-label">{subscription.planId === 'ultimate' ? 'Ultimate' : subscription.planId === 'pro' ? 'Pro' : 'Starter'}</span>
+            <span className="plan-badge-expiry" style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', marginTop: '0.15rem', display: 'block' }}>
+              Expires {new Date(subscription.currentPeriodEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+            </span>
           </div>
         )}
 
