@@ -6,10 +6,17 @@ export const me = query({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) return null;
 
-    const subscription = await ctx.db
+    // Try looking up by subject first, then by email
+    let subscription = await ctx.db
       .query("subscriptions")
       .withIndex("by_userId", (q) => q.eq("userId", identity.subject))
       .first();
+
+    if (!subscription && identity.email) {
+      // Fallback: check all subscriptions for matching email
+      const allSubs = await ctx.db.query("subscriptions").collect();
+      subscription = allSubs.find(s => s.email?.toLowerCase() === identity.email.toLowerCase()) || null;
+    }
 
     if (!subscription) return {
       subject: identity.subject,
