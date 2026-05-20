@@ -2,6 +2,7 @@ import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
 import { api } from "./_generated/api";
 import { auth } from "./auth";
+import { resolvePlanFromCheckoutId } from "./subscriptionConfig";
 
 declare const process: {
   env: Record<string, string | undefined>;
@@ -61,8 +62,16 @@ http.route({
 
     const customData = payload.meta?.custom_data || {};
     const userId = customData.user_id;
-    const planId = customData.plan;
-    const billing = customData.billing;
+
+    // Extract checkout link ID from payload to resolve plan from config map
+    const checkoutLinkId = payload.data?.attributes?.first_order_item?.variant_id 
+      || payload.data?.attributes?.variant_id 
+      || "";
+    const { planId, billingPeriod } = resolvePlanFromCheckoutId(
+      checkoutLinkId,
+      customData.plan,
+      customData.billing
+    );
 
     if (!userId) {
       return new Response("Missing user_id in custom data", { status: 400 });
@@ -77,17 +86,20 @@ http.route({
     const orderId = String(payload.data?.id || "");
 
     const now = Date.now();
+    const periodEnd = billingPeriod === "yearly" 
+      ? now + 365 * 24 * 60 * 60 * 1000 
+      : now + 30 * 24 * 60 * 60 * 1000;
 
     if (eventName === "order_created") {
       await ctx.runMutation(api.subscriptions.upsertSubscription, {
         userId,
         email,
-        planId: planId || "pro",
-        billingPeriod: billing || "monthly",
+        planId,
+        billingPeriod,
         status: "active",
         lemonSqueezyOrderId: orderId,
         currentPeriodStart: now,
-        currentPeriodEnd: billing === "yearly" ? now + 365 * 24 * 60 * 60 * 1000 : now + 30 * 24 * 60 * 60 * 1000,
+        currentPeriodEnd: periodEnd,
       });
     }
 
@@ -96,13 +108,13 @@ http.route({
       await ctx.runMutation(api.subscriptions.upsertSubscription, {
         userId,
         email,
-        planId: planId || "pro",
-        billingPeriod: billing || "monthly",
+        planId,
+        billingPeriod,
         status: "active",
         lemonSqueezyOrderId: orderId,
         lemonSqueezySubscriptionId: subId,
         currentPeriodStart: now,
-        currentPeriodEnd: billing === "yearly" ? now + 365 * 24 * 60 * 60 * 1000 : now + 30 * 24 * 60 * 60 * 1000,
+        currentPeriodEnd: periodEnd,
       });
     }
 
@@ -111,12 +123,12 @@ http.route({
       await ctx.runMutation(api.subscriptions.upsertSubscription, {
         userId,
         email,
-        planId: planId || "pro",
-        billingPeriod: billing || "monthly",
+        planId,
+        billingPeriod,
         status,
         lemonSqueezyOrderId: orderId,
         currentPeriodStart: now,
-        currentPeriodEnd: billing === "yearly" ? now + 365 * 24 * 60 * 60 * 1000 : now + 30 * 24 * 60 * 60 * 1000,
+        currentPeriodEnd: periodEnd,
       });
     }
 
@@ -124,8 +136,8 @@ http.route({
       await ctx.runMutation(api.subscriptions.upsertSubscription, {
         userId,
         email,
-        planId: planId || "pro",
-        billingPeriod: billing || "monthly",
+        planId,
+        billingPeriod,
         status: "cancelled",
         lemonSqueezyOrderId: orderId,
         currentPeriodStart: now,
