@@ -97,7 +97,12 @@ export function Dashboard() {
     if (authUser === undefined) return;
 
     if (!isAuthenticated || !restaurantId) {
-      navigate('/login' + window.location.search);
+      // Only redirect if Convex Auth confirms we're not authenticated.
+      // Prevents race condition where me query returns null before auth
+      // token propagates to the Convex client.
+      if (!isAuth) {
+        navigate('/login' + window.location.search);
+      }
       return;
     }
 
@@ -1704,6 +1709,14 @@ export function Dashboard() {
       </div>
     );
   };
+
+  if (authUser === undefined) {
+    return (
+      <div className="dashboard-loading">
+        <div className="btn-spinner" style={{ width: '40px', height: '40px', borderWidth: '4px' }}></div>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-layout">

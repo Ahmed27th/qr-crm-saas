@@ -14,7 +14,7 @@ import { ChefDashboard } from './pages/ChefDashboard';
 import { useEffect } from 'react';
 import { NotificationService } from './utils/notifications';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { useConvexAuth } from 'convex/react';
+import { useConvexAuth } from '@convex-dev/auth/react';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useConvexAuth();

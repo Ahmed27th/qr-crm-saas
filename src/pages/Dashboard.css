@@ -136,6 +136,14 @@
   color: transparent;
 }
 
+.dashboard-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: var(--bg-primary, #0a0a0a);
+}
+
 .dashboard-layout {
   display: flex;
   height: 100vh;
