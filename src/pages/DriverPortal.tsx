@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { 
   ShoppingBag, CheckCircle, Clock, MapPin, 
-  Smartphone, LogOut, Activity, AlertCircle, Navigation, Phone, User, Target
+  Smartphone, LogOut, Activity, AlertCircle, Navigation, Phone, User, Target, Truck
 } from 'lucide-react';
 import { DataStore } from '../dataStore';
 import type { Order, Driver } from '../dataStore';
@@ -129,7 +129,22 @@ export function DriverPortal() {
   };
 
   if (loading) return <div className="flex items-center justify-center h-screen bg-primary">Chargement...</div>;
-  if (!driver) return <div className="flex items-center justify-center h-screen bg-primary">Livreur introuvable.</div>;
+  if (!driver) {
+    return (
+      <div className="min-h-screen bg-primary text-primary flex items-center justify-center p-8">
+        <div className="text-center max-w-sm">
+          <div className="w-20 h-20 rounded-full bg-accent/10 flex items-center justify-center mx-auto mb-6">
+            <Truck size={40} className="text-accent" />
+          </div>
+          <h2 className="text-xl font-bold mb-2">Portail Livreur</h2>
+          <p className="text-tertiary text-sm mb-6">Scannez votre QR code personnel depuis le tableau de bord pour accéder à vos missions.</p>
+          <a href={`/dashboard?demo=ultimate`} className="btn-primary inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold">
+            Accéder au Dashboard
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-primary text-primary pb-20">

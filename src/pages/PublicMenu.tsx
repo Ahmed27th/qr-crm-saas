@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ShoppingCart, Plus, Minus, Search, Info, Flame, AlertCircle, X, Sparkles, HeartHandshake, Star, Clock, FileText, ChevronRight, Home, UtensilsCrossed, Truck } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Search, Info, Flame, AlertCircle, X, Sparkles, HeartHandshake, Star, Clock, FileText, ChevronRight, Home, UtensilsCrossed, Truck, MapPin } from 'lucide-react';
 import { DataStore } from '../dataStore';
 import type { MenuItem, RestaurantProfile } from '../dataStore';
 import './PublicMenu.css';
@@ -186,21 +186,6 @@ export function PublicMenu() {
     <div className="public-menu-container" dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Top Nav */}
       <div className="public-menu-top-nav">
-        {/* Order Mode Toggle */}
-        <div className="order-mode-toggle">
-          <button
-            className={`mode-btn ${orderMode === 'dinein' ? 'active' : ''}`}
-            onClick={() => setOrderMode('dinein')}
-          >
-            <UtensilsCrossed size={16} /> Sur place
-          </button>
-          <button
-            className={`mode-btn ${orderMode === 'delivery' ? 'active' : ''}`}
-            onClick={() => setOrderMode('delivery')}
-          >
-            <Home size={16} /> Livraison
-          </button>
-        </div>
         {/* Search Bar */}
         <div className="menu-search-bar">
           <Search size={16} className="menu-search-icon" />
@@ -380,6 +365,24 @@ export function PublicMenu() {
                   <button className="close-btn" onClick={closeModal} aria-label="Fermer"><X size={24} /></button>
                 </div>
                 <div className="cart-modal-body">
+                  {/* Mode Selection */}
+                  <div className="checkout-mode-selector">
+                    <button
+                      className={`checkout-mode-btn ${orderMode === 'dinein' ? 'active' : ''}`}
+                      onClick={() => setOrderMode('dinein')}
+                    >
+                      <UtensilsCrossed size={20} />
+                      <span>Sur place</span>
+                    </button>
+                    <button
+                      className={`checkout-mode-btn ${orderMode === 'delivery' ? 'active' : ''}`}
+                      onClick={() => setOrderMode('delivery')}
+                    >
+                      <Home size={20} />
+                      <span>Livraison</span>
+                    </button>
+                  </div>
+
                   {orderMode === 'dinein' ? (
                     <div className="table-input-section">
                       <label>{t('seating_question')}</label>
@@ -387,7 +390,6 @@ export function PublicMenu() {
                     </div>
                   ) : (
                     <div className="delivery-form-section">
-                      <h4 className="delivery-form-title">Informations de livraison</h4>
                       <div className="delivery-form-group">
                         <label>Nom complet</label>
                         <input type="text" placeholder="Votre nom" value={deliveryName} onChange={e => setDeliveryName(e.target.value)} className="delivery-input" />
@@ -399,6 +401,27 @@ export function PublicMenu() {
                       <div className="delivery-form-group">
                         <label>Adresse de livraison</label>
                         <textarea placeholder="Numéro, rue, quartier, ville..." value={deliveryAddress} onChange={e => setDeliveryAddress(e.target.value)} className="delivery-textarea" rows={3} />
+                        <button
+                          type="button"
+                          className="btn btn-secondary w-full mt-2 py-2 flex items-center justify-center gap-2 text-xs font-bold"
+                          onClick={() => {
+                            if (navigator.geolocation) {
+                              navigator.geolocation.getCurrentPosition(
+                                (pos) => {
+                                  const { latitude, longitude } = pos.coords;
+                                  const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+                                  window.open(mapsUrl, '_blank');
+                                  setDeliveryAddress(`${latitude.toFixed(6)}, ${longitude.toFixed(6)}`);
+                                },
+                                () => alert("Activez la localisation dans votre navigateur")
+                              );
+                            } else {
+                              alert("Géolocalisation non supportée");
+                            }
+                          }}
+                        >
+                          <MapPin size={14} /> Utiliser ma position
+                        </button>
                       </div>
                       <div className="delivery-form-row">
                         <div className="delivery-form-group">
