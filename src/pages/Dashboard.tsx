@@ -15,7 +15,7 @@ import { api } from '../../convex/_generated/api';
 import { DataStore } from '../dataStore';
 import type { Order, Review, MenuItem, Reservation, Driver } from '../dataStore';
 import { QRCodeSVG } from 'qrcode.react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { NotificationService } from '../utils/notifications';
 import './Dashboard.css';
 
