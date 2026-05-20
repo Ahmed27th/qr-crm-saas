@@ -1,4 +1,4 @@
-import { query } from "./_generated/server";
+import { query, mutation } from "./_generated/server";
 
 export const me = query({
   args: {},
@@ -15,11 +15,22 @@ export const me = query({
     console.log("subscription by subject:", subscription);
 
     if (!subscription && identity.email) {
-      // Fallback: check all subscriptions for matching email
+      // Fallback 1: check all subscriptions for matching email
       const allSubs = await ctx.db.query("subscriptions").collect();
       console.log("all subscriptions:", allSubs.map(s => ({ userId: s.userId, email: s.email })));
       subscription = allSubs.find(s => s.email?.toLowerCase() === identity.email!.toLowerCase()) || null;
       console.log("subscription by email:", subscription);
+    }
+
+    // Fallback 2: try old email-derived userId format (e.g. "am_ahmed5maher_am_gmail_com")
+    if (!subscription && identity.email) {
+      const oldUserId = identity.email.replace(/[@.]/g, '_');
+      console.log("trying old userId:", oldUserId);
+      subscription = await ctx.db
+        .query("subscriptions")
+        .withIndex("by_userId", (q) => q.eq("userId", oldUserId))
+        .first();
+      console.log("subscription by old userId:", subscription);
     }
 
     if (!subscription) return {
@@ -39,5 +50,23 @@ export const me = query({
       name: identity.name,
       subscription: { ...subscription, status: effectiveStatus },
     };
+  },
+});
+
+export const linkSubscription = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    const allSubs = await ctx.db.query("subscriptions").collect();
+    let linked = false;
+    for (const sub of allSubs) {
+      if (sub.email?.toLowerCase() === identity.email?.toLowerCase()) {
+        await ctx.db.patch(sub._id, { userId: identity.subject });
+        linked = true;
+      }
+    }
+    return { linked, subject: identity.subject, email: identity.email };
   },
 });

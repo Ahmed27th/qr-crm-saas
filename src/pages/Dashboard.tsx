@@ -28,8 +28,10 @@ export function Dashboard() {
     userId: localStorage.getItem('qr_restaurant_id') || 'demo' 
   });
   const subscription = authUser?.subscription;
-  const isSubActive = subscription?.status === 'active';
-  const planId = isSubActive ? subscription.planId : 'none';
+  const demoParam = new URLSearchParams(window.location.search).get('demo');
+  const isDemoUltimate = demoParam === 'ultimate';
+  const isSubActive = isDemoUltimate || subscription?.status === 'active';
+  const planId = isDemoUltimate ? 'ultimate' : (isSubActive ? (subscription?.planId ?? 'none') : 'none');
 
   const PLAN_TABS: Record<string, Set<string>> = {
     starter: new Set(['overview', 'reviews', 'collection', 'qr', 'settings']),
@@ -1736,13 +1738,15 @@ export function Dashboard() {
           </button>
         </div>
 
-        {isSubActive && subscription && (
+        {isSubActive && (subscription || isDemoUltimate) && (
           <div className="sidebar-plan-badge" style={{ margin: '0.5rem 1rem' }}>
             <span className="plan-badge-dot" />
-            <span className="plan-badge-label">{subscription.planId === 'ultimate' ? 'Ultimate' : subscription.planId === 'pro' ? 'Pro' : 'Starter'}</span>
-            <span className="plan-badge-expiry" style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', marginTop: '0.15rem', display: 'block' }}>
-              Expires {new Date(subscription.currentPeriodEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-            </span>
+            <span className="plan-badge-label">{isDemoUltimate ? 'Ultimate (Demo)' : (subscription?.planId === 'ultimate' ? 'Ultimate' : subscription?.planId === 'pro' ? 'Pro' : 'Starter')}</span>
+            {!isDemoUltimate && subscription?.currentPeriodEnd && (
+              <span className="plan-badge-expiry" style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', marginTop: '0.15rem', display: 'block' }}>
+                Expires {new Date(subscription.currentPeriodEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              </span>
+            )}
           </div>
         )}
         
@@ -1783,13 +1787,15 @@ export function Dashboard() {
           <h2>QR CRM</h2>
         </div>
 
-        {isSubActive && subscription && (
+        {isSubActive && (subscription || isDemoUltimate) && (
           <div className="sidebar-plan-badge">
             <span className="plan-badge-dot" />
-            <span className="plan-badge-label">{subscription.planId === 'ultimate' ? 'Ultimate' : subscription.planId === 'pro' ? 'Pro' : 'Starter'}</span>
-            <span className="plan-badge-expiry" style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', marginTop: '0.15rem', display: 'block' }}>
-              Expires {new Date(subscription.currentPeriodEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-            </span>
+            <span className="plan-badge-label">{isDemoUltimate ? 'Ultimate (Demo)' : (subscription?.planId === 'ultimate' ? 'Ultimate' : subscription?.planId === 'pro' ? 'Pro' : 'Starter')}</span>
+            {!isDemoUltimate && subscription?.currentPeriodEnd && (
+              <span className="plan-badge-expiry" style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', marginTop: '0.15rem', display: 'block' }}>
+                Expires {new Date(subscription.currentPeriodEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              </span>
+            )}
           </div>
         )}
 
