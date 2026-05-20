@@ -2,7 +2,7 @@ import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
 import { api } from "./_generated/api";
 import { auth } from "./auth";
-import { resolvePlanFromCheckoutId } from "./subscriptionConfig";
+import { resolvePlanFromVariantId } from "./subscriptionConfig";
 
 declare const process: {
   env: Record<string, string | undefined>;
@@ -63,12 +63,14 @@ http.route({
     const customData = payload.meta?.custom_data || {};
     const userId = customData.user_id;
 
-    // Extract checkout link ID from payload to resolve plan from config map
-    const checkoutLinkId = payload.data?.attributes?.first_order_item?.variant_id 
+    // Extract variant ID from payload to resolve plan from config map
+    const variantId = String(
+      payload.data?.attributes?.first_order_item?.variant_id 
       || payload.data?.attributes?.variant_id 
-      || "";
-    const { planId, billingPeriod } = resolvePlanFromCheckoutId(
-      checkoutLinkId,
+      || ""
+    );
+    const { planId, billingPeriod } = resolvePlanFromVariantId(
+      variantId,
       customData.plan,
       customData.billing
     );
