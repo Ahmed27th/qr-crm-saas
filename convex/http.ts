@@ -147,6 +147,19 @@ http.route({
       });
     }
 
+    if (eventName === "subscription_expired") {
+      await ctx.runMutation(api.subscriptions.upsertSubscription, {
+        userId,
+        email,
+        planId,
+        billingPeriod,
+        status: "expired",
+        lemonSqueezyOrderId: orderId,
+        currentPeriodStart: now,
+        currentPeriodEnd: now,
+      });
+    }
+
     return new Response("OK", { status: 200 });
   }),
 });
