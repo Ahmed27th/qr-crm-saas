@@ -9,6 +9,7 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as driverLocations from "../driverLocations.js";
 import type * as drivers from "../drivers.js";
 import type * as http from "../http.js";
 import type * as menu from "../menu.js";
@@ -30,6 +31,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  driverLocations: typeof driverLocations;
   drivers: typeof drivers;
   http: typeof http;
   menu: typeof menu;

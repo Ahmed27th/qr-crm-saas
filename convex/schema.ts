@@ -86,6 +86,13 @@ export default defineSchema({
     createdAt: v.number(),
   }).index("by_restaurantId", ["restaurantId"]),
 
+  driverLocations: defineTable({
+    driverId: v.string(),
+    lat: v.number(),
+    lng: v.number(),
+    updatedAt: v.number(),
+  }).index("by_driverId", ["driverId"]),
+
   subscriptions: defineTable({
     userId: v.string(),
     email: v.optional(v.string()),

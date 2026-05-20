@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { ShoppingCart, Plus, Minus, Search, Info, Flame, AlertCircle, X, Sparkles, HeartHandshake, Star, Clock, FileText, ChevronRight } from 'lucide-react';
+import { ShoppingCart, Plus, Minus, Search, Info, Flame, AlertCircle, X, Sparkles, HeartHandshake, Star, Clock, FileText, ChevronRight, Home, UtensilsCrossed, Truck } from 'lucide-react';
 import { DataStore } from '../dataStore';
 import type { MenuItem, RestaurantProfile } from '../dataStore';
 import './PublicMenu.css';
@@ -17,7 +17,13 @@ export function PublicMenu() {
   const [activeCategory, setActiveCategory] = useState('');
   const [cart, setCart] = useState<Record<string, number>>({});
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [orderMode, setOrderMode] = useState<'dinein' | 'delivery'>('dinein');
   const [tableNumber, setTableNumber] = useState('');
+  const [deliveryName, setDeliveryName] = useState('');
+  const [deliveryPhone, setDeliveryPhone] = useState('');
+  const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [deliveryTime, setDeliveryTime] = useState('');
+  const [deliveryInstructions, setDeliveryInstructions] = useState('');
   const [tipPercentage, setTipPercentage] = useState(15);
   const [modalState, setModalState] = useState<'checkout' | 'success' | 'review'>('checkout');
   const [reviewRating, setReviewRating] = useState(0);
@@ -27,6 +33,7 @@ export function PublicMenu() {
   const [isInfoOpen, setIsInfoOpen] = useState(false);
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [lastOrderId, setLastOrderId] = useState<string | null>(null);
 
   const isRTL = i18n.language === 'ar' || i18n.language === 'ary';
 
@@ -108,15 +115,33 @@ export function PublicMenu() {
   const handlePlaceOrder = async () => {
     setIsPlacingOrder(true);
     try {
-      await DataStore.addOrder({ 
-        table: tableNumber, 
-        items: cartTotalItems, 
-        total: finalTotal,
-        orderItems: Object.entries(cart).map(([id, qty]) => {
-          const item = menuItems.find(m => m.id === id);
-          return { name: item?.name || 'Inconnu', qty, price: item?.price || 0 };
-        })
-      }, restaurantId);
+      let newOrderId: string | undefined;
+      if (orderMode === 'delivery') {
+        newOrderId = await DataStore.addOrder({ 
+          table: 'Livraison',
+          items: cartTotalItems, 
+          total: finalTotal,
+          customerName: deliveryName,
+          customerPhone: deliveryPhone,
+          customerAddress: deliveryAddress,
+          deliveryInstructions: deliveryTime ? `${deliveryTime} - ${deliveryInstructions}` : deliveryInstructions,
+          orderItems: Object.entries(cart).map(([id, qty]) => {
+            const item = menuItems.find(m => m.id === id);
+            return { name: item?.name || 'Inconnu', qty, price: item?.price || 0 };
+          })
+        }, restaurantId);
+      } else {
+        newOrderId = await DataStore.addOrder({ 
+          table: tableNumber, 
+          items: cartTotalItems, 
+          total: finalTotal,
+          orderItems: Object.entries(cart).map(([id, qty]) => {
+            const item = menuItems.find(m => m.id === id);
+            return { name: item?.name || 'Inconnu', qty, price: item?.price || 0 };
+          })
+        }, restaurantId);
+      }
+      if (newOrderId) setLastOrderId(newOrderId);
       setModalState('success');
       
       // Clear cart
@@ -151,6 +176,8 @@ export function PublicMenu() {
 
   const closeModal = () => {
     setIsCartOpen(false); setCart({}); setTableNumber('');
+    setDeliveryName(''); setDeliveryPhone(''); setDeliveryAddress('');
+    setDeliveryTime(''); setDeliveryInstructions('');
     setModalState('checkout'); setReviewRating(0); setReviewComment('');
   };
 
@@ -159,6 +186,21 @@ export function PublicMenu() {
     <div className="public-menu-container" dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Top Nav */}
       <div className="public-menu-top-nav">
+        {/* Order Mode Toggle */}
+        <div className="order-mode-toggle">
+          <button
+            className={`mode-btn ${orderMode === 'dinein' ? 'active' : ''}`}
+            onClick={() => setOrderMode('dinein')}
+          >
+            <UtensilsCrossed size={16} /> Sur place
+          </button>
+          <button
+            className={`mode-btn ${orderMode === 'delivery' ? 'active' : ''}`}
+            onClick={() => setOrderMode('delivery')}
+          >
+            <Home size={16} /> Livraison
+          </button>
+        </div>
         {/* Search Bar */}
         <div className="menu-search-bar">
           <Search size={16} className="menu-search-icon" />
@@ -283,11 +325,22 @@ export function PublicMenu() {
         <div className="cart-modal-overlay">
           <div className="cart-modal">
             {modalState === 'success' && (
-              <div className="success-state">
-                <div className="success-icon"><HeartHandshake size={48} /></div>
-                <h2>{t('order_sent')}</h2>
-                <p>{t('order_success_msg', { table: tableNumber || '?' })}</p>
-              </div>
+                <div className="success-state">
+                  <div className="success-icon"><HeartHandshake size={48} /></div>
+                  <h2>{t('order_sent')}</h2>
+                  {orderMode === 'delivery' ? (
+                    <>
+                      <p>Votre commande est en cours de préparation !</p>
+                      {lastOrderId && (
+                        <a href={`/track/${lastOrderId}`} className="btn btn-primary mt-4" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem', borderRadius: '12px', textDecoration: 'none' }}>
+                          <Truck size={18} /> Suivre ma livraison
+                        </a>
+                      )}
+                    </>
+                  ) : (
+                    <p>{t('order_success_msg', { table: tableNumber || '?' })}</p>
+                  )}
+                </div>
             )}
 
             {modalState === 'review' && (
@@ -327,10 +380,46 @@ export function PublicMenu() {
                   <button className="close-btn" onClick={closeModal} aria-label="Fermer"><X size={24} /></button>
                 </div>
                 <div className="cart-modal-body">
-                  <div className="table-input-section">
-                    <label>{t('seating_question')}</label>
-                    <input type="number" placeholder={t('table_placeholder')} value={tableNumber} onChange={e => setTableNumber(e.target.value)} className="table-number-input" />
-                  </div>
+                  {orderMode === 'dinein' ? (
+                    <div className="table-input-section">
+                      <label>{t('seating_question')}</label>
+                      <input type="number" placeholder={t('table_placeholder')} value={tableNumber} onChange={e => setTableNumber(e.target.value)} className="table-number-input" />
+                    </div>
+                  ) : (
+                    <div className="delivery-form-section">
+                      <h4 className="delivery-form-title">Informations de livraison</h4>
+                      <div className="delivery-form-group">
+                        <label>Nom complet</label>
+                        <input type="text" placeholder="Votre nom" value={deliveryName} onChange={e => setDeliveryName(e.target.value)} className="delivery-input" />
+                      </div>
+                      <div className="delivery-form-group">
+                        <label>Téléphone</label>
+                        <input type="tel" placeholder="06 XX XX XX XX" value={deliveryPhone} onChange={e => setDeliveryPhone(e.target.value)} className="delivery-input" />
+                      </div>
+                      <div className="delivery-form-group">
+                        <label>Adresse de livraison</label>
+                        <textarea placeholder="Numéro, rue, quartier, ville..." value={deliveryAddress} onChange={e => setDeliveryAddress(e.target.value)} className="delivery-textarea" rows={3} />
+                      </div>
+                      <div className="delivery-form-row">
+                        <div className="delivery-form-group">
+                          <label>Heure souhaitée</label>
+                          <input type="time" value={deliveryTime} onChange={e => setDeliveryTime(e.target.value)} className="delivery-input" />
+                        </div>
+                        <div className="delivery-form-group">
+                          <label>Mode de paiement</label>
+                          <select className="delivery-input" defaultValue="">
+                            <option value="" disabled>Choisir</option>
+                            <option value="cash">Espèces (à la livraison)</option>
+                            <option value="card">Carte bancaire (à la livraison)</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div className="delivery-form-group">
+                        <label>Instructions (optionnel)</label>
+                        <input type="text" placeholder="Code d'accès, étage, interphone..." value={deliveryInstructions} onChange={e => setDeliveryInstructions(e.target.value)} className="delivery-input" />
+                      </div>
+                    </div>
+                  )}
                   
                   <div className="cart-summary-list">
                     <div className="summary-header">Détails de la commande</div>
@@ -394,14 +483,16 @@ export function PublicMenu() {
                     <button 
                       className="btn btn-primary place-order-btn-swipe" 
                       onClick={handlePlaceOrder} 
-                      disabled={isPlacingOrder || !tableNumber}
+                      disabled={isPlacingOrder || (orderMode === 'dinein' ? !tableNumber : !deliveryName || !deliveryPhone || !deliveryAddress)}
                       style={{ opacity: isPlacingOrder ? 0.7 : 1 }}
                     >
                       <div className="swipe-shimmer"></div>
                       <span className="btn-text">
                         {isPlacingOrder 
                           ? "Traitement..."
-                          : !tableNumber ? t('enter_table_to_order') : t('send_to_kitchen')
+                          : orderMode === 'dinein' 
+                            ? (!tableNumber ? t('enter_table_to_order') : t('send_to_kitchen'))
+                            : (!deliveryName || !deliveryPhone || !deliveryAddress) ? "Remplissez les champs" : "Commander la livraison"
                         }
                       </span>
                       <ChevronRight className="swipe-icon" size={20} />

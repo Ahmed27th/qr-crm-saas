@@ -1630,4 +1630,119 @@
   font-size: 1rem;
 }
 
+/* Order Mode Toggle */
+.order-mode-toggle {
+  display: flex;
+  gap: 0.25rem;
+  background: var(--bg-secondary);
+  border-radius: 12px;
+  padding: 0.25rem;
+  border: 1px solid var(--border-color);
+  flex-shrink: 0;
+}
+
+.mode-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.75rem;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-tertiary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.mode-btn.active {
+  background: var(--accent-primary);
+  color: #000;
+  box-shadow: 0 2px 8px rgba(var(--accent-primary-rgb), 0.3);
+}
+
+.mode-btn:not(.active):hover {
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+}
+
+/* Delivery Form */
+.delivery-form-section {
+  padding: 0 0.25rem;
+}
+
+.delivery-form-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.delivery-form-group {
+  margin-bottom: 0.85rem;
+}
+
+.delivery-form-group label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 0.35rem;
+}
+
+.delivery-input {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.delivery-input:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb), 0.1);
+}
+
+.delivery-textarea {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.delivery-textarea:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb), 0.1);
+}
+
+.delivery-form-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.delivery-form-row .delivery-form-group {
+  flex: 1;
+}
+
+.delivery-form-row select.delivery-input {
+  cursor: pointer;
+  appearance: auto;
+}
+
 

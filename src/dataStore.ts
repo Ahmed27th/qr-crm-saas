@@ -162,11 +162,11 @@ export const DataStore = {
     return makeSafeUnsubscribe(unsub);
   },
 
-  addOrder: async (order: Omit<Order, 'id' | 'time' | 'status' | 'source'>, restaurantId?: string) => {
+  addOrder: async (order: Omit<Order, 'id' | 'time' | 'status' | 'source'>, restaurantId?: string): Promise<string | undefined> => {
     const resId = restaurantId || await getRestaurantId();
     if (!resId) return;
     
-    await convex.mutation(api.orders.add, {
+    const orderId = await convex.mutation(api.orders.add, {
       restaurantId: resId,
       table: order.table,
       items: order.items,
@@ -183,6 +183,7 @@ export const DataStore = {
       customerAddress: order.customerAddress,
       deliveryInstructions: order.deliveryInstructions
     });
+    return orderId;
   },
 
   updateOrderStatus: async (id: string, status: Order['status'], _restaurantId?: string) => {
@@ -565,5 +566,24 @@ export const DataStore = {
       });
     });
     return makeSafeUnsubscribe(unsub);
+  },
+
+  // --- DRIVER LOCATIONS ---
+  getDriverLocation: async (driverId: string): Promise<{lat: number, lng: number} | null> => {
+    const loc = await convex.query(api.driverLocations.getByDriverId, { driverId });
+    if (!loc) return null;
+    return { lat: loc.lat, lng: loc.lng };
+  },
+
+  subscribeToDriverLocation: (callback: (loc: {lat: number, lng: number} | null) => void, driverId: string) => {
+    const unsub = convex.onUpdate(api.driverLocations.getByDriverId, { driverId }, (result: any) => {
+      if (!result) { callback(null); return; }
+      callback({ lat: result.lat, lng: result.lng });
+    });
+    return makeSafeUnsubscribe(unsub);
+  },
+
+  updateDriverLocation: async (driverId: string, lat: number, lng: number) => {
+    await convex.mutation(api.driverLocations.updateLocation, { driverId, lat, lng });
   },
 };
