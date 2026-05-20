@@ -86,15 +86,6 @@ export function Dashboard() {
     let isAuthenticated = localStorage.getItem('qr_is_authenticated') === 'true';
     let restaurantId = localStorage.getItem('qr_restaurant_id');
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const demoPlan = urlParams.get('demo');
-    if (demoPlan) {
-      isAuthenticated = true;
-      if (!restaurantId) {
-        restaurantId = 'demo';
-      }
-    }
-
     if (!isAuthenticated && isAuth && authUser?.subject) {
       restaurantId = authUser.subject;
       localStorage.setItem('qr_restaurant_id', restaurantId);
@@ -102,7 +93,9 @@ export function Dashboard() {
       isAuthenticated = true;
     }
 
-    if (isAuth && authUser === undefined && !demoPlan) return;
+    // Wait for Convex Auth to finish loading before making redirect decisions
+    if (authUser === undefined) return;
+
     if (!isAuthenticated || !restaurantId) {
       navigate('/login' + window.location.search);
       return;
