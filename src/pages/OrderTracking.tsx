@@ -138,7 +138,7 @@ export function OrderTracking() {
         )}
 
         {/* Driver Info */}
-        {order.driverId && (
+        {order.driverId && order.status !== 'delivered' && (
           <div className="glass-panel p-4 mb-4">
             <h3 className="font-bold text-sm mb-3 flex items-center gap-2">
               <Truck size={16} className="text-accent" /> Livreur
@@ -160,13 +160,14 @@ export function OrderTracking() {
               )}
             </div>
 
-            {/* Driver location map */}
+            {/* Driver location map — only visible during active delivery */}
             {driverLocation && (
               <div className="mt-4 rounded-xl overflow-hidden border border-border" style={{ height: '200px' }}>
                 <iframe
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
+                  scrolling="no"
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
                   src={`https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(

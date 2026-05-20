@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { 
   ShoppingBag, CheckCircle, Clock, MapPin, 
-  Smartphone, LogOut, Activity, AlertCircle, Navigation, Phone, User, Target, Truck
+  Smartphone, LogOut, Activity, AlertCircle, Navigation, Phone, User, Target, Truck, X
 } from 'lucide-react';
 import { DataStore } from '../dataStore';
 import type { Order, Driver } from '../dataStore';
@@ -19,6 +19,8 @@ export function DriverPortal() {
   const [myLocation, setMyLocation] = useState<{lat: number, lng: number} | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [selectedOrderForMap, setSelectedOrderForMap] = useState<string | null>(null);
+  const [confirmDeliverId, setConfirmDeliverId] = useState<string | null>(null);
+  const [selectedHistoryOrder, setSelectedHistoryOrder] = useState<Order | null>(null);
   const locationIntervalRef = useRef<number | null>(null);
   const [missionSteps, setMissionSteps] = useState<Record<string, number>>({});
 
@@ -97,19 +99,26 @@ export function DriverPortal() {
   };
 
   const handleStepForward = (orderId: string) => {
+    const currentStep = missionSteps[orderId] || 0;
+    // On step 2 (Livraison terminée), show confirmation first
+    if (currentStep === 2) {
+      setConfirmDeliverId(orderId);
+      return;
+    }
     setMissionSteps(prev => {
-      const currentStep = prev[orderId] || 0;
       const nextStep = currentStep + 1;
-      
-      if (nextStep === 3) {
-        handleCompleteOrder(orderId);
-        const next = { ...prev };
-        delete next[orderId];
-        return next;
-      }
-      
       return { ...prev, [orderId]: nextStep };
     });
+  };
+
+  const confirmDelivery = async (orderId: string) => {
+    await handleCompleteOrder(orderId);
+    setMissionSteps(prev => {
+      const next = { ...prev };
+      delete next[orderId];
+      return next;
+    });
+    setConfirmDeliverId(null);
   };
 
   const handleCompleteOrder = async (orderId: string) => {
@@ -310,6 +319,24 @@ export function DriverPortal() {
           )}
         </div>
 
+        {/* Confirmation Modal */}
+        {confirmDeliverId && (
+          <div className="cart-modal-overlay" onClick={() => setConfirmDeliverId(null)}>
+            <div className="cart-modal" style={{ padding: '2rem', maxWidth: '360px', margin: 'auto' }} onClick={e => e.stopPropagation()}>
+              <h3 className="text-lg font-bold mb-2">Confirmer la livraison</h3>
+              <p className="text-sm text-tertiary mb-6">Êtes-vous sûr d'avoir livré cette commande ? Cette action est irréversible.</p>
+              <div className="flex gap-3">
+                <button onClick={() => setConfirmDeliverId(null)} className="btn-secondary flex-1 py-3 rounded-xl text-sm font-bold">
+                  Annuler
+                </button>
+                <button onClick={() => confirmDelivery(confirmDeliverId)} className="btn-primary flex-1 py-3 rounded-xl text-sm font-bold" style={{ background: 'var(--success)', color: 'white' }}>
+                  Confirmer
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Available Missions */}
         <div className="mt-12">
           <h3 className="text-sm font-bold uppercase tracking-widest text-tertiary mb-4 flex items-center gap-2">
@@ -359,11 +386,15 @@ export function DriverPortal() {
           <div className="mt-8">
             <h3 className="text-sm font-bold uppercase tracking-widest text-tertiary mb-4">Historique</h3>
             <div className="flex flex-col gap-3">
-              {historyOrders.slice(-5).reverse().map(order => (
-                <div key={order.id} className="glass-panel p-4 flex justify-between items-center opacity-70">
+              {historyOrders.slice(-10).reverse().map(order => (
+                <div key={order.id} 
+                  className="glass-panel p-4 flex justify-between items-center opacity-70 cursor-pointer hover:opacity-100 transition-opacity"
+                  onClick={() => setSelectedHistoryOrder(order)}
+                >
                   <div>
                     <span className="text-xs font-bold text-tertiary">#{order.id.slice(-6)}</span>
                     <h4 className="text-sm font-bold">Livraison Terminée</h4>
+                    {order.customerName && <p className="text-xs text-tertiary">{order.customerName}</p>}
                   </div>
                   <div className="text-right">
                     <span className="text-sm font-bold text-success">{order.total.toFixed(2)} DH</span>
@@ -371,6 +402,55 @@ export function DriverPortal() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* History Order Detail Modal */}
+        {selectedHistoryOrder && (
+          <div className="cart-modal-overlay" onClick={() => setSelectedHistoryOrder(null)}>
+            <div className="cart-modal" style={{ padding: '2rem', maxWidth: '400px', margin: 'auto' }} onClick={e => e.stopPropagation()}>
+              <div className="flex justify-between items-start mb-4">
+                <h3 className="text-lg font-bold">Détails de la livraison</h3>
+                <button className="close-btn" onClick={() => setSelectedHistoryOrder(null)} aria-label="Fermer"><X size={20} /></button>
+              </div>
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-tertiary">Commande</span>
+                  <span className="font-bold">#{selectedHistoryOrder.id.slice(-6)}</span>
+                </div>
+                {selectedHistoryOrder.customerName && (
+                  <div className="flex justify-between">
+                    <span className="text-tertiary">Client</span>
+                    <span className="font-bold">{selectedHistoryOrder.customerName}</span>
+                  </div>
+                )}
+                {selectedHistoryOrder.customerPhone && (
+                  <div className="flex justify-between">
+                    <span className="text-tertiary">Téléphone</span>
+                    <a href={`tel:${selectedHistoryOrder.customerPhone}`} className="font-bold text-accent">{selectedHistoryOrder.customerPhone}</a>
+                  </div>
+                )}
+                {selectedHistoryOrder.customerAddress && (
+                  <div className="flex justify-between">
+                    <span className="text-tertiary">Adresse</span>
+                    <span className="font-bold text-right max-w-[200px]">{selectedHistoryOrder.customerAddress}</span>
+                  </div>
+                )}
+                <div className="border-t border-border pt-3 mt-3">
+                  <span className="text-tertiary block mb-2">Articles</span>
+                  {selectedHistoryOrder.orderItems?.map((item, idx) => (
+                    <div key={idx} className="flex justify-between text-xs mb-1">
+                      <span>{item.qty}x {item.name}</span>
+                      <span>{((item.price ?? 0) * item.qty).toFixed(2)} DH</span>
+                    </div>
+                  ))}
+                  <div className="border-t border-border pt-2 mt-2 flex justify-between font-bold">
+                    <span>Total</span>
+                    <span className="text-success">{selectedHistoryOrder.total.toFixed(2)} DH</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
