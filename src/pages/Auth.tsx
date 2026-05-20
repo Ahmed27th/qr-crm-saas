@@ -98,8 +98,16 @@ export function Auth() {
     setLoading(true);
 
     try {
-      const flow = isLogin ? "signIn" : "signUp";
-      await signIn("password", { email, password, name: isLogin ? undefined : name, flow, redirectTo: "/dashboard" });
+      const params: Record<string, any> = {
+        email,
+        password,
+        flow: isLogin ? "signIn" : "signUp",
+        redirectTo: "/dashboard",
+      };
+      if (!isLogin && name) {
+        params.name = name;
+      }
+      await signIn("password", params);
     } catch (err: any) {
       setError(err.message || 'Une erreur est survenue');
       setLoading(false);
