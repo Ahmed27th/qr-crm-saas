@@ -15,7 +15,7 @@ export const me = query({
     if (!subscription && identity.email) {
       // Fallback: check all subscriptions for matching email
       const allSubs = await ctx.db.query("subscriptions").collect();
-      subscription = allSubs.find(s => s.email?.toLowerCase() === identity.email.toLowerCase()) || null;
+      subscription = allSubs.find(s => s.email?.toLowerCase() === identity.email!.toLowerCase()) || null;
     }
 
     if (!subscription) return {

@@ -98,8 +98,8 @@ export function Auth() {
     setLoading(true);
 
     try {
-      const flow = isLogin ? "login" : "register";
-      await signIn("password", { email, password, name: isLogin ? "" : name, flow, redirectTo: "/tarifs" });
+      const flow = isLogin ? "signIn" : "signUp";
+      await signIn("password", { email, password, name: isLogin ? undefined : name, flow, redirectTo: "/dashboard" });
     } catch (err: any) {
       setError(err.message || 'Une erreur est survenue');
       setLoading(false);
@@ -110,7 +110,7 @@ export function Auth() {
     setError('');
     setLoading(true);
     try {
-      await signIn("google", { redirectTo: "/tarifs" });
+      await signIn("google", { redirectTo: "/dashboard" });
     } catch (err: any) {
       setError(err.message || 'Erreur lors de la connexion Google');
       setLoading(false);
