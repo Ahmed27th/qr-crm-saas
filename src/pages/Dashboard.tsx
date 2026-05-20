@@ -98,7 +98,13 @@ export function Dashboard() {
     // Wait for Convex Auth to finish loading before making redirect decisions
     if (authUser === undefined) return;
 
-    if (!isAuthenticated || !restaurantId) {
+    if (isDemoUltimate) {
+      restaurantId = 'demo-ultimate';
+      isAuthenticated = true;
+      localStorage.setItem('qr_restaurant_id', 'demo-ultimate');
+      localStorage.setItem('qr_is_authenticated', 'true');
+      // Continue to subscribe with demo restaurant ID
+    } else if (!isAuthenticated || !restaurantId) {
       // Only redirect if Convex Auth confirms we're not authenticated.
       // Prevents race condition where me query returns null before auth
       // token propagates to the Convex client.
