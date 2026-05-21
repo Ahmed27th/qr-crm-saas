@@ -12,16 +12,8 @@ export const me = query({
 
     const userId = getStableUserId(identity.subject);
 
-    // Look up user from auth users table to get email/name if JWT doesn't carry them
-    let userEmail = identity.email;
-    let userName = identity.name;
-    if (!userEmail) {
-      const authUser = await ctx.db.get(userId as any);
-      if (authUser && typeof authUser === 'object' && 'email' in authUser) {
-        userEmail = (authUser as { email?: string; name?: string }).email || undefined;
-        userName = (authUser as { email?: string; name?: string }).name || userName;
-      }
-    }
+    const userEmail = identity.email;
+    const userName = identity.name;
 
     // Try looking up by stable user ID first (userId without session)
     let subscription = await ctx.db
@@ -34,21 +26,6 @@ export const me = query({
       subscription = await ctx.db
         .query("subscriptions")
         .withIndex("by_userId", (q) => q.eq("userId", identity.subject))
-        .first();
-    }
-
-    if (!subscription && userEmail) {
-      // Fallback: check all subscriptions for matching email
-      const allSubs = await ctx.db.query("subscriptions").collect();
-      subscription = allSubs.find(s => s.email?.toLowerCase() === userEmail!.toLowerCase()) || null;
-    }
-
-    // Fallback: try old email-derived userId format (e.g. "am_ahmed5maher_am_gmail_com")
-    if (!subscription && userEmail) {
-      const oldUserId = userEmail.replace(/[@.]/g, '_');
-      subscription = await ctx.db
-        .query("subscriptions")
-        .withIndex("by_userId", (q) => q.eq("userId", oldUserId))
         .first();
     }
 
@@ -89,19 +66,12 @@ export const linkSubscription = mutation({
 
     const stableUserId = getStableUserId(identity.subject);
 
-    // Get email from auth users table if JWT doesn't carry it
-    let userEmail = identity.email;
-    if (!userEmail) {
-      const authUser = await ctx.db.get(stableUserId as any);
-      if (authUser && typeof authUser === 'object' && 'email' in authUser) {
-        userEmail = (authUser as { email?: string }).email || undefined;
-      }
-    }
+    const userEmail = identity.email;
 
     const allSubs = await ctx.db.query("subscriptions").collect();
     let linked = false;
     for (const sub of allSubs) {
-      if (sub.email?.toLowerCase() === userEmail?.toLowerCase()) {
+      if (userEmail && sub.email?.toLowerCase() === userEmail.toLowerCase()) {
         await ctx.db.patch(sub._id, { userId: stableUserId });
         linked = true;
       }

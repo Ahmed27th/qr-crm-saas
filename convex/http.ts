@@ -8,6 +8,18 @@ declare const process: {
   env: Record<string, string | undefined>;
 };
 
+function parseLsDate(dateStr: string | undefined | null): number | null {
+  if (!dateStr) return null;
+  const ms = Date.parse(dateStr);
+  return Number.isNaN(ms) ? null : ms;
+}
+
+function getBillingPeriodMs(billingPeriod: string): number {
+  return billingPeriod === "yearly"
+    ? 365 * 24 * 60 * 60 * 1000
+    : 30 * 24 * 60 * 60 * 1000;
+}
+
 const http = httpRouter();
 
 auth.addHttpRoutes(http);
@@ -29,7 +41,6 @@ http.route({
       return new Response("Webhook secret not configured", { status: 500 });
     }
 
-    // Verify HMAC-SHA256 signature using Web Crypto API
     const encoder = new TextEncoder();
     const key = await crypto.subtle.importKey(
       "raw",
@@ -63,7 +74,6 @@ http.route({
     const customData = payload.meta?.custom_data || {};
     const userId = customData.user_id;
 
-    // Extract variant ID from payload to resolve plan from config map
     const variantId = String(
       payload.data?.attributes?.first_order_item?.variant_id 
       || payload.data?.attributes?.variant_id 
@@ -86,13 +96,19 @@ http.route({
 
     const email = attributes.user_email || "";
     const orderId = String(payload.data?.id || "");
-
+    const subId = String(payload.data?.id || "");
     const now = Date.now();
-    const periodEnd = billingPeriod === "yearly" 
-      ? now + 365 * 24 * 60 * 60 * 1000 
-      : now + 30 * 24 * 60 * 60 * 1000;
+    const billingMs = getBillingPeriodMs(billingPeriod);
+
+    // Try to get actual dates from LS payload; fall back to computed from now
+    const renewsAt = parseLsDate(attributes.renews_at);
+    const endsAt = parseLsDate(attributes.ends_at);
+    const trialEndsAt = parseLsDate(attributes.trial_ends_at);
 
     if (eventName === "order_created") {
+      const firstSub = attributes.first_subscription;
+      const lsRenew = firstSub ? parseLsDate(firstSub.renews_at) : null;
+      const periodEnd = lsRenew || renewsAt || (now + billingMs);
       await ctx.runMutation(api.subscriptions.upsertSubscription, {
         userId,
         email,
@@ -106,7 +122,24 @@ http.route({
     }
 
     if (eventName === "subscription_created") {
-      const subId = String(payload.data?.id || "");
+      const periodEnd = renewsAt || trialEndsAt || (now + billingMs);
+      await ctx.runMutation(api.subscriptions.upsertSubscription, {
+        userId,
+        email,
+        planId,
+        billingPeriod,
+        status: "active",
+        lemonSqueezyOrderId: orderId,
+        lemonSqueezySubscriptionId: subId,
+        currentPeriodStart: now,
+        currentPeriodEnd: periodEnd,
+      });
+    }
+
+    if (eventName === "subscription_payment_success") {
+      // LS sends the new renews_at after each successful recurring payment
+      // Use it directly, or extend from existing end by one billing period
+      const periodEnd = renewsAt || (trialEndsAt || (now + billingMs));
       await ctx.runMutation(api.subscriptions.upsertSubscription, {
         userId,
         email,
@@ -122,6 +155,7 @@ http.route({
 
     if (eventName === "subscription_updated") {
       const status = attributes.status || "active";
+      const periodEnd = renewsAt || trialEndsAt || (now + billingMs);
       await ctx.runMutation(api.subscriptions.upsertSubscription, {
         userId,
         email,
@@ -129,12 +163,15 @@ http.route({
         billingPeriod,
         status,
         lemonSqueezyOrderId: orderId,
+        lemonSqueezySubscriptionId: subId,
         currentPeriodStart: now,
         currentPeriodEnd: periodEnd,
       });
     }
 
     if (eventName === "subscription_cancelled") {
+      // Use LS ends_at so user keeps access through the paid period
+      const periodEnd = endsAt || now;
       await ctx.runMutation(api.subscriptions.upsertSubscription, {
         userId,
         email,
@@ -142,8 +179,9 @@ http.route({
         billingPeriod,
         status: "cancelled",
         lemonSqueezyOrderId: orderId,
+        lemonSqueezySubscriptionId: subId,
         currentPeriodStart: now,
-        currentPeriodEnd: now,
+        currentPeriodEnd: periodEnd,
       });
     }
 
@@ -155,6 +193,7 @@ http.route({
         billingPeriod,
         status: "expired",
         lemonSqueezyOrderId: orderId,
+        lemonSqueezySubscriptionId: subId,
         currentPeriodStart: now,
         currentPeriodEnd: now,
       });

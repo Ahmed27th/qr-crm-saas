@@ -47,10 +47,7 @@ export function Tarifs() {
     const separator = baseUrl.includes('?') ? '&' : '?';
     const origin = window.location.origin;
     const checkoutUrl = `${baseUrl}${separator}checkout[custom][user_id]=${encodeURIComponent(userId)}&checkout[custom][plan]=${plan.id}&checkout[custom][billing]=${billingCycle}&checkout[success_url]=${encodeURIComponent(origin + '/dashboard')}&checkout[cancel_url]=${encodeURIComponent(origin + '/tarifs')}`;
-    const popup = window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
-    if (!popup || popup.closed) {
-      window.location.href = checkoutUrl;
-    }
+    window.location.href = checkoutUrl;
   };
 
   const monthlyPrices = {

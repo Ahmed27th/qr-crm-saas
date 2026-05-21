@@ -31,6 +31,21 @@ export const setTestSubscription = mutation({
   },
 });
 
+export const expireTestSubscription = mutation({
+  args: { userId: v.string() },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("subscriptions")
+      .withIndex("by_userId", (q) => q.eq("userId", args.userId))
+      .first();
+    if (existing) {
+      await ctx.db.patch(existing._id, { currentPeriodEnd: Date.now() - 86400000 });
+      return "expired";
+    }
+    return "not found";
+  },
+});
+
 export const clearTestSubscription = mutation({
   args: { userId: v.string() },
   handler: async (ctx, args) => {
