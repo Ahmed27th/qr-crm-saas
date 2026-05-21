@@ -28,7 +28,9 @@ export function Dashboard() {
     userId: localStorage.getItem('qr_restaurant_id') || 'demo' 
   });
   const subscription = authUser?.subscription;
-  const demoParam = new URLSearchParams(window.location.search).get('demo');
+  const searchParams = new URLSearchParams(window.location.search);
+  const demoParam = searchParams.get('demo');
+  const checkoutSuccess = searchParams.get('checkout') === 'success';
   const isDemoUltimate = demoParam === 'ultimate';
   const isSubActive = isDemoUltimate || subscription?.status === 'active';
   const planId = isDemoUltimate ? 'ultimate' : (isSubActive ? (subscription?.planId ?? 'none') : 'none');
@@ -1543,9 +1545,13 @@ export function Dashboard() {
   useEffect(() => {
     if (isAuth && authUser && !authUser.subject) return;
     if (isAuth && authUser?.subject && !isSubActive) {
+      if (checkoutSuccess) {
+        const timer = setTimeout(() => navigate('/tarifs'), 5000);
+        return () => clearTimeout(timer);
+      }
       navigate('/tarifs');
     }
-  }, [isAuth, authUser, isSubActive, navigate]);
+  }, [isAuth, authUser, isSubActive, navigate, checkoutSuccess]);
 
   // Redirect hook removed to allow users to view locked tabs with premium overlays
   /*
