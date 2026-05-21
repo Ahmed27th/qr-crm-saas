@@ -31,6 +31,31 @@ export const getUserAccessLevel = query({
   },
 });
 
+export const getSubscriptionByStripeId = query({
+  args: { stripeSubscriptionId: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("subscriptions")
+      .withIndex("by_stripeSubscriptionId", (q) => q.eq("stripeSubscriptionId", args.stripeSubscriptionId))
+      .first();
+  },
+});
+
+export const updateSubscriptionPeriod = mutation({
+  args: {
+    subscriptionId: v.id("subscriptions"),
+    status: v.string(),
+    currentPeriodEnd: v.number(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.subscriptionId, {
+      status: args.status,
+      currentPeriodEnd: args.currentPeriodEnd,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
 export const upsertSubscription = mutation({
   args: {
     userId: v.string(),
@@ -40,6 +65,8 @@ export const upsertSubscription = mutation({
     status: v.string(),
     lemonSqueezyOrderId: v.optional(v.string()),
     lemonSqueezySubscriptionId: v.optional(v.string()),
+    stripeSubscriptionId: v.optional(v.string()),
+    stripeCustomerId: v.optional(v.string()),
     currentPeriodStart: v.number(),
     currentPeriodEnd: v.number(),
   },
@@ -59,6 +86,8 @@ export const upsertSubscription = mutation({
         email: args.email,
         lemonSqueezyOrderId: args.lemonSqueezyOrderId,
         lemonSqueezySubscriptionId: args.lemonSqueezySubscriptionId,
+        stripeSubscriptionId: args.stripeSubscriptionId,
+        stripeCustomerId: args.stripeCustomerId,
         currentPeriodStart: args.currentPeriodStart,
         currentPeriodEnd: args.currentPeriodEnd,
         updatedAt: now,
@@ -73,6 +102,8 @@ export const upsertSubscription = mutation({
         status: args.status,
         lemonSqueezyOrderId: args.lemonSqueezyOrderId,
         lemonSqueezySubscriptionId: args.lemonSqueezySubscriptionId,
+        stripeSubscriptionId: args.stripeSubscriptionId,
+        stripeCustomerId: args.stripeCustomerId,
         currentPeriodStart: args.currentPeriodStart,
         currentPeriodEnd: args.currentPeriodEnd,
         createdAt: now,

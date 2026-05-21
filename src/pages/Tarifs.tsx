@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from 'convex/react';
+import { useQuery, useAction } from 'convex/react';
 import { useConvexAuth } from '@convex-dev/auth/react';
 import { api } from '../../convex/_generated/api';
 import { QrCode, Check, X, ArrowLeft, Zap, Star, Crown, ArrowRight, Percent, Monitor, Smartphone } from 'lucide-react';
@@ -12,7 +12,7 @@ export function Tarifs() {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading } = useConvexAuth();
   const user = useQuery(api.users.me);
-  const subject = useQuery(api.users.getSubject);
+  const createCheckout = useAction(api.stripe.createCheckoutSession);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [scrolled, setScrolled] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<any>(null);
@@ -37,17 +37,21 @@ export function Tarifs() {
     }
   };
 
-  const handleCheckout = (plan: typeof plans[0]) => {
+  const handleCheckout = async (plan: typeof plans[0]) => {
     if (isLoading) return;
     if (!isAuthenticated) { window.location.href = '/login?redirectTo=/tarifs'; return; }
-    const rawSubject = user?.subject || subject;
-    if (!rawSubject) return;
-    const userId = rawSubject.split('|')[0];
-    const baseUrl = plan.checkoutUrl[billingCycle];
-    const separator = baseUrl.includes('?') ? '&' : '?';
-    const origin = window.location.origin;
-    const checkoutUrl = `${baseUrl}${separator}checkout[custom][user_id]=${encodeURIComponent(userId)}&checkout[custom][plan]=${plan.id}&checkout[custom][billing]=${billingCycle}&checkout[success_url]=${encodeURIComponent(origin + '/dashboard?checkout=success')}&checkout[cancel_url]=${encodeURIComponent(origin + '/tarifs')}`;
-    window.location.href = checkoutUrl;
+    try {
+      const origin = window.location.origin;
+      const { url } = await createCheckout({
+        planId: plan.id,
+        billingPeriod: billingCycle,
+        successUrl: origin + '/dashboard?checkout=success',
+        cancelUrl: origin + '/tarifs',
+      });
+      window.location.href = url;
+    } catch (err) {
+      console.error("Checkout failed:", err);
+    }
   };
 
   const monthlyPrices = {
@@ -60,7 +64,6 @@ export function Tarifs() {
     {
       id: 'starter', name: t('pricing_starter_name'), badge: t('pricing_starter_badge'),
       monthlyPrice: monthlyPrices.starter, yearlyPrice: 2000, savings: 388,
-      checkoutUrl: { monthly: 'https://saasprojectreview.lemonsqueezy.com/checkout/buy/6f1df6f9-ab9d-46f7-8f24-d9d1daa08c90', yearly: 'https://saasprojectreview.lemonsqueezy.com/checkout/buy/5c111176-1b68-4e09-a5c8-40dc412409e6' },
       desc: t('pricing_starter_desc'), icon: <Star size={22} />,
       features: [
         { text: t('pricing_feature_reviews'), included: true },
@@ -73,7 +76,6 @@ export function Tarifs() {
     {
       id: 'pro', name: t('pricing_pro_name'), badge: t('pricing_pro_badge'),
       monthlyPrice: monthlyPrices.pro, yearlyPrice: 5000, savings: 988,
-      checkoutUrl: { monthly: 'https://saasprojectreview.lemonsqueezy.com/checkout/buy/96c4bcaf-a41e-425f-a87e-60d43e0dc3d3', yearly: 'https://saasprojectreview.lemonsqueezy.com/checkout/buy/39d74bf6-7d6a-45fe-8b1f-63949fcfbe42' },
       desc: t('pricing_pro_desc'), icon: <Zap size={22} />, popular: true,
       features: [
         { text: t('pricing_feature_menu'), included: true },
@@ -86,7 +88,6 @@ export function Tarifs() {
     {
       id: 'ultimate', name: t('pricing_ultimate_name'), badge: t('pricing_ultimate_badge'),
       monthlyPrice: monthlyPrices.ultimate, yearlyPrice: 11000, savings: 988,
-      checkoutUrl: { monthly: 'https://saasprojectreview.lemonsqueezy.com/checkout/buy/2c46c199-3fd3-4223-b63b-d06a1056d544', yearly: 'https://saasprojectreview.lemonsqueezy.com/checkout/buy/8aab7afb-e0e6-4862-afa3-626ce1fae247' },
       desc: t('pricing_ultimate_desc'), icon: <Crown size={22} />,
       features: [
         { text: t('pricing_feature_menu'), included: true },
@@ -179,9 +180,9 @@ export function Tarifs() {
               <button
                 className={`tarifs-card-btn ${plan.popular ? 'tarifs-card-btn--primary' : 'tarifs-card-btn--ghost'}`}
                 onClick={() => handleCheckout(plan)}
-                disabled={isLoading || (isAuthenticated && !user && !subject)}
+                disabled={isLoading || (isAuthenticated && !user)}
               >
-                <span>{isLoading ? '...' : isAuthenticated && !user && !subject ? 'Chargement...' : 'Get Started'}</span>
+                <span>{isLoading ? '...' : isAuthenticated && !user ? 'Chargement...' : 'Get Started'}</span>
                 <ArrowRight size={15} />
               </button>
             </div>
