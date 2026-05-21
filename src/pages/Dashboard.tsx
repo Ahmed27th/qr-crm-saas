@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { 
   LayoutDashboard, ShoppingBag, Utensils, QrCode, Settings,
-  Bell, Search, Plus, CheckCircle, Clock, TrendingUp, Users, Star, MessageSquare, ExternalLink, ShieldAlert, Smartphone, Calendar, Mail, Trash2, X, Tag, Image as ImageIcon, Link as LinkIcon, FileText, Sparkles,
+  Bell, Search, Plus, CheckCircle, Clock, TrendingUp, User, Users, Star, MessageSquare, ExternalLink, ShieldAlert, Smartphone, Calendar, Mail, Trash2, X, Tag, Image as ImageIcon, Link as LinkIcon, FileText, Sparkles,
   BarChart3, Activity, PieChart as PieChartIcon, Target, Phone, Truck, Crown, Lock
 } from 'lucide-react';
 import { 
@@ -916,18 +916,16 @@ export function Dashboard() {
     return (
       <div className="dashboard-content">
         {/* Welcome Banner */}
-        <div className="overview-welcome glass-panel" style={{ padding: '2rem 2.5rem', marginBottom: '2rem', background: 'linear-gradient(135deg, rgba(var(--accent-primary-rgb), 0.08), rgba(var(--accent-primary-rgb), 0.02))', border: '1px solid rgba(var(--accent-primary-rgb), 0.15)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+        <div className="overview-welcome glass-panel">
+          <div className="overview-welcome-content">
             <div>
-              <h2 className="page-title" style={{ marginBottom: '0.25rem' }}>
-                {t('dash_welcome', 'Bienvenue')} 👋
+              <h2 className="page-title">
+                {t('dash_welcome', 'Bienvenue')}{authUser?.name ? `, ${authUser.name.split(' ')[0]}` : ''} 👋
               </h2>
-              <p className="text-tertiary" style={{ fontSize: '0.95rem' }}>
-                {t('dash_welcome_desc', 'Voici un aperçu de votre activité en temps réel.')}
-              </p>
+              <p>{t('dash_welcome_desc', 'Voici un aperçu de votre activité en temps réel.')}</p>
             </div>
-            <div className="badge-accent flex items-center gap-2" style={{ fontSize: '0.8rem' }}>
-              <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--success)', display: 'inline-block', animation: 'logoPulse 2s ease-in-out infinite' }}></span>
+            <div className="badge-accent">
+              <span className="live-dot"></span>
               {t('status_live', 'Live')}
             </div>
           </div>
@@ -978,14 +976,14 @@ export function Dashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '2rem', flexWrap: 'wrap' }}>
-          <button className="btn-primary" style={{ padding: '0.6rem 1.25rem', borderRadius: '12px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', border: 'none' }} onClick={() => setActiveTab('menu')}>
+        <div className="quick-actions-row">
+          <button className="quick-action-btn primary" onClick={() => setActiveTab('menu')}>
             <Plus size={16} /> {t('menu_add_plat', 'Ajouter un plat')}
           </button>
-          <button className="btn-secondary" style={{ padding: '0.6rem 1.25rem', borderRadius: '12px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }} onClick={() => setActiveTab('qr')}>
+          <button className="quick-action-btn secondary" onClick={() => setActiveTab('qr')}>
             <QrCode size={16} /> {t('qr_view', 'QR Codes')}
           </button>
-          <button className="btn-secondary" style={{ padding: '0.6rem 1.25rem', borderRadius: '12px', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }} onClick={() => window.open(`${window.location.origin}/menu/${profile?.id || 'demo'}`, '_blank')}>
+          <button className="quick-action-btn secondary" onClick={() => window.open(`${window.location.origin}/menu/${profile?.id || 'demo'}`, '_blank')}>
             <ExternalLink size={16} /> {t('view_menu', 'Voir mon menu')}
           </button>
         </div>
@@ -994,14 +992,14 @@ export function Dashboard() {
         <div className="analytics-charts-grid-2">
           <div className="glass-panel p-6">
             <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(var(--accent-primary-rgb), 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div className="section-header-icon" style={{ background: 'rgba(var(--accent-primary-rgb), 0.1)' }}>
                 <Clock size={18} className="text-accent"/>
               </div>
               File d'attente Cuisine
             </h3>
             <div className="flex flex-col gap-3">
               {activeOrders.slice(0, 5).map(order => (
-                <div key={order.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.85rem 1rem', borderRadius: '12px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', transition: 'all 0.2s' }}>
+                <div key={order.id} className="overview-order-item">
                   <div>
                     <div className="font-bold" style={{ fontSize: '0.9rem' }}>{order.id}</div>
                     <div className="text-xs text-tertiary">Table {order.table} • {order.items} articles</div>
@@ -1012,13 +1010,13 @@ export function Dashboard() {
                 </div>
               ))}
               {activeOrders.length === 0 && (
-                <div style={{ textAlign: 'center', padding: '2.5rem 1rem' }}>
-                  <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', fontSize: '1.5rem' }}>🍽️</div>
-                  <p className="text-tertiary" style={{ fontSize: '0.9rem' }}>Aucune commande active</p>
-                  <p className="text-tertiary" style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>Les commandes apparaîtront ici en temps réel</p>
+                <div className="empty-mini">
+                  <div className="empty-mini-icon">🍽️</div>
+                  <p className="text-tertiary">Aucune commande active</p>
+                  <p className="text-tertiary">Les commandes apparaîtront ici en temps réel</p>
                 </div>
               )}
-              <button className="btn-secondary" style={{ width: '100%', marginTop: '0.5rem', padding: '0.65rem', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }} onClick={() => setActiveTab('orders')}>
+              <button className="btn-secondary btn-full" onClick={() => setActiveTab('orders')}>
                 Voir tout le Kanban →
               </button>
             </div>
@@ -1026,7 +1024,7 @@ export function Dashboard() {
           
           <div className="glass-panel p-6">
             <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(16, 185, 129, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div className="section-header-icon" style={{ background: 'rgba(16, 185, 129, 0.1)' }}>
                 <Users size={18} style={{ color: 'var(--success)' }}/>
               </div>
               Staff en Service
@@ -1035,31 +1033,29 @@ export function Dashboard() {
               {staffList.slice(0, 5).map((member, idx) => {
                 const colors = ['#667eea', '#E2B36B', '#11998e', '#f093fb', '#4facfe'];
                 return (
-                  <div key={member.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.7rem 1rem', borderRadius: '12px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', transition: 'all 0.2s' }}>
+                  <div key={member.id} className="overview-staff-item">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <div style={{ width: 38, height: 38, borderRadius: '50%', background: colors[idx % colors.length], display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: '0.85rem' }}>
-                        {member.name.charAt(0)}
-                      </div>
+                      <div className="staff-avatar-mini" style={{ background: colors[idx % colors.length] }}>{member.name.charAt(0)}</div>
                       <div>
-                        <div className="font-bold" style={{ fontSize: '0.9rem' }}>{member.name}</div>
+                        <div className="font-bold">{member.name}</div>
                         <div className="text-xs text-tertiary">{member.role}</div>
                       </div>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                      <div style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--success)', boxShadow: '0 0 6px rgba(16, 185, 129, 0.5)' }}></div>
+                      <div className="status-dot-active"></div>
                       <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>Actif</span>
                     </div>
                   </div>
                 );
               })}
               {staffList.length === 0 && (
-                <div style={{ textAlign: 'center', padding: '2.5rem 1rem' }}>
-                  <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem', fontSize: '1.5rem' }}>👥</div>
-                  <p className="text-tertiary" style={{ fontSize: '0.9rem' }}>Aucun staff ajouté</p>
-                  <p className="text-tertiary" style={{ fontSize: '0.75rem', marginTop: '0.25rem' }}>Ajoutez votre équipe pour commencer</p>
+                <div className="empty-mini">
+                  <div className="empty-mini-icon">👥</div>
+                  <p className="text-tertiary">Aucun staff ajouté</p>
+                  <p className="text-tertiary">Ajoutez votre équipe pour commencer</p>
                 </div>
               )}
-              <button className="btn-secondary" style={{ width: '100%', marginTop: '0.5rem', padding: '0.65rem', borderRadius: '10px', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem' }} onClick={() => setActiveTab('staff')}>
+              <button className="btn-secondary btn-full" onClick={() => setActiveTab('staff')}>
                 Gérer le Staff →
               </button>
             </div>
@@ -1068,25 +1064,25 @@ export function Dashboard() {
 
         {/* Recent Reviews Section */}
         {reviews.length > 0 && (
-          <div style={{ marginTop: '2rem' }}>
+          <div className="mt-8">
             <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-              <div style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(139, 92, 246, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div className="section-header-icon" style={{ background: 'rgba(139, 92, 246, 0.1)' }}>
                 <MessageSquare size={18} style={{ color: '#8B5CF6' }}/>
               </div>
               Derniers Avis
             </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+            <div className="reviews-grid">
               {reviews.slice(0, 3).map(review => (
-                <div key={review.id} className="glass-panel" style={{ padding: '1.25rem', borderRadius: '14px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-                    <div style={{ display: 'flex', gap: '2px' }}>
+                <div key={review.id} className="glass-panel overview-review-card">
+                  <div className="review-header">
+                    <div className="review-stars">
                       {[1,2,3,4,5].map(star => (
-                        <Star key={star} size={14} fill={star <= review.rating ? '#f59e0b' : 'none'} color={star <= review.rating ? '#f59e0b' : 'var(--border-color)'} />
+                        <Star key={star} size={14} className={star <= review.rating ? 'star-filled' : 'star-empty'} fill={star <= review.rating ? "currentColor" : "none"} />
                       ))}
                     </div>
-                    <span className="text-xs text-tertiary">{Math.floor((Date.now() - review.time) / 60000)}m</span>
+                    <span className="review-time">{Math.floor((Date.now() - review.time) / 60000)}m</span>
                   </div>
-                  <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' as const, overflow: 'hidden' }}>"{review.comment}"</p>
+                  <p className="review-comment" style={{ fontSize: '0.85rem', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>"{review.comment}"</p>
                 </div>
               ))}
             </div>
@@ -1561,18 +1557,33 @@ export function Dashboard() {
   */
 
   const NAV_ITEMS = [
-    { id: 'overview', icon: <LayoutDashboard size={20}/>, label: t('dash_overview') },
-    { id: 'analytics', icon: <BarChart3 size={20}/>, label: t('dash_analytics') },
-    { id: 'orders', icon: <ShoppingBag size={20}/>, label: t('dash_orders') },
-    { id: 'collection', icon: <Smartphone size={20}/>, label: t('dash_collection') },
-    { id: 'reservations', icon: <Calendar size={20}/>, label: t('dash_reservations') },
-    { id: 'reviews', icon: <MessageSquare size={20}/>, label: t('dash_reviews') },
-    { id: 'staff', icon: <Users size={20}/>, label: t('dash_staff') },
-    { id: 'drivers', icon: <Truck size={20}/>, label: t('dash_drivers') },
-    { id: 'menu', icon: <Utensils size={20}/>, label: t('dash_menu') },
-    { id: 'qr', icon: <QrCode size={20}/>, label: t('dash_qr') },
-    { id: 'settings', icon: <Settings size={20}/>, label: t('dash_settings') },
+    { id: 'overview', icon: <LayoutDashboard size={17}/>, label: t('dash_overview') },
+    { id: 'analytics', icon: <BarChart3 size={17}/>, label: t('dash_analytics') },
+    { id: 'orders', icon: <ShoppingBag size={17}/>, label: t('dash_orders') },
+    { id: 'collection', icon: <Smartphone size={17}/>, label: t('dash_collection') },
+    { id: 'reservations', icon: <Calendar size={17}/>, label: t('dash_reservations') },
+    { id: 'reviews', icon: <MessageSquare size={17}/>, label: t('dash_reviews') },
+    { id: 'staff', icon: <Users size={17}/>, label: t('dash_staff') },
+    { id: 'drivers', icon: <Truck size={17}/>, label: t('dash_drivers') },
+    { id: 'menu', icon: <Utensils size={17}/>, label: t('dash_menu') },
+    { id: 'qr', icon: <QrCode size={17}/>, label: t('dash_qr') },
+    { id: 'settings', icon: <Settings size={17}/>, label: t('dash_settings') },
   ];
+
+  const navGroups: Record<string, string[]> = {
+    '': ['overview'],
+    'Opérations': ['analytics', 'orders', 'collection', 'reservations'],
+    'Équipe': ['reviews', 'staff', 'drivers'],
+    'Contenu': ['menu', 'qr'],
+  };
+
+  const getNavGroup = (id: string): string | null => {
+    for (const [group, ids] of Object.entries(navGroups)) {
+      if (ids.includes(id)) return group || null;
+    }
+    return null;
+  };
+
   const handleNavClick = (id: string) => { setActiveTab(id); setMobileNavOpen(false); };
 
   const renderLockedFeaturePlaceholder = (tabId: string) => {
@@ -1758,19 +1769,23 @@ export function Dashboard() {
         
         <div className="mobile-drawer-body">
           <nav className="mobile-nav-list">
-            {NAV_ITEMS.map(item => {
+            {NAV_ITEMS.map((item, idx) => {
               const isLocked = !allowedTabs.has(item.id);
+              const group = getNavGroup(item.id);
+              const prevItem = idx > 0 ? NAV_ITEMS[idx - 1] : null;
+              const prevGroup = prevItem ? getNavGroup(prevItem.id) : null;
+              const showLabel = group && group !== prevGroup;
               return (
-                <button key={item.id}
-                  className={`nav-item ${activeTab === item.id ? 'active' : ''} ${isLocked ? 'locked-nav-item' : ''}`}
-                  onClick={() => handleNavClick(item.id)}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <span key={item.id}>
+                  {showLabel && <div className="nav-group-label">{group}</div>}
+                  <button
+                    className={`nav-item ${activeTab === item.id ? 'active' : ''} ${isLocked ? 'locked-nav-item' : ''}`}
+                    onClick={() => handleNavClick(item.id)}>
                     {item.icon}
                     <span>{item.label}</span>
-                  </div>
-                  {isLocked && <Lock size={14} style={{ opacity: 0.8, color: '#ffb800' }} />}
-                </button>
+                    {isLocked && <Lock size={13} className="lock-icon" />}
+                  </button>
+                </span>
               );
             })}
           </nav>
@@ -1778,10 +1793,10 @@ export function Dashboard() {
 
         <div className="mobile-drawer-footer">
           <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => handleNavClick('settings')}>
-            <Settings size={20} /><span>{t('dash_settings')}</span>
+            <Settings size={17} /><span>{t('dash_settings')}</span>
           </button>
           <button className="nav-item text-error" onClick={handleLogout}>
-            <ExternalLink size={20} /><span>Déconnexion</span>
+            <ExternalLink size={17} /><span>Déconnexion</span>
           </button>
         </div>
       </div>
@@ -1806,24 +1821,31 @@ export function Dashboard() {
         )}
 
         <nav className="sidebar-nav">
-          {NAV_ITEMS.map(item => {
+          {NAV_ITEMS.map((item, idx) => {
             const isLocked = !allowedTabs.has(item.id);
+            const group = getNavGroup(item.id);
+            const prevItem = idx > 0 ? NAV_ITEMS[idx - 1] : null;
+            const prevGroup = prevItem ? getNavGroup(prevItem.id) : null;
+            const showLabel = group && group !== prevGroup;
             return (
-              <button key={item.id}
-                className={`nav-item ${activeTab === item.id ? 'active' : ''} ${isLocked ? 'locked-nav-item' : ''}`}
-                onClick={() => handleNavClick(item.id)}
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <span key={item.id}>
+                {showLabel && <div className="nav-group-label">{group}</div>}
+                <button
+                  className={`nav-item ${activeTab === item.id ? 'active' : ''} ${isLocked ? 'locked-nav-item' : ''}`}
+                  onClick={() => handleNavClick(item.id)}>
                   {item.icon}
                   <span>{item.label}</span>
-                </div>
-                {isLocked && <Lock size={14} style={{ opacity: 0.8, color: '#ffb800' }} />}
-              </button>
+                  {isLocked && <Lock size={13} className="lock-icon" />}
+                </button>
+              </span>
             );
           })}
         </nav>
 
         <div className="sidebar-footer">
+          <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>
+            <Settings size={17} /><span>{t('dash_settings')}</span>
+          </button>
           <button className="nav-item" onClick={() => {
             const prompt = (window as any).deferredPrompt;
             if (prompt) {
@@ -1832,11 +1854,8 @@ export function Dashboard() {
             } else {
               alert(t('pwa_install_info', 'To install this app, please use your browser menu (e.g. "Add to Home Screen" or the Install icon in the address bar).'));
             }
-          }} style={{ color: 'var(--accent-primary)', marginBottom: '0.5rem' }}>
-            <Smartphone size={18} /><span>Installer App</span>
-          </button>
-          <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>
-            <Settings size={18} /><span>{t('dash_settings')}</span>
+          }}>
+            <Smartphone size={17} /><span>Installer App</span>
           </button>
         </div>
       </aside>
@@ -1858,6 +1877,19 @@ export function Dashboard() {
           </div>
           
           <div className="header-actions">
+
+            {/* User Profile */}
+            <div className="user-profile" onClick={() => setActiveTab('settings')} title={authUser?.email || ''}>
+              <div className="avatar">
+                {authUser?.name ? authUser.name.charAt(0).toUpperCase() : <User size={16} />}
+              </div>
+              <div className="user-info desktop-only">
+                <span className="user-name">{authUser?.name || 'Compte'}</span>
+                <span className="user-role">Gérant</span>
+              </div>
+            </div>
+
+            {/* Notifications */}
             <div className="notification-wrapper" style={{ position: 'relative' }}>
               <button 
                 className="icon-btn-ghost" 
@@ -1899,6 +1931,7 @@ export function Dashboard() {
                 </div>
               )}
             </div>
+
           </div>
         </header>
 
@@ -2105,7 +2138,7 @@ export function Dashboard() {
 
               <div className="settings-layout mt-8">
                 {saveError && (
-                  <div className="error-message mb-6" style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '1rem', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div className="error-message mb-6">
                     <ShieldAlert size={20} />
                     <span>{saveError}</span>
                   </div>

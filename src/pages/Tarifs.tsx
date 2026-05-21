@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from 'convex/react';
+import { useConvexAuth } from '@convex-dev/auth/react';
 import { api } from '../../convex/_generated/api';
 import { QrCode, Check, X, ArrowLeft, Zap, Star, Crown, ArrowRight, Percent, Monitor, Smartphone } from 'lucide-react';
 import './Tarifs.css';
@@ -9,7 +10,9 @@ import './Tarifs.css';
 export function Tarifs() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { isAuthenticated, isLoading } = useConvexAuth();
   const user = useQuery(api.users.me);
+  const subject = useQuery(api.users.getSubject);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [scrolled, setScrolled] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<any>(null);
@@ -35,18 +38,19 @@ export function Tarifs() {
   };
 
   const handleCheckout = (plan: typeof plans[0]) => {
-    let userId = localStorage.getItem('qr_restaurant_id');
-    if (!userId && user?.subject) {
-      userId = user.subject;
-      localStorage.setItem('qr_restaurant_id', userId);
-      localStorage.setItem('qr_is_authenticated', 'true');
-    }
-    if (!userId) { navigate('/login'); return; }
+    if (isLoading) return;
+    if (!isAuthenticated) { window.location.href = '/login?redirectTo=/tarifs'; return; }
+    const rawSubject = user?.subject || subject;
+    if (!rawSubject) return;
+    const userId = rawSubject.split('|')[0];
     const baseUrl = plan.checkoutUrl[billingCycle];
     const separator = baseUrl.includes('?') ? '&' : '?';
     const origin = window.location.origin;
     const checkoutUrl = `${baseUrl}${separator}checkout[custom][user_id]=${encodeURIComponent(userId)}&checkout[custom][plan]=${plan.id}&checkout[custom][billing]=${billingCycle}&checkout[success_url]=${encodeURIComponent(origin + '/dashboard')}&checkout[cancel_url]=${encodeURIComponent(origin + '/tarifs')}`;
-    window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
+    const popup = window.open(checkoutUrl, '_blank', 'noopener,noreferrer');
+    if (!popup || popup.closed) {
+      window.location.href = checkoutUrl;
+    }
   };
 
   const monthlyPrices = {
@@ -85,7 +89,7 @@ export function Tarifs() {
     {
       id: 'ultimate', name: t('pricing_ultimate_name'), badge: t('pricing_ultimate_badge'),
       monthlyPrice: monthlyPrices.ultimate, yearlyPrice: 11000, savings: 988,
-      checkoutUrl: { monthly: 'https://saasprojectreview.lemonsqueezy.com/checkout/buy/2c46c199-3fd3-4223-b63b-d06a1056d544', yearly: 'https://saasprojectreview.lemonsqueezy.com/checkout/buy/2c46c199-3fd3-4223-b63b-d06a1056d544' },
+      checkoutUrl: { monthly: 'https://saasprojectreview.lemonsqueezy.com/checkout/buy/2c46c199-3fd3-4223-b63b-d06a1056d544', yearly: 'https://saasprojectreview.lemonsqueezy.com/checkout/buy/8aab7afb-e0e6-4862-afa3-626ce1fae247' },
       desc: t('pricing_ultimate_desc'), icon: <Crown size={22} />,
       features: [
         { text: t('pricing_feature_menu'), included: true },
@@ -178,8 +182,9 @@ export function Tarifs() {
               <button
                 className={`tarifs-card-btn ${plan.popular ? 'tarifs-card-btn--primary' : 'tarifs-card-btn--ghost'}`}
                 onClick={() => handleCheckout(plan)}
+                disabled={isLoading || (isAuthenticated && !user && !subject)}
               >
-                <span>Get Started</span>
+                <span>{isLoading ? '...' : isAuthenticated && !user && !subject ? 'Chargement...' : 'Get Started'}</span>
                 <ArrowRight size={15} />
               </button>
             </div>

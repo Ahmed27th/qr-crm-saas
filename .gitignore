@@ -24,3 +24,18 @@ dist-ssr
 *.sw?
 
 .vercel
+.env.local
+
+# Testing artifacts
+.playwright-mcp/
+screenshot-*
+lemonsqueezy-*
+after-escape
+dashboard-subscription-found
+*.txt
+pro-monthly-share
+products-table-close
+ultimate-yearly-*
+opencode.json
+database.json
+firecrawl.json

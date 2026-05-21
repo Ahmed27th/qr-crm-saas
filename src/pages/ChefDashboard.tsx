@@ -132,7 +132,7 @@ export function ChefDashboard() {
   };
 
   return (
-    <div className="chef-dashboard">
+    <div className="chef-dashboard-page">
       <audio 
         ref={audioRef} 
         src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" 
@@ -141,8 +141,8 @@ export function ChefDashboard() {
       
       <header className="chef-header">
         <div className="chef-logo">
-          <div className="chef-icon-wrapper">
-            <ChefHat className="chef-icon-main" size={24} />
+          <div className="chef-icon-circle">
+            <ChefHat size={20} />
           </div>
           <span>{t('chef_title')}</span>
         </div>
@@ -182,8 +182,8 @@ export function ChefDashboard() {
             {filterOrders('pending').length > 0 ? (
               filterOrders('pending').map(renderOrderCard)
             ) : (
-              <div className="empty-state">
-                <AlertCircle className="empty-icon" size={48} />
+              <div className="chef-empty-state">
+                <AlertCircle className="chef-empty-icon" size={48} />
                 <p>{t('chef_no_orders')}</p>
               </div>
             )}
@@ -202,8 +202,8 @@ export function ChefDashboard() {
             {filterOrders('preparing').length > 0 ? (
               filterOrders('preparing').map(renderOrderCard)
             ) : (
-              <div className="empty-state">
-                <UtensilsCrossed className="empty-icon" size={48} />
+              <div className="chef-empty-state">
+                <UtensilsCrossed className="chef-empty-icon" size={48} />
                 <p>{t('chef_no_orders')}</p>
               </div>
             )}

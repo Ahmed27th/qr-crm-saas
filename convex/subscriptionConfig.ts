@@ -7,19 +7,19 @@
 
 export const VARIANT_ID_TO_PLAN: Record<string, { planId: string; billingPeriod: string }> = {
   // Starter - Monthly
-  "1675406": { planId: "starter", billingPeriod: "monthly" },
+  "1068829": { planId: "starter", billingPeriod: "monthly" },
   // Starter - Yearly
-  "1675438": { planId: "starter", billingPeriod: "yearly" },
+  "1068853": { planId: "starter", billingPeriod: "yearly" },
 
   // Pro - Monthly
-  "1675449": { planId: "pro", billingPeriod: "monthly" },
+  "1068862": { planId: "pro", billingPeriod: "monthly" },
   // Pro - Yearly
-  "1675452": { planId: "pro", billingPeriod: "yearly" },
+  "1068864": { planId: "pro", billingPeriod: "yearly" },
 
   // Ultimate - Monthly
-  "1675460": { planId: "ultimate", billingPeriod: "monthly" },
+  "1068871": { planId: "ultimate", billingPeriod: "monthly" },
   // Ultimate - Yearly
-  "1675468": { planId: "ultimate", billingPeriod: "yearly" },
+  "1068876": { planId: "ultimate", billingPeriod: "yearly" },
 };
 
 /**
