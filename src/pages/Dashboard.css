@@ -401,6 +401,52 @@
   gap: 1.5rem;
 }
 
+.header-plan-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.6rem 0.2rem 0.5rem;
+  border-radius: 100px;
+  background: rgba(var(--accent-primary-rgb), 0.07);
+  border: 1px solid rgba(var(--accent-primary-rgb), 0.15);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--accent-primary);
+  white-space: nowrap;
+}
+
+.header-plan-label {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.header-plan-expiry {
+  font-size: 0.6rem;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.header-manage-sub-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid rgba(var(--accent-primary-rgb), 0.2);
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  color: var(--accent-primary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.header-manage-sub-btn:hover {
+  background: rgba(var(--accent-primary-rgb), 0.15);
+}
+
 .notification-btn {
   position: relative;
 }
@@ -3684,6 +3730,10 @@
 
   .header-actions {
     gap: 0.4rem;
+  }
+
+  .header-plan-badge {
+    display: none;
   }
 
   .user-profile {

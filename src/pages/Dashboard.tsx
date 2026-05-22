@@ -1783,13 +1783,13 @@ export function Dashboard() {
             <span className="plan-badge-dot" />
             <span className="plan-badge-label">{isDemoUltimate ? 'Ultimate (Demo)' : (subscription?.planId === 'ultimate' ? 'Ultimate' : subscription?.planId === 'pro' ? 'Pro' : 'Starter')}</span>
             {!isDemoUltimate && subscription?.currentPeriodEnd && (
-              <span className="plan-badge-expiry" style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', marginTop: '0.15rem', display: 'block' }}>
-                Expires {new Date(subscription.currentPeriodEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+              <span style={{ fontSize: '0.6rem', color: 'var(--text-tertiary)', marginLeft: '0.2rem' }}>
+                Exp. {new Date(subscription.currentPeriodEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
               </span>
             )}
             {!isDemoUltimate && (
-              <button className="manage-sub-btn" onClick={handleManageSubscription} style={{ marginTop: '0.4rem', fontSize: '0.7rem', padding: '0.25rem 0.5rem', background: 'var(--glass-bg)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}>
-                <CreditCard size={12} /> Gérer l'abonnement
+              <button className="manage-sub-btn" onClick={handleManageSubscription} style={{ marginLeft: 'auto', fontSize: '0.65rem', padding: '0.15rem 0.4rem', background: 'transparent', border: '1px solid rgba(var(--accent-primary-rgb),0.2)', borderRadius: '6px', color: 'var(--accent-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                <CreditCard size={10} />
               </button>
             )}
           </div>
@@ -1836,23 +1836,6 @@ export function Dashboard() {
           <div className="brand-logo"><QrCode size={24} color="white" /></div>
           <h2>QR CRM</h2>
         </div>
-
-        {isSubActive && (subscription || isDemoUltimate) && (
-          <div className="sidebar-plan-badge">
-            <span className="plan-badge-dot" />
-            <span className="plan-badge-label">{isDemoUltimate ? 'Ultimate (Demo)' : (subscription?.planId === 'ultimate' ? 'Ultimate' : subscription?.planId === 'pro' ? 'Pro' : 'Starter')}</span>
-            {!isDemoUltimate && subscription?.currentPeriodEnd && (
-              <span className="plan-badge-expiry" style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', marginTop: '0.15rem', display: 'block' }}>
-                Expires {new Date(subscription.currentPeriodEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
-              </span>
-            )}
-            {!isDemoUltimate && (
-              <button className="manage-sub-btn" onClick={handleManageSubscription} style={{ marginTop: '0.4rem', fontSize: '0.7rem', padding: '0.25rem 0.5rem', background: 'var(--glass-bg)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}>
-                <CreditCard size={12} /> Gérer l'abonnement
-              </button>
-            )}
-          </div>
-        )}
 
         <nav className="sidebar-nav">
           {NAV_ITEMS.map((item, idx) => {
@@ -1983,13 +1966,31 @@ export function Dashboard() {
           
           <div className="header-actions">
 
+            {/* Subscription Badge */}
+            {isSubActive && (subscription || isDemoUltimate) && (
+              <div className="header-plan-badge">
+                <span className="plan-badge-dot" />
+                <span className="header-plan-label">{isDemoUltimate ? 'Ultimate (Demo)' : (subscription?.planId === 'ultimate' ? 'Ultimate' : subscription?.planId === 'pro' ? 'Pro' : 'Starter')}</span>
+                {!isDemoUltimate && subscription?.currentPeriodEnd && (
+                  <span className="header-plan-expiry">
+                    Exp. {new Date(subscription.currentPeriodEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </span>
+                )}
+                {!isDemoUltimate && (
+                  <button className="header-manage-sub-btn" onClick={handleManageSubscription} title="Gérer l'abonnement">
+                    <CreditCard size={12} />
+                  </button>
+                )}
+              </div>
+            )}
+
             {/* User Profile */}
             <div className="user-profile" onClick={() => setActiveTab('settings')} title={authUser?.email || ''}>
               <div className="avatar">
-                {authUser?.name ? authUser.name.charAt(0).toUpperCase() : <User size={16} />}
+                {profile.name && profile.name !== 'Chargement...' ? profile.name.charAt(0).toUpperCase() : <User size={16} />}
               </div>
               <div className="user-info desktop-only">
-                <span className="user-name">{authUser?.name || 'Compte'}</span>
+                <span className="user-name">{profile.name && profile.name !== 'Chargement...' ? profile.name : (authUser?.name || 'Compte')}</span>
                 <span className="user-role">Gérant</span>
               </div>
             </div>
