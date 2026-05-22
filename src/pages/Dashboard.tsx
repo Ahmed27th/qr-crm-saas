@@ -616,38 +616,43 @@ export function Dashboard() {
     );
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, callback: (url: string) => void) => {
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, callback: (url: string) => void, mode: 'square' | 'cover' = 'square') => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onload = (event) => {
         const img = new Image();
         img.onload = () => {
-          // Force a perfect 1:1 square aspect ratio
-          const SIZE = 800;
           const canvas = document.createElement('canvas');
-          canvas.width = SIZE;
-          canvas.height = SIZE;
           const ctx = canvas.getContext('2d');
-
-          // Calculate cropping to center the image
-          let sourceX = 0;
-          let sourceY = 0;
-          let sourceSize = Math.min(img.width, img.height);
-
-          if (img.width > img.height) {
-            sourceX = (img.width - img.height) / 2;
+          if (mode === 'cover') {
+            const W = 1200, H = 400;
+            canvas.width = W;
+            canvas.height = H;
+            const srcRatio = img.width / img.height;
+            const dstRatio = W / H;
+            let sourceX = 0, sourceY = 0, sourceW = img.width, sourceH = img.height;
+            if (srcRatio > dstRatio) {
+              sourceW = img.height * dstRatio;
+              sourceX = (img.width - sourceW) / 2;
+            } else {
+              sourceH = img.width / dstRatio;
+              sourceY = (img.height - sourceH) / 2;
+            }
+            ctx?.drawImage(img, sourceX, sourceY, sourceW, sourceH, 0, 0, W, H);
           } else {
-            sourceY = (img.height - img.width) / 2;
+            const SIZE = 800;
+            canvas.width = SIZE;
+            canvas.height = SIZE;
+            let sourceX = 0, sourceY = 0;
+            const sourceSize = Math.min(img.width, img.height);
+            if (img.width > img.height) {
+              sourceX = (img.width - img.height) / 2;
+            } else {
+              sourceY = (img.height - img.width) / 2;
+            }
+            ctx?.drawImage(img, sourceX, sourceY, sourceSize, sourceSize, 0, 0, SIZE, SIZE);
           }
-
-          ctx?.drawImage(
-            img, 
-            sourceX, sourceY, sourceSize, sourceSize, // Source (centered square)
-            0, 0, SIZE, SIZE // Destination (resized square)
-          );
-
-          // Export as compressed JPEG
           const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
           callback(dataUrl);
         };
@@ -2306,7 +2311,12 @@ export function Dashboard() {
                         </div>
                       </label>
                       {settingsForm.aboutImage && (
-                        <img src={settingsForm.aboutImage} className="w-16 h-16 rounded-lg object-cover border border-accent shadow-md" alt="About Preview" />
+                        <>
+                          <img src={settingsForm.aboutImage} className="w-16 h-16 rounded-lg object-cover border border-accent shadow-md" alt="About Preview" />
+                          <button type="button" onClick={() => setSettingsForm({...settingsForm, aboutImage: ''})} className="btn-icon text-red-400 hover:text-red-300 transition-colors" title={t('image_delete')}>
+                            <X size={18} />
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>
@@ -2324,12 +2334,19 @@ export function Dashboard() {
                         accept="image/*" 
                         onChange={(e) => handleImageUpload(e, (url) => setSettingsForm({...settingsForm, logo: url}))}
                       />
-                      <label htmlFor="logo-upload" className="relative group cursor-pointer inline-block">
-                        <img src={settingsForm.logo} className="w-24 h-24 rounded-full border-4 border-accent object-cover shadow-xl" alt="Logo" />
-                        <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <span className="text-white text-xs font-bold">{t('settings_change')}</span>
-                        </div>
-                      </label>
+                      <div className="flex items-end gap-3">
+                        <label htmlFor="logo-upload" className="relative group cursor-pointer inline-block">
+                          <img src={settingsForm.logo} className="w-24 h-24 rounded-full border-4 border-accent object-cover shadow-xl" alt="Logo" />
+                          <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span className="text-white text-xs font-bold">{t('settings_change')}</span>
+                          </div>
+                        </label>
+                        {settingsForm.logo && (
+                          <button type="button" onClick={() => setSettingsForm({...settingsForm, logo: ''})} className="btn-icon text-red-400 hover:text-red-300 transition-colors mb-1" title={t('image_delete')}>
+                            <X size={18} />
+                          </button>
+                        )}
+                      </div>
                       <p className="text-[10px] text-tertiary mt-2">{t('click_to_change')}</p>
                     </div>
                     <div className="cover-edit flex-1">
@@ -2339,14 +2356,21 @@ export function Dashboard() {
                         id="cover-upload" 
                         hidden 
                         accept="image/*" 
-                        onChange={(e) => handleImageUpload(e, (url) => setSettingsForm({...settingsForm, coverImage: url}))}
+                        onChange={(e) => handleImageUpload(e, (url) => setSettingsForm({...settingsForm, coverImage: url}), 'cover')}
                       />
-                      <label htmlFor="cover-upload" className="relative group cursor-pointer block">
-                        <img src={settingsForm.coverImage} className="w-full h-24 rounded-xl object-cover border border-border shadow-lg mb-2" alt="Cover" />
-                        <div className="absolute inset-0 bg-black/20 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                          <span className="text-white text-xs font-bold">{t('settings_change')}</span>
-                        </div>
-                      </label>
+                      <div className="relative">
+                        <label htmlFor="cover-upload" className="relative group cursor-pointer block">
+                          <img src={settingsForm.coverImage} className="w-full h-24 rounded-xl object-cover border border-border shadow-lg mb-2" alt="Cover" />
+                          <div className="absolute inset-0 bg-black/20 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span className="text-white text-xs font-bold">{t('settings_change')}</span>
+                          </div>
+                        </label>
+                        {settingsForm.coverImage && (
+                          <button type="button" onClick={() => setSettingsForm({...settingsForm, coverImage: ''})} className="absolute top-2 right-2 bg-black/50 hover:bg-black/70 text-red-400 rounded-full p-1.5 transition-colors z-10" title={t('image_delete')}>
+                            <X size={16} />
+                          </button>
+                        )}
+                      </div>
                       <p className="text-[10px] text-tertiary">{t('recommended_size')} • {t('click_to_change')}</p>
                     </div>
                   </div>
@@ -2414,7 +2438,12 @@ export function Dashboard() {
                   </div>
                 </label>
                 {editingDish.image && (
-                  <img src={editingDish.image} className="w-24 h-24 rounded-lg object-cover border border-accent shadow-lg" alt="Preview" />
+                  <>
+                    <img src={editingDish.image} className="w-24 h-24 rounded-lg object-cover border border-accent shadow-lg" alt="Preview" />
+                    <button type="button" onClick={() => setEditingDish({...editingDish, image: ''})} className="btn-icon text-red-400 hover:text-red-300 transition-colors" title={t('image_delete')}>
+                      <X size={18} />
+                    </button>
+                  </>
                 )}
               </div>
             </div>
@@ -2508,7 +2537,12 @@ export function Dashboard() {
                   </div>
                 </label>
                 {newDish.image && (
-                  <img src={newDish.image} className="w-24 h-24 rounded-lg object-cover border border-accent shadow-lg" alt="Preview" />
+                  <>
+                    <img src={newDish.image} className="w-24 h-24 rounded-lg object-cover border border-accent shadow-lg" alt="Preview" />
+                    <button type="button" onClick={() => setNewDish({...newDish, image: ''})} className="btn-icon text-red-400 hover:text-red-300 transition-colors" title={t('image_delete')}>
+                      <X size={18} />
+                    </button>
+                  </>
                 )}
               </div>
             </div>

@@ -72,6 +72,7 @@ const menuKeys = {
     cat_entrees: "Appetizers", cat_plats: "Main Dishes", cat_desserts: "Desserts", cat_boissons: "Drinks",
     click_to_change: "Click to change", recommended_size: "Recommended: 1200x400px",
     image_selected: "Image selected ✅", choose_photo: "Choose a photo...",
+    image_delete: "Delete", image_delete_confirm: "Remove this image?",
     error_name_price: "Name and Price required", settings_updated: "Settings updated!",
     qr_desc: "Generate custom 3D QR codes for your establishment.",
     qr_menu_desc: "Direct access to your real-time menu.",
