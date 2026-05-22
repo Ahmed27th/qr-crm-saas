@@ -487,3 +487,94 @@
   color: var(--ot-text);
   background: var(--ot-card-hover);
 }
+
+/* ════════════════════════════════════════════
+   RESPONSIVE — ORDER TRACKING
+════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .ot-container {
+    padding: 0 0.75rem 80px;
+  }
+
+  .ot-header {
+    padding: 1rem 0.75rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .ot-header h1 {
+    font-size: 1.2rem;
+  }
+
+  .ot-status-tracker {
+    padding: 1.25rem 1rem;
+  }
+
+  .ot-status-step {
+    gap: 0.5rem;
+  }
+
+  .ot-status-step .step-label {
+    font-size: 0.7rem;
+  }
+
+  .ot-order-details {
+    padding: 1rem;
+  }
+
+  .ot-order-details h2 {
+    font-size: 1rem;
+  }
+
+  .ot-items-list {
+    gap: 0.5rem;
+  }
+
+  .ot-item-row {
+    padding: 0.5rem 0;
+    font-size: 0.85rem;
+  }
+
+  .ot-map-container {
+    height: 200px;
+  }
+
+  .ot-driver-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+
+  .ot-driver-info .driver-contact {
+    width: 100%;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .ot-driver-info .driver-contact button {
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .ot-header h1 {
+    font-size: 1rem;
+  }
+
+  .ot-status-tracker {
+    padding: 1rem 0.75rem;
+  }
+
+  .ot-status-step .step-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+  }
+
+  .ot-status-step .step-label {
+    font-size: 0.6rem;
+  }
+}

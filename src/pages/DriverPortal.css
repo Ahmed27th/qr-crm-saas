@@ -880,3 +880,121 @@
 .driver-detail-total strong {
   color: var(--dp-green);
 }
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE — DRIVER PORTAL
+═══════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .driver-portal-container {
+    padding: 0 0 80px;
+  }
+
+  .driver-header {
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+
+  .driver-header-top {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .driver-header-top h1 {
+    font-size: 1.25rem;
+    width: 100%;
+    text-align: center;
+  }
+
+  .driver-status-bar {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .delivery-stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5rem;
+    padding: 0 0.75rem;
+  }
+
+  .delivery-stat-card {
+    padding: 0.65rem;
+  }
+
+  .delivery-stat-card h4 {
+    font-size: 0.7rem;
+  }
+
+  .delivery-stat-card .stat-number {
+    font-size: 1.25rem;
+  }
+
+  .driver-main-layout {
+    padding: 0.75rem;
+  }
+
+  .deliveries-list {
+    gap: 0.75rem;
+  }
+
+  .delivery-card {
+    padding: 0.85rem;
+  }
+
+  .delivery-card-header {
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  .delivery-card-header h3 {
+    font-size: 0.95rem;
+    width: 100%;
+  }
+
+  .delivery-card .delivery-status {
+    font-size: 0.7rem;
+  }
+
+  .delivery-card .delivery-address {
+    font-size: 0.8rem;
+  }
+
+  .driver-bottom-nav {
+    padding: 0.35rem 0;
+    gap: 0;
+  }
+
+  .driver-bottom-nav button {
+    flex-direction: column;
+    gap: 0.1rem;
+    padding: 0.3rem 0.4rem;
+    font-size: 0.55rem;
+    min-width: 44px;
+  }
+
+  .driver-bottom-nav button svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .delivery-stats {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
+  }
+
+  .delivery-card-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .delivery-card-actions button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .driver-header {
+    padding: 0.75rem;
+  }
+}

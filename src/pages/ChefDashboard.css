@@ -348,3 +348,72 @@
   opacity: 0.2;
   color: var(--text-tertiary);
 }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .chef-container {
+    padding: 1rem 0.75rem 80px;
+  }
+  .chef-header {
+    padding: 1rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .chef-header h1 {
+    font-size: 1.2rem;
+    width: 100%;
+  }
+  .chef-stats {
+    gap: 0.5rem;
+  }
+  .chef-stat-card {
+    padding: 0.65rem;
+    min-width: 60px;
+  }
+  .chef-stat-card .chef-stat-number {
+    font-size: 1.1rem;
+  }
+  .chef-stat-card .chef-stat-label {
+    font-size: 0.6rem;
+  }
+  .chef-orders-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  .chef-order-card {
+    padding: 14px;
+  }
+  .chef-order-card .chef-order-number {
+    font-size: 0.9rem;
+  }
+  .chef-order-card .chef-order-meta {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+  .chef-order-card .chef-order-items {
+    font-size: 0.8rem;
+  }
+  .chef-order-card .chef-order-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .chef-order-card .chef-order-actions button {
+    width: 100%;
+    justify-content: center;
+    padding: 0.6rem;
+    font-size: 0.8rem;
+  }
+  .chef-tabs {
+    overflow-x: auto;
+    gap: 0.25rem;
+    scrollbar-width: none;
+  }
+  .chef-tabs::-webkit-scrollbar {
+    display: none;
+  }
+  .chef-tab {
+    font-size: 0.75rem;
+    padding: 0.4rem 0.75rem;
+    white-space: nowrap;
+  }
+}

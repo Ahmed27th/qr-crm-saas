@@ -1551,14 +1551,21 @@ export function Dashboard() {
   );
 
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [dismissCheckout, setDismissCheckout] = useState(false);
+  const [checkoutTimedOut, setCheckoutTimedOut] = useState(false);
+
+  // If checkout success but subscription hasn't appeared in 30s, show contact-support message
+  useEffect(() => {
+    if (checkoutSuccess && !isSubActive && !dismissCheckout) {
+      const timer = setTimeout(() => setCheckoutTimedOut(true), 30000);
+      return () => clearTimeout(timer);
+    }
+    if (isSubActive) setCheckoutTimedOut(false);
+  }, [checkoutSuccess, isSubActive, dismissCheckout]);
 
   useEffect(() => {
     if (isAuth && authUser && !authUser.subject) return;
-    if (isAuth && authUser?.subject && !isSubActive) {
-      if (checkoutSuccess) {
-        const timer = setTimeout(() => navigate('/tarifs'), 5000);
-        return () => clearTimeout(timer);
-      }
+    if (isAuth && authUser?.subject && !isSubActive && !checkoutSuccess) {
       navigate('/tarifs');
     }
   }, [isAuth, authUser, isSubActive, navigate, checkoutSuccess]);
@@ -1801,7 +1808,8 @@ export function Dashboard() {
                   {showLabel && <div className="nav-group-label">{group}</div>}
                   <button
                     className={`nav-item ${activeTab === item.id ? 'active' : ''} ${isLocked ? 'locked-nav-item' : ''}`}
-                    onClick={() => handleNavClick(item.id)}>
+                    onClick={() => handleNavClick(item.id)}
+                    data-tip={item.label}>
                     {item.icon}
                     <span>{item.label}</span>
                     {isLocked && <Lock size={13} className="lock-icon" />}
@@ -1813,7 +1821,7 @@ export function Dashboard() {
         </div>
 
         <div className="mobile-drawer-footer">
-          <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => handleNavClick('settings')}>
+          <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => handleNavClick('settings')} data-tip={t('dash_settings')}>
             <Settings size={17} /><span>{t('dash_settings')}</span>
           </button>
           <button className="nav-item text-error" onClick={handleLogout}>
@@ -1858,7 +1866,8 @@ export function Dashboard() {
                 {showLabel && <div className="nav-group-label">{group}</div>}
                 <button
                   className={`nav-item ${activeTab === item.id ? 'active' : ''} ${isLocked ? 'locked-nav-item' : ''}`}
-                  onClick={() => handleNavClick(item.id)}>
+                  onClick={() => handleNavClick(item.id)}
+                  data-tip={item.label}>
                   {item.icon}
                   <span>{item.label}</span>
                   {isLocked && <Lock size={13} className="lock-icon" />}
@@ -1869,7 +1878,7 @@ export function Dashboard() {
         </nav>
 
         <div className="sidebar-footer">
-          <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>
+          <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')} data-tip={t('dash_settings')}>
             <Settings size={17} /><span>{t('dash_settings')}</span>
           </button>
           <button className="nav-item" onClick={() => {
@@ -1909,6 +1918,52 @@ export function Dashboard() {
           }
           return null;
         })()
+      )}
+
+      {/* Checkout success banner — pending */}
+      {checkoutSuccess && !dismissCheckout && !isSubActive && !checkoutTimedOut && (
+        <div className="glass-panel" style={{ margin: '0 1.5rem', padding: '1rem 1.25rem', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.35)', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(34,197,94,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div style={{ flex: 1 }}>
+            <strong style={{ color: '#22c55e', fontSize: '0.95rem', display: 'block' }}>Paiement confirmé !</strong>
+            <span style={{ color: 'var(--text-secondary)', fontSize: '0.82rem' }}>Merci pour votre abonnement. L'activation de votre compte est en cours...</span>
+          </div>
+          <div className="spinner" style={{ width: 20, height: 20, border: '2px solid rgba(34,197,94,0.3)', borderTopColor: '#22c55e', borderRadius: '50%', animation: 'spin 0.8s linear infinite', flexShrink: 0 }} />
+        </div>
+      )}
+
+      {/* Checkout success banner — timed out */}
+      {checkoutSuccess && !dismissCheckout && !isSubActive && checkoutTimedOut && (
+        <div className="glass-panel" style={{ margin: '0 1.5rem', padding: '1rem 1.25rem', background: 'rgba(234,179,8,0.12)', border: '1px solid rgba(234,179,8,0.35)', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(234,179,8,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <span style={{ fontSize: '1.1rem' }}>⏳</span>
+          </div>
+          <div style={{ flex: 1 }}>
+            <strong style={{ color: 'var(--warning)', fontSize: '0.95rem', display: 'block' }}>Activation en attente</strong>
+            <span style={{ color: 'var(--text-secondary)', fontSize: '0.82rem' }}>Votre paiement a bien été reçu mais l'activation prend plus de temps que prévu. Si le problème persiste, contactez le support.</span>
+          </div>
+          <button onClick={() => setDismissCheckout(true)} style={{ background: 'rgba(234,179,8,0.2)', border: 'none', borderRadius: '8px', padding: '0.4rem 0.75rem', color: 'var(--warning)', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, flexShrink: 0 }}>
+            OK
+          </button>
+        </div>
+      )}
+
+      {/* Success banner after subscription activates */}
+      {checkoutSuccess && !dismissCheckout && isSubActive && (
+        <div className="glass-panel" style={{ margin: '0 1.5rem', padding: '1rem 1.25rem', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.35)', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(34,197,94,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <div style={{ flex: 1 }}>
+            <strong style={{ color: '#22c55e', fontSize: '0.95rem', display: 'block' }}>Abonnement activé !</strong>
+            <span style={{ color: 'var(--text-secondary)', fontSize: '0.82rem' }}>Votre abonnement {subscription?.planId === 'ultimate' ? 'Ultimate' : subscription?.planId === 'pro' ? 'Pro' : 'Starter'} est maintenant actif. Profitez de toutes les fonctionnalités !</span>
+          </div>
+          <button onClick={() => setDismissCheckout(true)} style={{ background: 'rgba(34,197,94,0.2)', border: 'none', borderRadius: '8px', padding: '0.4rem 0.75rem', color: '#22c55e', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, flexShrink: 0 }}>
+            OK
+          </button>
+        </div>
       )}
 
       {/* Main Content */}

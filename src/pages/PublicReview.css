@@ -237,3 +237,28 @@
   transition: color 0.2s;
 }
 .review-back-btn:hover { color: var(--accent-primary); }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .review-container {
+    padding: 1rem;
+  }
+  .review-card {
+    padding: 1.25rem;
+    border-radius: 16px;
+  }
+  .review-card .stars {
+    font-size: 1.5rem;
+  }
+  .review-card .review-input {
+    min-height: 80px;
+  }
+  .review-card .review-submit {
+    width: 100%;
+    justify-content: center;
+  }
+  .review-card .review-skip {
+    width: 100%;
+    text-align: center;
+  }
+}

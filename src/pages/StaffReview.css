@@ -332,3 +332,29 @@
   background: #f5f5f5;
   color: var(--sr-gold);
 }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .sr-container {
+    padding: 1rem;
+  }
+  .sr-container .sr-title {
+    font-size: 1.2rem;
+  }
+  .sr-reviews-list {
+    gap: 0.75rem;
+  }
+  .sr-review-card {
+    padding: 1rem;
+  }
+  .sr-review-card .sr-review-header {
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+  .sr-review-stars {
+    font-size: 1rem;
+  }
+  .sr-review-comment {
+    font-size: 0.85rem;
+  }
+}

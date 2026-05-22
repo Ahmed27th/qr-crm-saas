@@ -129,3 +129,49 @@
   color: #fff;
   border: 2px solid var(--border-color);
 }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .booking-container {
+    padding: 1rem;
+    align-items: flex-start;
+    padding-top: 2rem;
+  }
+  .booking-card {
+    padding: 1.25rem;
+    border-radius: 16px;
+  }
+  .booking-header h1 {
+    font-size: 1.3rem;
+  }
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  .form-section {
+    padding: 1rem;
+  }
+  .input-group label {
+    font-size: 0.8rem;
+  }
+  .input-group input,
+  .input-group select {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.9rem;
+  }
+  .submit-booking-btn {
+    width: 100%;
+    justify-content: center;
+    font-size: 1rem;
+    padding: 0.85rem;
+  }
+  .booking-logo-placeholder,
+  .booking-logo {
+    width: 64px;
+    height: 64px;
+    font-size: 1.4rem;
+  }
+  .success-card {
+    padding: 2rem 1.25rem;
+  }
+}
