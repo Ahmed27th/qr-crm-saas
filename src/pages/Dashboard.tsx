@@ -2294,16 +2294,15 @@ export function Dashboard() {
 
                   <div className="premium-input-group mt-6">
                     <label>{t('settings_about_image', 'Photo de l\'annonce / À propos')}</label>
-                    <input 
-                      type="file" 
-                      id="about-image-upload" 
-                      hidden 
-                      accept="image/*" 
-                      onChange={(e) => handleImageUpload(e, (url) => setSettingsForm({...settingsForm, aboutImage: url}))}
-                    />
                     <div className="flex gap-4 items-center">
-                      <label htmlFor="about-image-upload" className="flex-1">
-                        <div className="premium-input-wrapper cursor-pointer group">
+                      <label className="flex-1 cursor-pointer">
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          style={{ display: 'none' }}
+                          onChange={(e) => handleImageUpload(e, (url) => setSettingsForm({...settingsForm, aboutImage: url}))}
+                        />
+                        <div className="premium-input-wrapper group">
                           <ImageIcon className="input-icon group-hover:text-accent transition-colors" size={18} />
                           <div className="premium-input flex items-center text-tertiary">
                             {settingsForm.aboutImage ? t('image_selected') : t('choose_photo')}
@@ -2327,15 +2326,14 @@ export function Dashboard() {
                   <div className="branding-edit flex gap-8">
                     <div className="logo-edit">
                       <label className="block mb-2 text-sm text-tertiary">{t('settings_logo')}</label>
-                      <input 
-                        type="file" 
-                        id="logo-upload" 
-                        hidden 
-                        accept="image/*" 
-                        onChange={(e) => handleImageUpload(e, (url) => setSettingsForm({...settingsForm, logo: url}))}
-                      />
                       <div className="flex items-end gap-3">
-                        <label htmlFor="logo-upload" className="relative group cursor-pointer inline-block">
+                        <label className="relative group cursor-pointer inline-block">
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            style={{ display: 'none' }}
+                            onChange={(e) => handleImageUpload(e, (url) => setSettingsForm({...settingsForm, logo: url}))}
+                          />
                           <img src={settingsForm.logo} className="w-24 h-24 rounded-full border-4 border-accent object-cover shadow-xl" alt="Logo" />
                           <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                             <span className="text-white text-xs font-bold">{t('settings_change')}</span>
@@ -2351,15 +2349,14 @@ export function Dashboard() {
                     </div>
                     <div className="cover-edit flex-1">
                       <label className="block mb-2 text-sm text-tertiary">{t('settings_cover')}</label>
-                      <input 
-                        type="file" 
-                        id="cover-upload" 
-                        hidden 
-                        accept="image/*" 
-                        onChange={(e) => handleImageUpload(e, (url) => setSettingsForm({...settingsForm, coverImage: url}), 'cover')}
-                      />
                       <div className="relative">
-                        <label htmlFor="cover-upload" className="relative group cursor-pointer block">
+                        <label className="relative group cursor-pointer block">
+                          <input 
+                            type="file" 
+                            accept="image/*" 
+                            style={{ display: 'none' }}
+                            onChange={(e) => handleImageUpload(e, (url) => setSettingsForm({...settingsForm, coverImage: url}), 'cover')}
+                          />
                           <img src={settingsForm.coverImage} className="w-full h-24 rounded-xl object-cover border border-border shadow-lg mb-2" alt="Cover" />
                           <div className="absolute inset-0 bg-black/20 rounded-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                             <span className="text-white text-xs font-bold">{t('settings_change')}</span>
@@ -2421,16 +2418,15 @@ export function Dashboard() {
 
             <div className="premium-input-group mb-10">
               <label>{t('menu_image')}</label>
-              <input 
-                type="file" 
-                id="edit-dish-image-upload" 
-                hidden 
-                accept="image/*" 
-                onChange={(e) => handleImageUpload(e, (url) => setEditingDish({...editingDish, image: url}))}
-              />
               <div className="flex gap-4 items-center">
-                <label htmlFor="edit-dish-image-upload" className="flex-1">
-                  <div className="premium-input-wrapper cursor-pointer group">
+                <label className="flex-1 cursor-pointer">
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    style={{ display: 'none' }}
+                    onChange={(e) => handleImageUpload(e, (url) => setEditingDish({...editingDish, image: url}))}
+                  />
+                  <div className="premium-input-wrapper group">
                     <ImageIcon className="input-icon group-hover:text-accent transition-colors" size={18} />
                     <div className="premium-input flex items-center text-tertiary">
                       {editingDish.image ? t('image_selected') : t('choose_photo')}
@@ -2520,16 +2516,15 @@ export function Dashboard() {
 
             <div className="premium-input-group mb-10">
               <label>{t('menu_image')}</label>
-              <input 
-                type="file" 
-                id="dish-image-upload" 
-                hidden 
-                accept="image/*" 
-                onChange={(e) => handleImageUpload(e, (url) => setNewDish({...newDish, image: url}))}
-              />
               <div className="flex gap-4 items-center">
-                <label htmlFor="dish-image-upload" className="flex-1">
-                  <div className="premium-input-wrapper cursor-pointer group">
+                <label className="flex-1 cursor-pointer">
+                  <input 
+                    type="file" 
+                    accept="image/*" 
+                    style={{ display: 'none' }}
+                    onChange={(e) => handleImageUpload(e, (url) => setNewDish({...newDish, image: url}))}
+                  />
+                  <div className="premium-input-wrapper group">
                     <ImageIcon className="input-icon group-hover:text-accent transition-colors" size={18} />
                     <div className="premium-input flex items-center text-tertiary">
                       {newDish.image ? t('image_selected') : t('choose_photo')}
