@@ -1829,6 +1829,17 @@ export function Dashboard() {
           <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => handleNavClick('settings')} data-tip={t('dash_settings')}>
             <Settings size={17} /><span>{t('dash_settings')}</span>
           </button>
+          <button className="nav-item" onClick={() => {
+            const prompt = (window as any).deferredPrompt;
+            if (prompt) {
+              prompt.prompt();
+              (window as any).deferredPrompt = null;
+            } else {
+              alert(t('pwa_install_info', 'To install this app, please use your browser menu (e.g. "Add to Home Screen" or the Install icon in the address bar).'));
+            }
+          }}>
+            <Smartphone size={17} /><span>Installer App</span>
+          </button>
           <button className="nav-item text-error" onClick={handleLogout}>
             <ExternalLink size={17} /><span>Déconnexion</span>
           </button>
