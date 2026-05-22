@@ -15,6 +15,7 @@ import type * as http from "../http.js";
 import type * as menu from "../menu.js";
 import type * as orders from "../orders.js";
 import type * as profiles from "../profiles.js";
+import type * as push from "../push.js";
 import type * as reservations from "../reservations.js";
 import type * as reviews from "../reviews.js";
 import type * as staff from "../staff.js";
@@ -38,6 +39,7 @@ declare const fullApi: ApiFromModules<{
   menu: typeof menu;
   orders: typeof orders;
   profiles: typeof profiles;
+  push: typeof push;
   reservations: typeof reservations;
   reviews: typeof reviews;
   staff: typeof staff;

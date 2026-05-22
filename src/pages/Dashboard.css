@@ -198,6 +198,12 @@
   flex-shrink: 0;
 }
 
+.brand-logo-img {
+  width: 20px;
+  height: 20px;
+  filter: brightness(0) invert(1);
+}
+
 @keyframes logoPulse {
   0%, 100% { box-shadow: 0 3px 12px rgba(var(--accent-primary-rgb), 0.35); }
   50% { box-shadow: 0 3px 20px rgba(var(--accent-primary-rgb), 0.5); }

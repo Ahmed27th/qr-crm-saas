@@ -68,8 +68,15 @@
   letter-spacing: -0.5px;
 }
 
-.landing-logo svg {
+.landing-logo svg,
+.landing-logo-img {
   color: var(--accent-primary);
+  width: 22px;
+  height: 22px;
+}
+
+.landing-logo-img {
+  display: block;
 }
 
 .landing-nav-links {
@@ -525,6 +532,12 @@
   font-weight: 700;
   color: var(--accent-primary);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.phone-app-logo-img {
+  width: 16px;
+  height: 16px;
+  display: block;
 }
 
 .phone-menu-items {

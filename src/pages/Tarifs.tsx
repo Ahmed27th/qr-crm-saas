@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery, useAction } from 'convex/react';
 import { useConvexAuth } from '@convex-dev/auth/react';
 import { api } from '../../convex/_generated/api';
-import { QrCode, Check, X, ArrowLeft, Zap, Star, Crown, ArrowRight, Percent, Monitor, Smartphone } from 'lucide-react';
+import { Check, X, ArrowLeft, Zap, Star, Crown, ArrowRight, Percent, Monitor, Smartphone } from 'lucide-react';
 import './Tarifs.css';
 
 export function Tarifs() {
@@ -107,7 +107,7 @@ export function Tarifs() {
       <nav className={`tarifs-nav ${scrolled ? 'scrolled' : ''}`}>
         <div className="tarifs-nav-inner">
           <button className="tarifs-logo" onClick={() => navigate('/')}>
-            <QrCode size={22} />
+            <img src="/favicon.svg" className="tarifs-logo-img" alt="QR CRM" />
             <span>QR CRM</span>
           </button>
           <div className="tarifs-nav-right">
@@ -213,7 +213,7 @@ export function Tarifs() {
         <div className="landing-footer-inner">
           <div className="landing-footer-brand">
             <div className="landing-logo">
-              <QrCode size={20} />
+              <img src="/favicon.svg" className="landing-logo-img" alt="QR CRM" />
               <span>QR CRM</span>
             </div>
             <p>{t('hero_subtitle')}</p>

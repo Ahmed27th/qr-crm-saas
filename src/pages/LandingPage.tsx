@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { QrCode, ArrowRight, CheckCircle2, ChevronRight, Clock, Star, Smartphone, Monitor, Menu, X } from 'lucide-react';
+import { ArrowRight, CheckCircle2, ChevronRight, Clock, Star, Smartphone, Monitor, Menu, X } from 'lucide-react';
 import './LandingPage.css';
 
 function useInView(threshold = 0.15) {
@@ -89,7 +89,7 @@ export function LandingPage() {
         <div className="landing-nav-inner">
           <div className="landing-nav-left">
             <div className="landing-logo">
-              <QrCode size={22} />
+              <img src="/favicon.svg" className="landing-logo-img" alt="QR CRM" />
               <span>QR CRM</span>
             </div>
             <div className="landing-nav-links">
@@ -169,7 +169,7 @@ export function LandingPage() {
                 </div>
                 <div className="phone-app">
                   <div className="phone-app-header">
-                    <QrCode size={16} />
+                    <img src="/favicon.svg" className="phone-app-logo-img" alt="" />
                     <span>QR CRM</span>
                   </div>
                   <div className="phone-menu-items">
@@ -255,7 +255,7 @@ export function LandingPage() {
         <div className="landing-footer-inner">
           <div className="landing-footer-brand">
             <div className="landing-logo">
-              <QrCode size={20} />
+              <img src="/favicon.svg" className="landing-logo-img" alt="QR CRM" />
               <span>QR CRM</span>
             </div>
             <p>{t('hero_subtitle')}</p>

@@ -1781,7 +1781,7 @@ export function Dashboard() {
       <div className={`mobile-nav-drawer ${mobileNavOpen ? 'open' : ''}`}>
         <div className="mobile-drawer-header">
           <div className="sidebar-brand" style={{ margin: 0 }}>
-            <div className="brand-logo"><QrCode size={20} color="white" /></div>
+            <div className="brand-logo"><img src="/favicon.svg" className="brand-logo-img" alt="QR CRM" /></div>
             <h2>QR CRM</h2>
           </div>
           <button className="icon-btn-ghost" onClick={() => setMobileNavOpen(false)} aria-label={t('close')} style={{ border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.4rem' }}>
@@ -1854,10 +1854,10 @@ export function Dashboard() {
 
       {/* ── Desktop Sidebar ── */}
       <aside className="dashboard-sidebar glass-panel">
-        <div className="sidebar-brand">
-          <div className="brand-logo"><QrCode size={24} color="white" /></div>
-          <h2>QR CRM</h2>
-        </div>
+          <div className="sidebar-brand">
+            <div className="brand-logo"><img src="/favicon.svg" className="brand-logo-img" alt="QR CRM" /></div>
+            <h2>QR CRM</h2>
+          </div>
 
         <nav className="sidebar-nav">
           {NAV_ITEMS.map((item, idx) => {

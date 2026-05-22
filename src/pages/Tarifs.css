@@ -53,8 +53,15 @@
   cursor: pointer;
 }
 
-.tarifs-logo svg {
+.tarifs-logo svg,
+.tarifs-logo-img {
   color: var(--accent-primary);
+  width: 22px;
+  height: 22px;
+}
+
+.tarifs-logo-img {
+  display: block;
 }
 
 .tarifs-nav-right {

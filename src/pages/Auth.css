@@ -189,6 +189,13 @@
   animation: logoPulse 4s infinite ease-in-out;
 }
 
+.auth-brand-img {
+  width: 28px;
+  height: 28px;
+  filter: brightness(0) invert(1);
+  animation: logoPulse 4s infinite ease-in-out;
+}
+
 @keyframes logoPulse {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.05); }

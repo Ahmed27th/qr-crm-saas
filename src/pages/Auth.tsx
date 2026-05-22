@@ -174,7 +174,7 @@ export function Auth() {
           
           <div className="auth-brand-header auth-animate-fade-in">
             <div className="auth-brand-logo">
-              <QrCode size={28} className="logo-icon" />
+              <img src="/favicon.svg" className="auth-brand-img" alt="QR CRM" />
               <div className="logo-glow"></div>
             </div>
             <span className="auth-brand-title">QR CRM</span>
