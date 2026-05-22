@@ -3,13 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { 
   LayoutDashboard, ShoppingBag, Utensils, QrCode, Settings,
   Bell, Search, Plus, CheckCircle, Clock, TrendingUp, User, Users, Star, MessageSquare, ExternalLink, ShieldAlert, Smartphone, Calendar, Mail, Trash2, X, Tag, Image as ImageIcon, Link as LinkIcon, FileText, Sparkles,
-  BarChart3, Activity, PieChart as PieChartIcon, Target, Phone, Truck, Crown, Lock
+  BarChart3, Activity, PieChart as PieChartIcon, Target, Phone, Truck, Crown, Lock, CreditCard
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   PieChart, Pie, Cell, AreaChart, Area 
 } from 'recharts';
-import { useQuery } from 'convex/react';
+import { useQuery, useAction } from 'convex/react';
 import { useConvexAuth } from '@convex-dev/auth/react';
 import { api } from '../../convex/_generated/api';
 import { DataStore } from '../dataStore';
@@ -34,6 +34,16 @@ export function Dashboard() {
   const isDemoUltimate = demoParam === 'ultimate';
   const isSubActive = isDemoUltimate || subscription?.status === 'active';
   const planId = isDemoUltimate ? 'ultimate' : (isSubActive ? (subscription?.planId ?? 'none') : 'none');
+  const createPortal = useAction(api.stripe.createPortalSession);
+
+  const handleManageSubscription = async () => {
+    try {
+      const { url } = await createPortal({ returnUrl: window.location.href });
+      window.location.href = url;
+    } catch (err) {
+      console.error("Failed to open portal:", err);
+    }
+  };
 
   const PLAN_TABS: Record<string, Set<string>> = {
     starter: new Set(['overview', 'reviews', 'collection', 'qr', 'settings']),
@@ -1770,6 +1780,11 @@ export function Dashboard() {
                 Expires {new Date(subscription.currentPeriodEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
               </span>
             )}
+            {!isDemoUltimate && (
+              <button className="manage-sub-btn" onClick={handleManageSubscription} style={{ marginTop: '0.4rem', fontSize: '0.7rem', padding: '0.25rem 0.5rem', background: 'var(--glass-bg)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}>
+                <CreditCard size={12} /> Gérer l'abonnement
+              </button>
+            )}
           </div>
         )}
         
@@ -1823,6 +1838,11 @@ export function Dashboard() {
                 Expires {new Date(subscription.currentPeriodEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
               </span>
             )}
+            {!isDemoUltimate && (
+              <button className="manage-sub-btn" onClick={handleManageSubscription} style={{ marginTop: '0.4rem', fontSize: '0.7rem', padding: '0.25rem 0.5rem', background: 'var(--glass-bg)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-secondary)', cursor: 'pointer', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem' }}>
+                <CreditCard size={12} /> Gérer l'abonnement
+              </button>
+            )}
           </div>
         )}
 
@@ -1866,6 +1886,30 @@ export function Dashboard() {
         </div>
       </aside>
 
+
+      {/* Expiring Soon Banner */}
+      {isSubActive && !isDemoUltimate && subscription?.currentPeriodEnd && (
+        (() => {
+          const daysLeft = Math.ceil((subscription.currentPeriodEnd - Date.now()) / 86400000);
+          if (daysLeft <= 0) {
+            return (
+              <div className="glass-panel" style={{ margin: '0 1.5rem', padding: '0.75rem 1rem', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <span style={{ color: 'var(--danger)', fontSize: '0.85rem', fontWeight: 500 }}>⚠ Votre abonnement a expiré. Renouvelez-le pour continuer à utiliser toutes les fonctionnalités.</span>
+                <button className="manage-sub-btn" onClick={handleManageSubscription} style={{ fontSize: '0.8rem', padding: '0.35rem 0.75rem', background: 'var(--accent)', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', whiteSpace: 'nowrap' }}>Renouveler</button>
+              </div>
+            );
+          }
+          if (daysLeft <= 7) {
+            return (
+              <div className="glass-panel" style={{ margin: '0 1.5rem', padding: '0.75rem 1rem', background: 'rgba(234,179,8,0.1)', border: '1px solid rgba(234,179,8,0.3)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <span style={{ color: 'var(--warning)', fontSize: '0.85rem', fontWeight: 500 }}>⚠ Votre abonnement expire dans {daysLeft} jour{daysLeft > 1 ? 's' : ''}. Gérez votre abonnement pour éviter toute interruption.</span>
+                <button className="manage-sub-btn" onClick={handleManageSubscription} style={{ fontSize: '0.8rem', padding: '0.35rem 0.75rem', background: 'var(--accent)', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', whiteSpace: 'nowrap' }}>Gérer</button>
+              </div>
+            );
+          }
+          return null;
+        })()
+      )}
 
       {/* Main Content */}
       <main className="dashboard-main">

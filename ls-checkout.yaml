@@ -1,0 +1,28 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e5]:
+    - generic [ref=e8]:
+      - text: Le mode test est actuellement activé.
+      - link "Aide↗" [ref=e9] [cursor=pointer]:
+        - /url: https://docs.lemonsqueezy.com/help/getting-started/test-mode/
+    - generic [ref=e11]:
+      - generic [ref=e12]:
+        - generic "Saas Project Review" [ref=e15]:
+          - img [ref=e16]
+        - paragraph [ref=e19]:
+          - link "Saas Project Review" [ref=e20] [cursor=pointer]:
+            - /url: https://saasprojectreview.lemonsqueezy.com
+      - generic [ref=e23]:
+        - generic [ref=e24]:
+          - generic [ref=e25]
+          - paragraph [ref=e29]: 499,00 MAD facturation chaque mois
+        - list [ref=e32]:
+          - listitem [ref=e33]
+        - paragraph [ref=e37]: Automatisation complète.
+      - generic [ref=e40]:
+        - generic [ref=e41]:
+          - generic [ref=e42]
+          - generic [ref=e46]
+        - contentinfo [ref=e74]:
+          - generic [ref=e76]
+  - iframe [ref=e92]:
+    

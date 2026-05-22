@@ -1,0 +1,149 @@
+- generic [ref=e142]:
+  - generic [ref=e143]:
+    - generic [ref=e144]:
+      - generic [ref=e145]:
+        - img [ref=e147]
+        - heading "QR CRM" [level=2] [ref=e153]
+      - button "close" [ref=e154] [cursor=pointer]:
+        - img [ref=e155]
+    - navigation [ref=e159]:
+      - button "Overview" [ref=e161] [cursor=pointer]:
+        - img [ref=e162]
+        - generic [ref=e167]: Overview
+        - img [ref=e168]
+      - generic [ref=e171]:
+        - generic: Opérations
+        - button "Analytics" [ref=e172] [cursor=pointer]:
+          - img [ref=e173]
+          - generic [ref=e175]: Analytics
+          - img [ref=e176]
+      - button "Orders" [ref=e180] [cursor=pointer]:
+        - img [ref=e181]
+        - generic [ref=e184]: Orders
+        - img [ref=e185]
+      - button "Collection" [ref=e189] [cursor=pointer]:
+        - img [ref=e190]
+        - generic [ref=e192]: Collection
+        - img [ref=e193]
+      - button "Reservations" [ref=e197] [cursor=pointer]:
+        - img [ref=e198]
+        - generic [ref=e200]: Reservations
+        - img [ref=e201]
+      - generic [ref=e204]:
+        - generic: Équipe
+        - button "Reviews" [ref=e205] [cursor=pointer]:
+          - img [ref=e206]
+          - generic [ref=e208]: Reviews
+          - img [ref=e209]
+      - button "Staff" [ref=e213] [cursor=pointer]:
+        - img [ref=e214]
+        - generic [ref=e219]: Staff
+        - img [ref=e220]
+      - button "Drivers" [ref=e224] [cursor=pointer]:
+        - img [ref=e225]
+        - generic [ref=e230]: Drivers
+        - img [ref=e231]
+      - generic [ref=e234]:
+        - generic: Contenu
+        - button "Menu" [ref=e235] [cursor=pointer]:
+          - img [ref=e236]
+          - generic [ref=e239]: Menu
+          - img [ref=e240]
+      - button "QR" [ref=e244] [cursor=pointer]:
+        - img [ref=e245]
+        - generic [ref=e251]: QR
+        - img [ref=e252]
+      - button "Settings" [ref=e256] [cursor=pointer]:
+        - img [ref=e257]
+        - generic [ref=e260]: Settings
+        - img [ref=e261]
+    - generic [ref=e264]:
+      - button "Settings" [ref=e265] [cursor=pointer]:
+        - img [ref=e266]
+        - generic [ref=e269]: Settings
+      - button "Déconnexion" [ref=e270] [cursor=pointer]:
+        - img [ref=e271]
+        - generic [ref=e275]: Déconnexion
+  - complementary [ref=e276]:
+    - generic [ref=e277]:
+      - img [ref=e279]
+      - heading "QR CRM" [level=2] [ref=e285]
+    - navigation [ref=e286]:
+      - button "Overview" [ref=e288] [cursor=pointer]:
+        - img [ref=e289]
+        - generic [ref=e294]: Overview
+        - img [ref=e295]
+      - generic [ref=e298]:
+        - generic: Opérations
+        - button "Analytics" [ref=e299] [cursor=pointer]:
+          - img [ref=e300]
+          - generic [ref=e302]: Analytics
+          - img [ref=e303]
+      - button "Orders" [ref=e307] [cursor=pointer]:
+        - img [ref=e308]
+        - generic [ref=e311]: Orders
+        - img [ref=e312]
+      - button "Collection" [ref=e316] [cursor=pointer]:
+        - img [ref=e317]
+        - generic [ref=e319]: Collection
+        - img [ref=e320]
+      - button "Reservations" [ref=e324] [cursor=pointer]:
+        - img [ref=e325]
+        - generic [ref=e327]: Reservations
+        - img [ref=e328]
+      - generic [ref=e331]:
+        - generic: Équipe
+        - button "Reviews" [ref=e332] [cursor=pointer]:
+          - img [ref=e333]
+          - generic [ref=e335]: Reviews
+          - img [ref=e336]
+      - button "Staff" [ref=e340] [cursor=pointer]:
+        - img [ref=e341]
+        - generic [ref=e346]: Staff
+        - img [ref=e347]
+      - button "Drivers" [ref=e351] [cursor=pointer]:
+        - img [ref=e352]
+        - generic [ref=e357]: Drivers
+        - img [ref=e358]
+      - generic [ref=e361]:
+        - generic: Contenu
+        - button "Menu" [ref=e362] [cursor=pointer]:
+          - img [ref=e363]
+          - generic [ref=e366]: Menu
+          - img [ref=e367]
+      - button "QR" [ref=e371] [cursor=pointer]:
+        - img [ref=e372]
+        - generic [ref=e378]: QR
+        - img [ref=e379]
+      - button "Settings" [ref=e383] [cursor=pointer]:
+        - img [ref=e384]
+        - generic [ref=e387]: Settings
+        - img [ref=e388]
+    - generic [ref=e391]:
+      - button "Settings" [ref=e392] [cursor=pointer]:
+        - img [ref=e393]
+        - generic [ref=e396]: Settings
+      - button "Installer App" [ref=e397] [cursor=pointer]:
+        - img [ref=e398]
+        - generic [ref=e400]: Installer App
+  - main [ref=e401]:
+    - generic [ref=e402]:
+      - generic [ref=e403]:
+        - img [ref=e404]
+        - textbox "Search..." [ref=e407]
+      - generic [ref=e408]:
+        - generic [ref=e409] [cursor=pointer]:
+          - img [ref=e411]
+          - generic [ref=e414]:
+            - generic [ref=e415]: Compte
+            - generic [ref=e416]: Gérant
+        - button [ref=e418] [cursor=pointer]:
+          - img [ref=e419]
+    - generic [ref=e424]:
+      - img [ref=e426]
+      - generic [ref=e428]: Plan Pro requis
+      - heading [level=3]
+      - paragraph
+      - button "Débloquer maintenant" [ref=e430]:
+        - img [ref=e431]
+        - text: Débloquer maintenant

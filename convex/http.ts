@@ -23,7 +23,6 @@ http.route({
 
     const secret = process.env.STRIPE_WEBHOOK_SECRET;
     if (!secret) {
-      console.error("STRIPE_WEBHOOK_SECRET is not configured");
       return new Response("Webhook secret not configured", { status: 500 });
     }
 
@@ -33,9 +32,8 @@ http.route({
 
     let event: any;
     try {
-      event = stripe.webhooks.constructEvent(bodyText, sigHeader, secret);
+      event = await stripe.webhooks.constructEventAsync(bodyText, sigHeader, secret);
     } catch (err: any) {
-      console.error("Invalid Stripe webhook signature:", err.message);
       return new Response("Invalid signature", { status: 401 });
     }
 
@@ -43,9 +41,7 @@ http.route({
     if (!dataObj) return new Response("Missing object", { status: 400 });
 
     if (event.type === "checkout.session.completed") {
-      if (dataObj.mode !== "subscription") {
-        return new Response("Not a subscription", { status: 200 });
-      }
+      if (dataObj.mode !== "subscription") return new Response("Not a subscription", { status: 200 });
 
       const userId = dataObj.metadata?.userId || dataObj.client_reference_id;
       const planId = dataObj.metadata?.planId;
@@ -53,15 +49,16 @@ http.route({
       const email = dataObj.customer_email || dataObj.customer_details?.email || "";
       const subscriptionId = dataObj.subscription;
 
-      if (!userId || !planId || !billingPeriod) {
-        return new Response("Missing metadata", { status: 400 });
-      }
+      if (!userId || !planId || !billingPeriod) return new Response("Missing metadata", { status: 400 });
 
       if (subscriptionId) {
-        const sub: any = await stripe.subscriptions.retrieve(subscriptionId);
-        const now = Date.now();
-        const periodEnd = (sub.current_period_end || 0) * 1000;
-
+        let currentPeriodEnd = Date.now() + (billingPeriod === "yearly" ? 365 : 30) * 86400000;
+        try {
+          const sub: any = await stripe.subscriptions.retrieve(subscriptionId);
+          currentPeriodEnd = (sub.current_period_end || 0) * 1000;
+        } catch (e: any) {
+          // fallback to calculated period
+        }
         await ctx.runMutation(api.subscriptions.upsertSubscription, {
           userId,
           email,
@@ -70,8 +67,8 @@ http.route({
           status: "active",
           stripeSubscriptionId: subscriptionId,
           stripeCustomerId: dataObj.customer as string,
-          currentPeriodStart: now,
-          currentPeriodEnd: periodEnd,
+          currentPeriodStart: Date.now(),
+          currentPeriodEnd,
         });
       }
     }
@@ -79,18 +76,10 @@ http.route({
     if (event.type === "invoice.paid") {
       const subscriptionId = dataObj.subscription;
       if (subscriptionId) {
-        const sub: any = await stripe.subscriptions.retrieve(subscriptionId);
-        const periodEnd = (sub.current_period_end || 0) * 1000;
-
-        const existingSub = await ctx.runQuery(api.subscriptions.getSubscriptionByStripeId, {
-          stripeSubscriptionId: subscriptionId,
-        });
+        const periodEnd = Date.now() + 30 * 86400000;
+        const existingSub = await ctx.runQuery(api.subscriptions.getSubscriptionByStripeId, { stripeSubscriptionId: subscriptionId });
         if (existingSub) {
-          await ctx.runMutation(api.subscriptions.updateSubscriptionPeriod, {
-            subscriptionId: existingSub._id,
-            status: "active",
-            currentPeriodEnd: periodEnd,
-          });
+          await ctx.runMutation(api.subscriptions.updateSubscriptionPeriod, { subscriptionId: existingSub._id, status: "active", currentPeriodEnd: periodEnd });
         }
       }
     }
@@ -102,19 +91,12 @@ http.route({
         : dataObj.status === "canceled" ? "cancelled"
         : dataObj.status === "incomplete" ? "active"
         : dataObj.status;
-
       const periodEnd = (dataObj.current_period_end || 0) * 1000;
 
       if (subId) {
-        const existingSub = await ctx.runQuery(api.subscriptions.getSubscriptionByStripeId, {
-          stripeSubscriptionId: subId,
-        });
+        const existingSub = await ctx.runQuery(api.subscriptions.getSubscriptionByStripeId, { stripeSubscriptionId: subId });
         if (existingSub) {
-          await ctx.runMutation(api.subscriptions.updateSubscriptionPeriod, {
-            subscriptionId: existingSub._id,
-            status,
-            currentPeriodEnd: periodEnd,
-          });
+          await ctx.runMutation(api.subscriptions.updateSubscriptionPeriod, { subscriptionId: existingSub._id, status, currentPeriodEnd: periodEnd });
         }
       }
     }
@@ -122,15 +104,9 @@ http.route({
     if (event.type === "customer.subscription.deleted") {
       const subId = dataObj.id;
       if (subId) {
-        const existingSub = await ctx.runQuery(api.subscriptions.getSubscriptionByStripeId, {
-          stripeSubscriptionId: subId,
-        });
+        const existingSub = await ctx.runQuery(api.subscriptions.getSubscriptionByStripeId, { stripeSubscriptionId: subId });
         if (existingSub) {
-          await ctx.runMutation(api.subscriptions.updateSubscriptionPeriod, {
-            subscriptionId: existingSub._id,
-            status: "expired",
-            currentPeriodEnd: Date.now(),
-          });
+          await ctx.runMutation(api.subscriptions.updateSubscriptionPeriod, { subscriptionId: existingSub._id, status: "expired", currentPeriodEnd: Date.now() });
         }
       }
     }

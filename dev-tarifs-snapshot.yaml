@@ -1,0 +1,41 @@
+- generic [ref=e3]:
+  - navigation [ref=e4]:
+    - generic [ref=e5]:
+      - button "QR CRM" [ref=e6] [cursor=pointer]
+      - button "Login" [ref=e15] [cursor=pointer]
+  - generic [ref=e25]:
+    - generic [ref=e26]: Plans & Pricing
+    - heading "Choose your perfect plan" [level=1] [ref=e27]
+    - paragraph [ref=e28]: Digital menus, order-to-table, payments, delivery, and reservations all in one seamless ecosystem.
+    - generic [ref=e29]:
+      - generic [ref=e30]: Monthly
+      - button [ref=e31] [cursor=pointer]
+      - generic [ref=e33]: Yearly -20% PROMO
+  - generic [ref=e35]:
+    - generic [ref=e36]:
+      - generic [ref=e37]
+      - generic [ref=e44]
+      - list [ref=e46]
+      - button "Get Started" [ref=e71] [cursor=pointer]
+    - generic [ref=e75]:
+      - generic [ref=e76]: Most Popular
+      - generic [ref=e77]
+      - generic [ref=e84]
+      - list [ref=e86]
+      - button "Get Started" [ref=e107] [cursor=pointer]
+    - generic [ref=e111]:
+      - generic [ref=e112]
+      - generic [ref=e119]
+      - list [ref=e121]
+      - button "Get Started" [ref=e146] [cursor=pointer]
+  - generic [ref=e150]:
+    - heading "Use QR CRM on any device" [level=2] [ref=e151]
+    - paragraph [ref=e152]: Install our Progressive Web App for a native-like experience.
+    - generic [ref=e153]:
+      - generic [ref=e154]
+      - generic [ref=e160]
+  - contentinfo [ref=e166]:
+    - generic [ref=e167]:
+      - generic [ref=e168]
+      - generic [ref=e179]
+    - paragraph [ref=e184]: © 2026 QR CRM SAAS. All rights reserved.

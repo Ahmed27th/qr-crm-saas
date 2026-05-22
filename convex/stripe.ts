@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { action } from "./_generated/server";
+import { api } from "./_generated/api";
 import { PLAN_TO_STRIPE_PRICE } from "./subscriptionConfig";
 
 declare const process: {
@@ -48,5 +49,28 @@ export const createCheckoutSession = action({
 
     if (!session.url) throw new Error("Failed to create checkout session");
     return { url: session.url, sessionId: session.id };
+  },
+});
+
+export const createPortalSession = action({
+  args: { returnUrl: v.string() },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Not authenticated");
+
+    const userId = identity.subject.split("|")[0];
+    const subscription = await ctx.runQuery(api.subscriptions.getSubscription, { userId });
+    if (!subscription?.stripeCustomerId) throw new Error("No Stripe customer found");
+
+    const stripe = new (await import("stripe")).default(
+      process.env.STRIPE_SECRET_KEY!
+    );
+
+    const session = await stripe.billingPortal.sessions.create({
+      customer: subscription.stripeCustomerId,
+      return_url: args.returnUrl,
+    });
+
+    return { url: session.url };
   },
 });

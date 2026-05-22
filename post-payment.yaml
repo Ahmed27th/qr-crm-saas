@@ -1,0 +1,12 @@
+- generic [ref=e1]:
+  - generic [ref=e5]:
+    - generic [ref=e8]:
+      - text: Le mode test est actuellement activé.
+      - link "Aide↗" [ref=e9] [cursor=pointer]:
+        - /url: https://docs.lemonsqueezy.com/help/getting-started/test-mode/
+    - generic [ref=e11]:
+      - generic [ref=e12]
+      - generic [ref=e23]
+      - generic [ref=e40]
+  - iframe [ref=e92]:
+    

@@ -1,0 +1,36 @@
+- generic [ref=e4]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - img [ref=e8]
+      - generic [ref=e15]: QR CRM
+    - generic [ref=e16]:
+      - heading "L'ère de la restauration intelligente" [level=1] [ref=e17]
+      - paragraph [ref=e18]: Digitalisez votre menu, automatisez la récolte d'avis clients, et pilotez votre équipe en temps réel.
+      - generic [ref=e19]:
+        - generic [ref=e20]
+        - generic [ref=e27]
+        - generic [ref=e34]
+      - generic [ref=e44]:
+        - generic [ref=e45]
+        - generic [ref=e88]
+  - generic [ref=e97]:
+    - generic [ref=e98]:
+      - heading "Bon retour !" [level=2] [ref=e99]
+      - paragraph [ref=e100]: Entrez vos identifiants pour gérer votre établissement
+    - generic [ref=e101]:
+      - button "Connexion" [ref=e102] [cursor=pointer]
+      - button "Créer un compte" [ref=e103] [cursor=pointer]
+    - generic [ref=e105]:
+      - generic [ref=e106]:
+        - generic [ref=e107]: Adresse Email
+        - generic [ref=e108]
+      - generic [ref=e110]:
+        - generic [ref=e111]: Mot de passe
+        - generic [ref=e112]
+      - generic [ref=e118]:
+        - generic [ref=e119] [cursor=pointer]
+        - button "Mot de passe oublié ?" [ref=e122] [cursor=pointer]
+      - button "Se connecter" [ref=e123] [cursor=pointer]:
+        - generic [ref=e124]: Se connecter
+        - img [ref=e125]
+    - paragraph [ref=e128]: En continuant, vous acceptez nos Conditions d'utilisation et notre Politique de confidentialité.
