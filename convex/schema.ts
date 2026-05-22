@@ -111,4 +111,11 @@ export default defineSchema({
     .index("by_lemonSqueezyOrderId", ["lemonSqueezyOrderId"])
     .index("by_lemonSqueezySubscriptionId", ["lemonSqueezySubscriptionId"])
     .index("by_stripeSubscriptionId", ["stripeSubscriptionId"]),
+
+  pushSubscriptions: defineTable({
+    userId: v.string(),
+    endpoint: v.string(),
+    p256dh: v.string(),
+    auth: v.string(),
+  }).index("by_userId", ["userId"]),
 });

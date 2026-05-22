@@ -16,7 +16,6 @@ self.addEventListener('activate', (e) => {
 
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
-
   e.respondWith(
     caches.open(CACHE_NAME).then(async (cache) => {
       try {
@@ -28,6 +27,40 @@ self.addEventListener('fetch', (e) => {
       } catch {
         return cache.match(e.request) || new Response('Offline', { status: 503 });
       }
+    })
+  );
+});
+
+self.addEventListener('push', (e) => {
+  if (!e.data) return;
+  try {
+    const data = e.data.json();
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: '/favicon.svg',
+      badge: '/favicon.svg',
+      data: { url: data.url || '/dashboard' },
+      vibrate: [200, 100, 200],
+    });
+  } catch {
+    self.registration.showNotification(e.data.text(), {
+      icon: '/favicon.svg',
+      badge: '/favicon.svg',
+    });
+  }
+});
+
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  const urlToOpen = e.notification.data?.url || '/dashboard';
+  e.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientsList) => {
+      for (const client of clientsList) {
+        if (client.url.includes(urlToOpen) && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      return clients.openWindow(urlToOpen);
     })
   );
 });

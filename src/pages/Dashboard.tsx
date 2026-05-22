@@ -9,7 +9,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   PieChart, Pie, Cell, AreaChart, Area 
 } from 'recharts';
-import { useQuery, useAction } from 'convex/react';
+import { useQuery, useAction, useConvex } from 'convex/react';
 import { useConvexAuth } from '@convex-dev/auth/react';
 import { api } from '../../convex/_generated/api';
 import { DataStore } from '../dataStore';
@@ -17,12 +17,14 @@ import type { Order, Review, MenuItem, Reservation, Driver } from '../dataStore'
 import { QRCodeSVG } from 'qrcode.react';
 import { useNavigate } from 'react-router-dom';
 import { NotificationService } from '../utils/notifications';
+import { PushService } from '../utils/pushService';
 import './Dashboard.css';
 
 export function Dashboard() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated: isAuth } = useConvexAuth();
+  const convex = useConvex();
   const authUser = useQuery(api.users.me);
   const accessLevel = useQuery(api.subscriptions.getUserAccessLevel, { 
     userId: localStorage.getItem('qr_restaurant_id') || 'demo' 
@@ -126,6 +128,9 @@ export function Dashboard() {
       return;
     }
 
+    // Subscribe to push notifications
+    PushService.subscribe(convex);
+
     const activeCleanups: (() => void)[] = [];
 
     // Initialize subscriptions
@@ -182,6 +187,7 @@ export function Dashboard() {
   }, [navigate, prevOrdersCount, prevReviewsCount, t, isAuth, authUser]);
 
   const handleLogout = async () => {
+    PushService.unsubscribe(convex);
     localStorage.removeItem('qr_is_authenticated');
     localStorage.removeItem('qr_restaurant_id');
     navigate('/login');

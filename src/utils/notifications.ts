@@ -20,8 +20,8 @@ export const NotificationService = {
   showNotification: (title: string, options?: NotificationOptions) => {
     if (Notification.permission === 'granted') {
       return new Notification(title, {
-        icon: '/logo192.png', // Fallback to a common icon if exists
-        badge: '/logo192.png',
+        icon: '/favicon.svg',
+        badge: '/favicon.svg',
         ...options
       });
     }
