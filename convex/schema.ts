@@ -118,4 +118,16 @@ export default defineSchema({
     p256dh: v.string(),
     auth: v.string(),
   }).index("by_userId", ["userId"]),
+
+  restaurants: defineTable({
+    name: v.string(),
+    createdAt: v.number(),
+  }).index("by_name", ["name"]),
+
+  devices: defineTable({
+    restaurantId: v.string(),
+    deviceName: v.string(),
+    status: v.union(v.literal("online"), v.literal("offline")),
+    lastSync: v.number(),
+  }).index("by_restaurantId", ["restaurantId"]),
 });

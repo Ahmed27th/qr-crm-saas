@@ -3,13 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { 
   LayoutDashboard, ShoppingBag, Utensils, QrCode, Settings,
   Bell, Search, Plus, CheckCircle, Clock, TrendingUp, User, Users, Star, MessageSquare, ExternalLink, ShieldAlert, Smartphone, Calendar, Mail, Trash2, X, Tag, Image as ImageIcon, Link as LinkIcon, FileText, Sparkles,
-  BarChart3, Activity, PieChart as PieChartIcon, Target, Phone, Truck, Crown, Lock, CreditCard
+  BarChart3, Activity, PieChart as PieChartIcon, Target, Phone, Truck, Crown, Lock, CreditCard, Monitor, Wifi, WifiOff
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   PieChart, Pie, Cell, AreaChart, Area 
 } from 'recharts';
-import { useQuery, useAction, useConvex } from 'convex/react';
+import { useQuery, useAction, useConvex, useMutation } from 'convex/react';
 import { useConvexAuth } from '@convex-dev/auth/react';
 import { api } from '../../convex/_generated/api';
 import { DataStore } from '../dataStore';
@@ -38,6 +38,10 @@ export function Dashboard() {
   const planId = isDemoUltimate ? 'ultimate' : (isSubActive ? (subscription?.planId ?? 'none') : 'none');
   const createPortal = useAction(api.stripe.createPortalSession);
 
+  const restaurantId = localStorage.getItem('qr_restaurant_id') || 'demo';
+  const devices = useQuery(api.devices.getDevicesByRestaurantId, { restaurantId });
+  const upsertDevice = useMutation(api.devices.upsertDevice);
+
   const handleManageSubscription = async () => {
     try {
       const { url } = await createPortal({ returnUrl: window.location.href });
@@ -48,9 +52,9 @@ export function Dashboard() {
   };
 
   const PLAN_TABS: Record<string, Set<string>> = {
-    starter: new Set(['overview', 'reviews', 'collection', 'qr', 'settings']),
-    pro: new Set(['overview', 'analytics', 'orders', 'collection', 'reservations', 'reviews', 'staff', 'menu', 'qr', 'settings']),
-    ultimate: new Set(['overview', 'analytics', 'orders', 'collection', 'reservations', 'reviews', 'staff', 'drivers', 'menu', 'qr', 'settings']),
+    starter: new Set(['overview', 'reviews', 'collection', 'devices', 'qr', 'settings']),
+    pro: new Set(['overview', 'analytics', 'orders', 'collection', 'reservations', 'reviews', 'staff', 'devices', 'menu', 'qr', 'settings']),
+    ultimate: new Set(['overview', 'analytics', 'orders', 'collection', 'reservations', 'reviews', 'staff', 'drivers', 'devices', 'menu', 'qr', 'settings']),
   };
   const allowedTabs = PLAN_TABS[planId] ?? new Set<string>();
 
@@ -130,6 +134,15 @@ export function Dashboard() {
 
     // Subscribe to push notifications
     PushService.subscribe(convex);
+
+    // Register this device
+    const deviceName = navigator.userAgent.includes('Mobile') ? 'Mobile' : 'Desktop';
+    upsertDevice({
+      restaurantId,
+      deviceName,
+      status: 'online',
+      lastSync: Date.now(),
+    });
 
     const activeCleanups: (() => void)[] = [];
 
@@ -1599,6 +1612,7 @@ export function Dashboard() {
     { id: 'reviews', icon: <MessageSquare size={17}/>, label: t('dash_reviews') },
     { id: 'staff', icon: <Users size={17}/>, label: t('dash_staff') },
     { id: 'drivers', icon: <Truck size={17}/>, label: t('dash_drivers') },
+    { id: 'devices', icon: <Monitor size={17}/>, label: t('dash_devices') },
     { id: 'menu', icon: <Utensils size={17}/>, label: t('dash_menu') },
     { id: 'qr', icon: <QrCode size={17}/>, label: t('dash_qr') },
     { id: 'settings', icon: <Settings size={17}/>, label: t('dash_settings') },
@@ -1607,7 +1621,7 @@ export function Dashboard() {
   const navGroups: Record<string, string[]> = {
     '': ['overview'],
     'Opérations': ['analytics', 'orders', 'collection', 'reservations'],
-    'Équipe': ['reviews', 'staff', 'drivers'],
+    'Équipe': ['reviews', 'staff', 'drivers', 'devices'],
     'Contenu': ['menu', 'qr'],
   };
 
@@ -2077,6 +2091,44 @@ export function Dashboard() {
           {activeTab === 'reviews' && renderReviews()}
           {activeTab === 'staff' && renderStaff()}
           {activeTab === 'drivers' && renderDrivers()}
+          {activeTab === 'devices' && (
+            <div className="dashboard-content">
+              <div className="page-header">
+                <h2 className="page-title">{t('dash_devices', 'Appareils Connectés')}</h2>
+                <p className="text-tertiary">{t('devices_desc', 'Visualisez tous les écrans connectés à votre établissement en temps réel.')}</p>
+              </div>
+              <div className="devices-grid">
+                {devices === undefined ? (
+                  <p className="text-tertiary">Chargement...</p>
+                ) : devices.length === 0 ? (
+                  <div className="devices-empty">
+                    <Monitor size={48} className="devices-empty-icon" />
+                    <p>{t('devices_no_devices', 'Aucun appareil connecté')}</p>
+                    <p className="text-tertiary">{t('devices_no_devices_desc', 'Les appareils apparaîtront ici automatiquement lorsque vous ouvrirez le dashboard sur un nouvel écran.')}</p>
+                  </div>
+                ) : (
+                  devices.map((device) => (
+                    <div key={device._id} className="device-card">
+                      <div className="device-card-header">
+                        <Monitor size={20} />
+                        <span className="device-name">{device.deviceName}</span>
+                      </div>
+                      <div className="device-status">
+                        {device.status === 'online' ? (
+                          <><Wifi size={14} className="device-status-online" /> En ligne</>
+                        ) : (
+                          <><WifiOff size={14} className="device-status-offline" /> Hors ligne</>
+                        )}
+                      </div>
+                      <div className="device-last-sync">
+                        {t('devices_last_sync', 'Dernière synchro')} : {new Date(device.lastSync).toLocaleTimeString()}
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
           {activeTab === 'menu' && renderMenuEditor()}
           {activeTab === 'qr' && (
             <div className="dashboard-content">
