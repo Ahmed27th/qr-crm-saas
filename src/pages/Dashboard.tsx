@@ -56,6 +56,7 @@ export function Dashboard() {
   const PRIMARY_NAV_IDS = new Set(['overview', 'orders', 'menu', 'reviews', 'qr']);
 
   const [activeTab, setActiveTab] = useState('overview');
+  const [searchQuery, setSearchQuery] = useState('');
   const [notifications, setNotifications] = useState<{id: string, text: string, time: string, read: boolean, type: 'order' | 'review'}[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
   const [pushStatus, setPushStatus] = useState<'loading' | 'on' | 'off' | 'blocked'>('loading');
@@ -318,6 +319,11 @@ export function Dashboard() {
 
 
   const renderStaff = () => {
+    const q = searchQuery.toLowerCase();
+    const filteredStaff = q ? staffList.filter(s =>
+      s.name.toLowerCase().includes(q) ||
+      s.role.toLowerCase().includes(q)
+    ) : staffList;
     const isPremium = planId === 'pro' || planId === 'ultimate' || accessLevel?.isPremium;
     if (!isPremium) {
       return (
@@ -353,7 +359,7 @@ export function Dashboard() {
             </div>
             <div className="stat-info">
               <span className="stat-title">{t('staff_members')}</span>
-              <h3 className="stat-value">{staffList.length}</h3>
+              <h3 className="stat-value">{filteredStaff.length}</h3>
             </div>
           </div>
           <div className="stat-card glass-panel staff-stats-card">
@@ -454,8 +460,15 @@ export function Dashboard() {
             </button>
           </div>
         ) : (
+          <>
+          {filteredStaff.length === 0 && searchQuery && (
+            <div className="glass-panel" style={{ padding: '3rem 2rem', textAlign: 'center', background: 'var(--bg-secondary)', border: '1px dashed var(--border-color)' }}>
+              <p className="text-tertiary">Aucun résultat pour "{searchQuery}"</p>
+            </div>
+          )}
+          {filteredStaff.length > 0 && (
           <div className="staff-cards-grid">
-            {staffList.map((member, idx) => {
+            {filteredStaff.map((member, idx) => {
               const memberReviews = reviews.filter(r => r.comment?.includes(`[${member.name}]`));
               const avgRating = memberReviews.length 
                 ? (memberReviews.reduce((s, r) => s + r.rating, 0) / memberReviews.length).toFixed(1) 
@@ -522,12 +535,20 @@ export function Dashboard() {
               );
             })}
           </div>
+          )}
+          </>
         )}
       </div>
     );
   };
 
   const renderDrivers = () => {
+    const q = searchQuery.toLowerCase();
+    const filteredDrivers = q ? drivers.filter(d =>
+      d.name.toLowerCase().includes(q) ||
+      d.phone.toLowerCase().includes(q) ||
+      d.status.toLowerCase().includes(q)
+    ) : drivers;
     return (
       <div className="dashboard-content">
         <div className="page-header" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -549,7 +570,7 @@ export function Dashboard() {
             </div>
             <div className="stat-info">
               <span className="stat-title">{t('dash_drivers')}</span>
-              <h3 className="stat-value">{drivers.length}</h3>
+              <h3 className="stat-value">{filteredDrivers.length}</h3>
             </div>
           </div>
           <div className="stat-card glass-panel staff-stats-card">
@@ -558,7 +579,7 @@ export function Dashboard() {
             </div>
             <div className="stat-info">
               <span className="stat-title">{t('driver_status_label')}</span>
-              <h3 className="stat-value">{drivers.filter(d => d.status === 'available').length} Dispo</h3>
+              <h3 className="stat-value">{filteredDrivers.filter(d => d.status === 'available').length} Dispo</h3>
             </div>
           </div>
           <div className="stat-card glass-panel staff-stats-card">
@@ -567,7 +588,7 @@ export function Dashboard() {
             </div>
             <div className="stat-info">
               <span className="stat-title">{t('driver_active_orders')}</span>
-              <h3 className="stat-value">{drivers.reduce((sum, d) => sum + (d.activeOrders || 0), 0)}</h3>
+              <h3 className="stat-value">{filteredDrivers.reduce((sum, d) => sum + (d.activeOrders || 0), 0)}</h3>
             </div>
           </div>
         </div>
@@ -588,8 +609,15 @@ export function Dashboard() {
             </button>
           </div>
         ) : (
+          <>
+          {filteredDrivers.length === 0 && searchQuery && (
+            <div className="glass-panel" style={{ padding: '3rem 2rem', textAlign: 'center', background: 'var(--bg-secondary)', border: '1px dashed var(--border-color)' }}>
+              <p className="text-tertiary">Aucun résultat pour "{searchQuery}"</p>
+            </div>
+          )}
+          {filteredDrivers.length > 0 && (
           <div className="staff-cards-grid">
-              {drivers.map((driver) => {
+              {filteredDrivers.map((driver) => {
               const initials = driver.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
               const statusColors = { available: 'var(--success)', busy: 'var(--warning)', offline: 'var(--text-tertiary)' };
               
@@ -634,6 +662,8 @@ export function Dashboard() {
               );
             })}
           </div>
+          )}
+          </>
         )}
       </div>
     );
@@ -904,13 +934,19 @@ export function Dashboard() {
     );
   };
 
-
-  const renderOrders = () => (
+  const renderOrders = () => {
+    const q = searchQuery.toLowerCase();
+    const filteredOrders = q ? orders.filter(o =>
+      o.id.toLowerCase().includes(q) ||
+      (o.customerName || '').toLowerCase().includes(q) ||
+      (o.table || '').toLowerCase().includes(q)
+    ) : orders;
+    return (
     <div className="dashboard-content">
       <div className="page-header">
         <h2 className="page-title">{t('dash_orders')}</h2>
         <div className="flex gap-2">
-          <span className="badge-success">{orders.filter(o => o.status === 'pending').length} {t('status_new', 'Nouveau')}</span>
+          <span className="badge-success">{filteredOrders.filter(o => o.status === 'pending').length} {t('status_new', 'Nouveau')}</span>
         </div>
       </div>
       
@@ -920,11 +956,11 @@ export function Dashboard() {
             <div className="kanban-col-header">
               <span className="kanban-title">{status.toUpperCase()}</span>
               <span className="kanban-count">
-                {orders.filter(o => o.status === status).length}
+                {filteredOrders.filter(o => o.status === status).length}
               </span>
             </div>
             <div className="kanban-cards">
-              {orders.filter(o => o.status === status).map(order => (
+              {filteredOrders.filter(o => o.status === status).map(order => (
                 <div key={order.id} className="order-card">
                   <div className="order-header">
                     <span className="order-id">{order.id}</span>
@@ -946,7 +982,8 @@ export function Dashboard() {
         ))}
       </div>
     </div>
-  );
+    );
+  };
 
   const renderOverview = () => {
     const todaySales = orders.reduce((sum, o) => sum + o.total, 0);
@@ -1132,15 +1169,27 @@ export function Dashboard() {
     );
   };
 
-  const renderReviews = () => (
+  const renderReviews = () => {
+    const q = searchQuery.toLowerCase();
+    const filteredReviews = q ? reviews.filter(r =>
+      (r.userName || '').toLowerCase().includes(q) ||
+      (r.comment || '').toLowerCase().includes(q)
+    ) : reviews;
+    return (
     <div className="dashboard-content">
       <div className="page-header">
         <h2 className="page-title">Review Management</h2>
         <p className="text-tertiary">Real-time feedback directly from customer tables.</p>
       </div>
 
+      {filteredReviews.length === 0 && searchQuery && (
+        <div className="glass-panel" style={{ padding: '3rem 2rem', textAlign: 'center', background: 'var(--bg-secondary)', border: '1px dashed var(--border-color)' }}>
+          <p className="text-tertiary">Aucun résultat pour "{searchQuery}"</p>
+        </div>
+      )}
+      {filteredReviews.length > 0 && (
       <div className="reviews-grid">
-        {reviews.sort((a, b) => b.time - a.time).map(review => {
+        {filteredReviews.sort((a, b) => b.time - a.time).map(review => {
           const isGood = review.rating >= 4;
           return (
             <div key={review.id} className="review-card glass-panel">
@@ -1184,8 +1233,10 @@ export function Dashboard() {
           );
         })}
       </div>
+      )}
     </div>
-  );
+    );
+  };
 
   const handleToggleAvailability = async (id: string, current: boolean) => {
     try {
@@ -1208,13 +1259,26 @@ export function Dashboard() {
     }
   };
 
-  const renderMenuEditor = () => (
+  const renderMenuEditor = () => {
+    const q = searchQuery.toLowerCase();
+    const filteredItems = q ? menuItems.filter(item =>
+      item.name.toLowerCase().includes(q) ||
+      item.category.toLowerCase().includes(q) ||
+      (item.description || '').toLowerCase().includes(q)
+    ) : menuItems;
+    return (
     <div className="dashboard-content">
       <div className="page-header">
         <h2 className="page-title">Menu Management</h2>
         <button className="btn btn-primary" onClick={() => setIsAddingDish(true)}><Plus size={18}/> Add Dish</button>
       </div>
 
+      {filteredItems.length === 0 && searchQuery && (
+        <div className="glass-panel mt-4" style={{ padding: '3rem 2rem', textAlign: 'center', border: '1px dashed var(--border-color)' }}>
+          <p className="text-tertiary">Aucun résultat pour "{searchQuery}"</p>
+        </div>
+      )}
+      {filteredItems.length > 0 && (
       <div className="menu-editor-grid glass-panel mt-4">
         <table className="data-table">
           <thead>
@@ -1227,7 +1291,7 @@ export function Dashboard() {
             </tr>
           </thead>
           <tbody>
-            {menuItems.map(item => (
+            {filteredItems.map(item => (
               <tr key={item.id}>
                 <td className="font-semibold">{item.name}</td>
                 <td><span className="category-badge">{item.category}</span></td>
@@ -1278,8 +1342,10 @@ export function Dashboard() {
           </tbody>
         </table>
       </div>
+      )}
     </div>
-  );
+    );
+  };
 
   const renderCollectionPoint = () => {
     const qrSales = orders.filter(o => o.source === 'qr').reduce((sum, o) => sum + o.total, 0);
@@ -1498,7 +1564,14 @@ export function Dashboard() {
     );
   };
 
-  const renderReservations = () => (
+  const renderReservations = () => {
+    const q = searchQuery.toLowerCase();
+    const filteredReservations = q ? reservations.filter(r =>
+      r.name.toLowerCase().includes(q) ||
+      (r.email || '').toLowerCase().includes(q) ||
+      (r.phone || '').toLowerCase().includes(q)
+    ) : reservations;
+    return (
     <div className="dashboard-content">
       <div className="page-header">
         <h2 className="page-title">Reservations Engine</h2>
@@ -1509,26 +1582,32 @@ export function Dashboard() {
         <div className="stat-card glass-panel" style={{ borderColor: 'var(--accent-primary)' }}>
           <div className="stat-info">
             <span className="stat-title">Upcoming Bookings</span>
-            <h3 className="stat-value">{reservations.filter(r => r.status === 'confirmed').length}</h3>
+            <h3 className="stat-value">{filteredReservations.filter(r => r.status === 'confirmed').length}</h3>
             <span className="stat-trend positive">No overbookings</span>
           </div>
         </div>
         <div className="stat-card glass-panel">
           <div className="stat-info">
             <span className="stat-title">Pending Approvals</span>
-            <h3 className="stat-value text-accent">{reservations.filter(r => r.status === 'pending').length}</h3>
+            <h3 className="stat-value text-accent">{filteredReservations.filter(r => r.status === 'pending').length}</h3>
             <span className="stat-trend">Action required</span>
           </div>
         </div>
         <div className="stat-card glass-panel">
           <div className="stat-info">
             <span className="stat-title">CRM Database</span>
-            <h3 className="stat-value">{reservations.length + orders.length}</h3>
+            <h3 className="stat-value">{filteredReservations.length + orders.length}</h3>
             <span className="stat-trend">Emails & phones collected</span>
           </div>
         </div>
       </div>
 
+      {filteredReservations.length === 0 && searchQuery && (
+        <div className="glass-panel mt-4" style={{ padding: '3rem 2rem', textAlign: 'center', border: '1px dashed var(--border-color)' }}>
+          <p className="text-tertiary">Aucun résultat pour "{searchQuery}"</p>
+        </div>
+      )}
+      {filteredReservations.length > 0 && (
       <div className="glass-panel mt-4">
         <table className="data-table">
           <thead>
@@ -1542,7 +1621,7 @@ export function Dashboard() {
             </tr>
           </thead>
           <tbody>
-            {reservations.sort((a,b) => new Date(`${a.date}T${a.time}`).getTime() - new Date(`${b.date}T${b.time}`).getTime()).map(res => (
+            {filteredReservations.sort((a,b) => new Date(`${a.date}T${a.time}`).getTime() - new Date(`${b.date}T${b.time}`).getTime()).map(res => (
               <tr key={res.id}>
                 <td className="font-semibold">{res.date} at {res.time}</td>
                 <td>{res.name}</td>
@@ -1575,8 +1654,10 @@ export function Dashboard() {
           </tbody>
         </table>
       </div>
+      )}
     </div>
-  );
+    );
+  };
 
   const downloadQR = (buttonEl: HTMLElement, filename: string) => {
     const panel = buttonEl.closest('.glass-panel');
@@ -2078,7 +2159,8 @@ export function Dashboard() {
           </button>
           <div className="search-bar">
             <Search size={18} className="text-tertiary" />
-            <input type="text" placeholder={t('dash_search')} aria-label={t('dash_search')} />
+            <input type="text" placeholder={t('dash_search')} aria-label={t('dash_search')}
+              value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} />
           </div>
           
           <div className="header-actions">
