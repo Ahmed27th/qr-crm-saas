@@ -19,14 +19,16 @@ export const getUserAccessLevel = query({
       .withIndex("by_userId", (q) => q.eq("userId", args.userId))
       .first();
 
-    // Starter plan could also have some access. We just check if they are active and have a plan.
-    const isActive = sub?.status === "active";
-    
+    const now = Date.now();
+    const isExpired = sub?.currentPeriodEnd ? sub.currentPeriodEnd < now : false;
+    const effectiveStatus = isExpired ? 'expired' : (sub?.status ?? 'none');
+    const isActive = effectiveStatus === "active";
+
     return {
       isActive,
       isPremium: isActive && (sub?.planId === "pro" || sub?.planId === "ultimate"),
       planId: sub?.planId || "none",
-      status: sub?.status || "none",
+      status: effectiveStatus,
     };
   },
 });

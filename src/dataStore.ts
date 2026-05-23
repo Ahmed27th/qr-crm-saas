@@ -96,8 +96,15 @@ export interface Subscription {
 }
 
 // Fallback UID if no auth is set up yet
+let _stableRestaurantId: string | null = null;
+
+export const setStableRestaurantId = (id: string) => {
+  _stableRestaurantId = id;
+  localStorage.setItem('qr_restaurant_id', id);
+};
+
 const getRestaurantId = () => {
-  // In production with Convex, you would use auth.currentUser?.subject
+  if (_stableRestaurantId) return _stableRestaurantId;
   let id = localStorage.getItem('qr_restaurant_id');
   if (!id) {
     id = 'rest_' + Math.random().toString(36).substr(2, 9);

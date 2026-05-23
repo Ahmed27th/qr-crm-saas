@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Calendar, Clock, Users, User, Mail, Phone, CheckCircle } from 'lucide-react';
 import { DataStore } from '../dataStore';
@@ -8,7 +8,6 @@ import './PublicBooking.css';
 
 export function PublicBooking() {
   const { restaurantId } = useParams();
-  const navigate = useNavigate();
   const { t } = useTranslation();
   const [profile, setProfile] = useState<RestaurantProfile | null>(null);
   
@@ -64,9 +63,6 @@ export function PublicBooking() {
           <p className="text-tertiary mt-4">
             {t('booking_email_info', { email: formData.email })}
           </p>
-          <button className="btn-primary w-full mt-8" onClick={() => navigate(`/menu/${restaurantId}`)}>
-            {t('view_menu')}
-          </button>
         </div>
       </div>
     );

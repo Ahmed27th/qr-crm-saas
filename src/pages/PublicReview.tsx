@@ -112,12 +112,6 @@ export const PublicReview = () => {
                   {copied ? 'Commentaire copié ✓' : 'Publier sur Google'}
                 </button>
               )}
-              <button
-                className="btn-secondary w-full py-4 rounded-xl font-bold"
-                onClick={() => (window.location.href = `/menu/${restaurantId}`)}
-              >
-                Retourner au Menu
-              </button>
             </div>
           </div>
         </div>

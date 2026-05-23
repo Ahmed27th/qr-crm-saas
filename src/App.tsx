@@ -11,6 +11,7 @@ import { Tarifs } from './pages/Tarifs';
 import { DriverPortal } from './pages/DriverPortal';
 import { ChefDashboard } from './pages/ChefDashboard';
 import { OrderTracking } from './pages/OrderTracking';
+import { PublicCheckReservation } from './pages/PublicCheckReservation';
 
 import { useEffect } from 'react';
 import { NotificationService } from './utils/notifications';
@@ -66,6 +67,7 @@ function App() {
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/chef/:restaurantId" element={<ChefDashboard />} />
           <Route path="/track/:orderId" element={<OrderTracking />} />
+          <Route path="/check-reservation/:restaurantId" element={<PublicCheckReservation />} />
         </Routes>
       </Router>
     </ErrorBoundary>

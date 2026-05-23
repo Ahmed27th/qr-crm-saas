@@ -12,6 +12,18 @@ export const getReservations = query({
   },
 });
 
+export const getByDate = query({
+  args: { restaurantId: v.string(), date: v.string() },
+  handler: async (ctx, args) => {
+    const rows = await ctx.db
+      .query("reservations")
+      .withIndex("by_restaurantId_date", (q) =>
+        q.eq("restaurantId", args.restaurantId).eq("date", args.date))
+      .collect();
+    return rows.sort((a, b) => a.time.localeCompare(b.time));
+  },
+});
+
 export const addReservation = mutation({
   args: {
     restaurantId: v.string(),

@@ -13,6 +13,7 @@ import type * as driverLocations from "../driverLocations.js";
 import type * as drivers from "../drivers.js";
 import type * as http from "../http.js";
 import type * as menu from "../menu.js";
+import type * as migrateRestaurantIds from "../migrateRestaurantIds.js";
 import type * as orders from "../orders.js";
 import type * as profiles from "../profiles.js";
 import type * as push from "../push.js";
@@ -37,6 +38,7 @@ declare const fullApi: ApiFromModules<{
   drivers: typeof drivers;
   http: typeof http;
   menu: typeof menu;
+  migrateRestaurantIds: typeof migrateRestaurantIds;
   orders: typeof orders;
   profiles: typeof profiles;
   push: typeof push;

@@ -35,6 +35,15 @@ export const PushService = {
     }
   },
 
+  async requestPermission(convex: any): Promise<boolean> {
+    if (!("Notification" in window)) return false;
+    const perm = await Notification.requestPermission();
+    if (perm === "granted") {
+      return await PushService.subscribe(convex);
+    }
+    return false;
+  },
+
   async unsubscribe(convex: any): Promise<boolean> {
     if (!("serviceWorker" in navigator)) return false;
     try {
@@ -48,5 +57,10 @@ export const PushService = {
     } catch {
       return false;
     }
+  },
+
+  async getSubscriptionStatus(): Promise<"granted" | "denied" | "default"> {
+    if (!("Notification" in window)) return "denied";
+    return Notification.permission;
   },
 };

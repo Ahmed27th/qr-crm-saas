@@ -1,6 +1,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useQuery } from 'convex/react';
+import { api } from '../../convex/_generated/api';
 import { ShoppingCart, Plus, Minus, Search, Info, Flame, AlertCircle, X, Sparkles, HeartHandshake, Star, Clock, FileText, ChevronRight, Home, UtensilsCrossed, Truck, MapPin } from 'lucide-react';
 import { DataStore } from '../dataStore';
 import type { MenuItem, RestaurantProfile } from '../dataStore';
@@ -10,6 +12,9 @@ import './PublicMenu.css';
 export function PublicMenu() {
   const { restaurantId } = useParams();
   const { t, i18n } = useTranslation();
+
+  const subscription = useQuery(api.subscriptions.getSubscription, { userId: restaurantId || '' });
+  const canDeliver = subscription?.planId === 'ultimate';
 
   const [profile, setProfile] = useState<RestaurantProfile | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
@@ -36,6 +41,12 @@ export function PublicMenu() {
   const [lastOrderId, setLastOrderId] = useState<string | null>(null);
 
   const isRTL = i18n.language === 'ar' || i18n.language === 'ary';
+
+  useEffect(() => {
+    if (!canDeliver) {
+      setOrderMode('dinein');
+    }
+  }, [canDeliver]);
 
   useEffect(() => {
     
@@ -86,7 +97,7 @@ export function PublicMenu() {
     : menuItems.filter(item => item.category === activeCategory);
 
   const upsellItems = menuItems.filter(item =>
-    item.category === 'Drinks' || item.category === 'Desserts' || item.category === 'Boissons'
+    (item.category === 'Drinks' || item.category === 'Desserts' || item.category === 'Boissons') && !cart[item.id]
   ).slice(0, 2);
 
   const addToCart = (id: string, e?: React.MouseEvent) => {
@@ -175,7 +186,7 @@ export function PublicMenu() {
   };
 
   const closeModal = () => {
-    setIsCartOpen(false); setCart({}); setTableNumber('');
+    setIsCartOpen(false); setTableNumber('');
     setDeliveryName(''); setDeliveryPhone(''); setDeliveryAddress('');
     setDeliveryTime(''); setDeliveryInstructions('');
     setModalState('checkout'); setReviewRating(0); setReviewComment('');
@@ -374,13 +385,15 @@ export function PublicMenu() {
                       <UtensilsCrossed size={20} />
                       <span>Sur place</span>
                     </button>
-                    <button
-                      className={`checkout-mode-btn ${orderMode === 'delivery' ? 'active' : ''}`}
-                      onClick={() => setOrderMode('delivery')}
-                    >
-                      <Home size={20} />
-                      <span>Livraison</span>
-                    </button>
+                    {canDeliver && (
+                      <button
+                        className={`checkout-mode-btn ${orderMode === 'delivery' ? 'active' : ''}`}
+                        onClick={() => setOrderMode('delivery')}
+                      >
+                        <Home size={20} />
+                        <span>Livraison</span>
+                      </button>
+                    )}
                   </div>
 
                   {orderMode === 'dinein' ? (

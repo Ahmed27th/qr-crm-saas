@@ -75,7 +75,8 @@ export default defineSchema({
     guests: v.number(),
     status: v.string(), // pending, confirmed, cancelled
     createdAt: v.number(),
-  }).index("by_restaurantId", ["restaurantId"]),
+  }).index("by_restaurantId", ["restaurantId"])
+    .index("by_restaurantId_date", ["restaurantId", "date"]),
 
   reviews: defineTable({
     restaurantId: v.string(),

@@ -3,16 +3,16 @@ import { useTranslation } from 'react-i18next';
 import { 
   LayoutDashboard, ShoppingBag, Utensils, QrCode, Settings,
   Bell, Search, Plus, CheckCircle, Clock, TrendingUp, User, Users, Star, MessageSquare, ExternalLink, ShieldAlert, Smartphone, Calendar, Mail, Trash2, X, Tag, Image as ImageIcon, Link as LinkIcon, FileText, Sparkles,
-  BarChart3, Activity, PieChart as PieChartIcon, Target, Phone, Truck, Crown, Lock, CreditCard
+  BarChart3, Activity, PieChart as PieChartIcon, Target, Phone, Truck, Crown, Lock, CreditCard, Download, MoreHorizontal
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   PieChart, Pie, Cell, AreaChart, Area 
 } from 'recharts';
-import { useQuery, useAction, useConvex } from 'convex/react';
+import { useQuery, useMutation, useAction, useConvex } from 'convex/react';
 import { useConvexAuth } from '@convex-dev/auth/react';
 import { api } from '../../convex/_generated/api';
-import { DataStore } from '../dataStore';
+import { DataStore, setStableRestaurantId } from '../dataStore';
 import type { Order, Review, MenuItem, Reservation, Driver } from '../dataStore';
 import { QRCodeSVG } from 'qrcode.react';
 import { useNavigate } from 'react-router-dom';
@@ -48,15 +48,17 @@ export function Dashboard() {
   };
 
   const PLAN_TABS: Record<string, Set<string>> = {
-    starter: new Set(['overview', 'reviews', 'collection', 'qr', 'settings']),
-    pro: new Set(['overview', 'analytics', 'orders', 'collection', 'reservations', 'reviews', 'staff', 'menu', 'qr', 'settings']),
+    starter: new Set(['overview', 'reviews', 'qr', 'settings']),
+    pro: new Set(['overview', 'analytics', 'orders', 'reservations', 'reviews', 'staff', 'menu', 'qr', 'settings']),
     ultimate: new Set(['overview', 'analytics', 'orders', 'collection', 'reservations', 'reviews', 'staff', 'drivers', 'menu', 'qr', 'settings']),
   };
   const allowedTabs = PLAN_TABS[planId] ?? new Set<string>();
+  const PRIMARY_NAV_IDS = new Set(['overview', 'orders', 'menu', 'reviews', 'qr']);
 
   const [activeTab, setActiveTab] = useState('overview');
   const [notifications, setNotifications] = useState<{id: string, text: string, time: string, read: boolean, type: 'order' | 'review'}[]>([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [pushStatus, setPushStatus] = useState<'loading' | 'on' | 'off' | 'blocked'>('loading');
   const [prevOrdersCount, setPrevOrdersCount] = useState(0);
   const [prevReviewsCount, setPrevReviewsCount] = useState(0);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -98,15 +100,24 @@ export function Dashboard() {
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const [updatingReviewId, setUpdatingReviewId] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const migrateRestaurantIds = useMutation(api.migrateRestaurantIds.run);
   useEffect(() => {
     let isAuthenticated = localStorage.getItem('qr_is_authenticated') === 'true';
     let restaurantId = localStorage.getItem('qr_restaurant_id');
 
-    if (!isAuthenticated && isAuth && authUser?.subject) {
-      restaurantId = authUser.subject;
-      localStorage.setItem('qr_restaurant_id', restaurantId);
-      localStorage.setItem('qr_is_authenticated', 'true');
-      isAuthenticated = true;
+    // Always enforce stable userId from auth, regardless of new/existing session
+    if (isAuth && authUser?.subject) {
+      const stableId = authUser.subject.split('|')[0];
+      if (restaurantId !== stableId) {
+        restaurantId = stableId;
+        localStorage.setItem('qr_restaurant_id', restaurantId);
+        migrateRestaurantIds().catch((e: any) => console.warn("Migration error:", e));
+      }
+      if (!isAuthenticated) {
+        localStorage.setItem('qr_is_authenticated', 'true');
+        isAuthenticated = true;
+      }
+      setStableRestaurantId(restaurantId);
     }
 
     // Wait for Convex Auth to finish loading before making redirect decisions
@@ -128,8 +139,14 @@ export function Dashboard() {
       return;
     }
 
-    // Subscribe to push notifications
-    PushService.subscribe(convex);
+    PushService.getSubscriptionStatus().then((s) => {
+      setPushStatus(s === "granted" ? "on" : s === "denied" ? "blocked" : "off");
+    });
+
+    // Try subscribing silently (works if permission already granted)
+    PushService.subscribe(convex).then((ok) => {
+      if (ok) setPushStatus("on");
+    });
 
     const activeCleanups: (() => void)[] = [];
 
@@ -1561,7 +1578,27 @@ export function Dashboard() {
     </div>
   );
 
+  const downloadQR = (buttonEl: HTMLElement, filename: string) => {
+    const panel = buttonEl.closest('.glass-panel');
+    if (!panel) return;
+    const container = panel.querySelector('.qr-preview-container');
+    if (!container) return;
+    const svg = container.querySelector('svg');
+    if (!svg) return;
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const blob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${filename}.svg`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [moreSheetOpen, setMoreSheetOpen] = useState(false);
   const [dismissCheckout, setDismissCheckout] = useState(false);
   const [checkoutTimedOut, setCheckoutTimedOut] = useState(false);
 
@@ -1866,11 +1903,12 @@ export function Dashboard() {
             const prevItem = idx > 0 ? NAV_ITEMS[idx - 1] : null;
             const prevGroup = prevItem ? getNavGroup(prevItem.id) : null;
             const showLabel = group && group !== prevGroup;
+            const isPrimary = PRIMARY_NAV_IDS.has(item.id);
             return (
               <span key={item.id}>
                 {showLabel && <div className="nav-group-label">{group}</div>}
                 <button
-                  className={`nav-item ${activeTab === item.id ? 'active' : ''} ${isLocked ? 'locked-nav-item' : ''}`}
+                  className={`nav-item ${activeTab === item.id ? 'active' : ''} ${isLocked ? 'locked-nav-item' : ''} ${isPrimary ? 'nav-item--primary' : ''}`}
                   onClick={() => handleNavClick(item.id)}
                   data-tip={item.label}>
                   {item.icon}
@@ -1880,6 +1918,11 @@ export function Dashboard() {
               </span>
             );
           })}
+          {/* "More" button — hidden on desktop, appears in bottom bar on phone */}
+          <button className="nav-item mobile-more-btn mobile-only" onClick={() => setMoreSheetOpen(true)} data-tip="Plus">
+            <MoreHorizontal size={17} />
+            <span>Plus</span>
+          </button>
         </nav>
 
         <div className="sidebar-footer">
@@ -1900,6 +1943,58 @@ export function Dashboard() {
         </div>
       </aside>
 
+      {/* ── Mobile "More" Bottom Sheet ── */}
+      <div className={`bottom-sheet-overlay ${moreSheetOpen ? 'open' : ''}`} onClick={() => setMoreSheetOpen(false)} />
+      <div className={`bottom-sheet ${moreSheetOpen ? 'open' : ''}`}>
+        <div className="bottom-sheet-handle" />
+        <div className="bottom-sheet-header">
+          <h3>Navigation</h3>
+          <button className="icon-btn-ghost" onClick={() => setMoreSheetOpen(false)} aria-label="Fermer" style={{ border: '1px solid var(--border-color)', borderRadius: '10px', padding: '0.4rem' }}>
+            <X size={20} />
+          </button>
+        </div>
+        <div className="bottom-sheet-body">
+          {NAV_ITEMS.map((item, idx) => {
+            const isLocked = !allowedTabs.has(item.id);
+            const group = getNavGroup(item.id);
+            const prevItem = idx > 0 ? NAV_ITEMS[idx - 1] : null;
+            const prevGroup = prevItem ? getNavGroup(prevItem.id) : null;
+            const showLabel = group && group !== prevGroup;
+            return (
+              <span key={item.id}>
+                {showLabel && <div className="nav-group-label">{group}</div>}
+                <button
+                  className={`nav-item ${activeTab === item.id ? 'active' : ''} ${isLocked ? 'locked-nav-item' : ''}`}
+                  onClick={() => { setActiveTab(item.id); setMoreSheetOpen(false); }}>
+                  {item.icon}
+                  <span>{item.label}</span>
+                  {isLocked && <Lock size={13} className="lock-icon" />}
+                </button>
+              </span>
+            );
+          })}
+        </div>
+        <div className="bottom-sheet-footer">
+          <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => { setActiveTab('settings'); setMoreSheetOpen(false); }}>
+            <Settings size={17} /><span>{t('dash_settings')}</span>
+          </button>
+          <button className="nav-item" onClick={() => {
+            setMoreSheetOpen(false);
+            const prompt = (window as any).deferredPrompt;
+            if (prompt) {
+              prompt.prompt();
+              (window as any).deferredPrompt = null;
+            } else {
+              alert(t('pwa_install_info', 'To install this app, please use your browser menu (e.g. "Add to Home Screen" or the Install icon in the address bar).'));
+            }
+          }}>
+            <Smartphone size={17} /><span>Installer App</span>
+          </button>
+          <button className="nav-item text-error" onClick={() => { setMoreSheetOpen(false); handleLogout(); }}>
+            <ExternalLink size={17} /><span>Déconnexion</span>
+          </button>
+        </div>
+      </div>
 
       {/* Expiring Soon Banner */}
       {isSubActive && !isDemoUltimate && subscription?.currentPeriodEnd && (
@@ -2022,10 +2117,14 @@ export function Dashboard() {
               <button 
                 className="icon-btn-ghost" 
                 style={{ position: 'relative' }}
-                onClick={() => {
+                onClick={async () => {
                   setShowNotifications(!showNotifications);
                   if (!showNotifications) {
                     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+                  }
+                  if (pushStatus === 'off') {
+                    const ok = await PushService.requestPermission(convex);
+                    setPushStatus(ok ? 'on' : 'blocked');
                   }
                 }}
               >
@@ -2033,12 +2132,26 @@ export function Dashboard() {
                 {notifications.some(n => !n.read) && <span className="notification-dot"></span>}
               </button>
               
-              {showNotifications && (
+                  {showNotifications && (
                 <div className="notification-dropdown glass-panel">
                   <div className="notification-header">
                     <h3>Notifications</h3>
                     <button className="text-xs text-accent" onClick={() => setNotifications([])}>Effacer tout</button>
                   </div>
+                  {pushStatus !== 'on' && (
+                    <div className="p-4 text-center border-b border-[var(--border-color)]">
+                      <p className="text-tertiary text-sm mb-2">
+                        {pushStatus === 'blocked'
+                          ? 'Notifications bloquées. Activez-les dans les paramètres du navigateur.'
+                          : 'Activez les notifications pour être alerté des nouvelles commandes et avis.'}
+                      </p>
+                      {pushStatus === 'off' && (
+                        <button className="btn-primary btn-sm" onClick={async (e) => { e.stopPropagation(); const ok = await PushService.requestPermission(convex); setPushStatus(ok ? 'on' : 'blocked'); }}>
+                          Activer les notifications
+                        </button>
+                      )}
+                    </div>
+                  )}
                   <div className="notification-list">
                     {notifications.length === 0 ? (
                       <div className="p-8 text-center text-tertiary">Aucune nouvelle notification</div>
@@ -2087,6 +2200,7 @@ export function Dashboard() {
 
               <div className="qr-grid mt-8">
                 {/* Core QR Codes */}
+                {planId !== 'starter' && (
                 <div className="glass-panel p-8 text-center qr-premium-card">
                   <div className="qr-preview-container" style={{ minHeight: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <QRCodeSVG 
@@ -2105,9 +2219,14 @@ export function Dashboard() {
                     <button className="btn-primary flex-1" onClick={() => window.open(`${window.location.origin}/menu/${profile?.id || 'demo'}`, '_blank')}>
                       {t('staff_test_link')}
                     </button>
+                    <button className="btn-secondary qr-dl-btn" onClick={(e) => downloadQR(e.currentTarget, 'qr-menu')} title="Télécharger QR Menu">
+                      <Download size={15} />
+                    </button>
                   </div>
                 </div>
+                )}
 
+                {planId !== 'starter' && (
                 <div className="glass-panel p-8 text-center qr-premium-card">
                   <div className="qr-preview-container" style={{ minHeight: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <QRCodeSVG 
@@ -2126,8 +2245,12 @@ export function Dashboard() {
                     <button className="btn-primary flex-1" onClick={() => window.open(`${window.location.origin}/book/${profile?.id || 'demo'}`, '_blank')}>
                       {t('staff_test_link')}
                     </button>
+                    <button className="btn-secondary qr-dl-btn" onClick={(e) => downloadQR(e.currentTarget, 'qr-reservation')} title="Télécharger QR Réservation">
+                      <Download size={15} />
+                    </button>
                   </div>
                 </div>
+                )}
 
                 <div className="glass-panel p-8 text-center qr-premium-card">
                   <div className="qr-preview-container" style={{ minHeight: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -2147,9 +2270,13 @@ export function Dashboard() {
                     <button className="btn-primary flex-1" onClick={() => window.open(`${window.location.origin}/review/${profile?.id || 'demo'}`, '_blank')}>
                       {t('staff_test_link')}
                     </button>
+                    <button className="btn-secondary qr-dl-btn" onClick={(e) => downloadQR(e.currentTarget, 'qr-avis')} title="Télécharger QR Avis">
+                      <Download size={15} />
+                    </button>
                   </div>
                 </div>
 
+                {planId !== 'starter' && (
                 <div className="glass-panel p-8 text-center qr-premium-card">
                   <div className="qr-preview-container" style={{ minHeight: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <QRCodeSVG 
@@ -2168,12 +2295,16 @@ export function Dashboard() {
                     <button className="btn-primary flex-1" onClick={() => window.open(`${window.location.origin}/chef/${profile?.id || 'demo'}`, '_blank')}>
                       {t('staff_test_link')}
                     </button>
+                    <button className="btn-secondary qr-dl-btn" onClick={(e) => downloadQR(e.currentTarget, 'qr-cuisine')} title="Télécharger QR Cuisine">
+                      <Download size={15} />
+                    </button>
                   </div>
                 </div>
+                )}
               </div>
 
               {/* Personnel QR Codes */}
-              {staffList.length > 0 && (
+              {planId !== 'starter' && staffList.length > 0 && (
                 <div className="mt-16">
                   <h3 className="text-2xl font-black mb-8 flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
@@ -2203,8 +2334,8 @@ export function Dashboard() {
                             <button className="btn-secondary flex-1 py-2 text-xs" onClick={() => window.open(reviewUrl, '_blank')}>
                               {t('staff_test_link')}
                             </button>
-                            <button className="btn-secondary px-2 py-2" title={t('staff_download')}>
-                              <ImageIcon size={14} />
+                            <button className="btn-secondary qr-dl-btn" onClick={(e) => downloadQR(e.currentTarget, `qr-staff-${staff.name.replace(/\s+/g, '-').toLowerCase()}`)} title={t('staff_download')}>
+                              <Download size={14} />
                             </button>
                           </div>
                         </div>
@@ -2215,7 +2346,7 @@ export function Dashboard() {
               )}
 
               {/* Drivers QR Codes */}
-              {drivers.length > 0 && (
+              {planId !== 'starter' && drivers.length > 0 && (
                 <div className="mt-16 mb-16">
                   <h3 className="text-2xl font-black mb-8 flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent">
@@ -2241,9 +2372,12 @@ export function Dashboard() {
                           </div>
                           <h4 className="font-bold text-sm mb-1">{driver.name}</h4>
                           <p className="text-tertiary text-[10px] mb-4 truncate">{driver.phone}</p>
-                          <div className="flex flex-col gap-2 w-full">
-                            <button className="btn-primary py-2 text-xs font-bold" onClick={() => window.open(driverUrl, '_blank')}>
+                          <div className="flex gap-2 w-full">
+                            <button className="btn-primary flex-1 py-2 text-xs font-bold" onClick={() => window.open(driverUrl, '_blank')}>
                               Ouvrir Portail Livreur
+                            </button>
+                            <button className="btn-secondary qr-dl-btn" onClick={(e) => downloadQR(e.currentTarget, `qr-driver-${driver.name.replace(/\s+/g, '-').toLowerCase()}`)} title="Télécharger QR Livreur">
+                              <Download size={14} />
                             </button>
                           </div>
                         </div>

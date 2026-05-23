@@ -2,7 +2,7 @@ import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
 import { api } from "./_generated/api";
 import { auth } from "./auth";
-import { resolvePlanFromPriceId } from "./subscriptionConfig";
+import { resolvePlanFromPriceId, STRIPE_PRICE_ID_TO_PLAN } from "./subscriptionConfig";
 
 declare const process: {
   env: Record<string, string | undefined>;
@@ -134,12 +134,11 @@ http.route({
 
     if (event.type === "invoice.paid") {
       const subscriptionId = dataObj.subscription;
-      const { userId, planId, billingPeriod } = extractSubInfo(dataObj);
       if (subscriptionId) {
         const now = Date.now();
         let periodEnd = now + 30 * 86400000;
         try {
-          const sub = await stripe.subscriptions.retrieve(subscriptionId) as { current_period_end?: number };
+          const sub = await stripe.subscriptions.retrieve(subscriptionId) as { current_period_end?: number; current_period_start?: number };
           if (sub?.current_period_end) {
             periodEnd = sub.current_period_end * 1000;
           }
@@ -151,38 +150,71 @@ http.route({
         }
         const existingSub = await ctx.runQuery(api.subscriptions.getSubscriptionByStripeId, { stripeSubscriptionId: subscriptionId });
         if (existingSub) {
-          await ctx.runMutation(api.subscriptions.updateSubscriptionPeriod, { subscriptionId: existingSub._id, status: "active", currentPeriodEnd: periodEnd });
-        } else if (userId && planId && billingPeriod) {
-          // Fallback: invoice.paid may arrive before checkout.session.completed for renewals
+          const priceId = dataObj.lines?.data?.[0]?.price?.id;
+          const hasPrice = priceId && STRIPE_PRICE_ID_TO_PLAN[priceId];
+          const planId = hasPrice ? STRIPE_PRICE_ID_TO_PLAN[priceId].planId : existingSub.planId;
+          const billingPeriod = hasPrice ? STRIPE_PRICE_ID_TO_PLAN[priceId].billingPeriod : existingSub.billingPeriod;
           await ctx.runMutation(api.subscriptions.upsertSubscription, {
-            userId,
-            email: "",
+            userId: existingSub.userId,
+            email: existingSub.email,
             planId,
             billingPeriod,
             status: "active",
             stripeSubscriptionId: subscriptionId,
-            stripeCustomerId: dataObj.customer as string,
-            currentPeriodStart: Date.now(),
+            stripeCustomerId: existingSub.stripeCustomerId,
+            currentPeriodStart: existingSub.currentPeriodStart,
             currentPeriodEnd: periodEnd,
           });
+        } else {
+          const { userId, planId, billingPeriod } = extractSubInfo(dataObj);
+          if (userId && planId && billingPeriod) {
+            await ctx.runMutation(api.subscriptions.upsertSubscription, {
+              userId,
+              email: "",
+              planId,
+              billingPeriod,
+              status: "active",
+              stripeSubscriptionId: subscriptionId,
+              stripeCustomerId: dataObj.customer as string,
+              currentPeriodStart: Date.now(),
+              currentPeriodEnd: periodEnd,
+            });
+          }
         }
       }
     }
 
     if (event.type === "customer.subscription.updated") {
       const subId = dataObj.id;
+      const periodEnd = (dataObj.current_period_end || 0) * 1000;
+      const periodStart = (dataObj.current_period_start || 0) * 1000;
+      const safePeriodEnd = periodEnd && periodEnd > Date.now() ? periodEnd : Date.now() + 30 * 86400000;
+
       const status = dataObj.status === "active" ? "active"
         : dataObj.status === "past_due" ? "past_due"
         : dataObj.status === "canceled" ? "cancelled"
         : dataObj.status === "incomplete" ? "active"
         : dataObj.status;
-      const periodEnd = (dataObj.current_period_end || 0) * 1000;
-      const safePeriodEnd = periodEnd && periodEnd > Date.now() ? periodEnd : Date.now() + 30 * 86400000;
 
       if (subId) {
         const existingSub = await ctx.runQuery(api.subscriptions.getSubscriptionByStripeId, { stripeSubscriptionId: subId });
         if (existingSub) {
-          await ctx.runMutation(api.subscriptions.updateSubscriptionPeriod, { subscriptionId: existingSub._id, status, currentPeriodEnd: safePeriodEnd });
+          const priceId = dataObj.items?.data?.[0]?.price?.id;
+          const hasPrice = priceId && STRIPE_PRICE_ID_TO_PLAN[priceId];
+          const planId = hasPrice ? STRIPE_PRICE_ID_TO_PLAN[priceId].planId : existingSub.planId;
+          const billingPeriod = hasPrice ? STRIPE_PRICE_ID_TO_PLAN[priceId].billingPeriod : existingSub.billingPeriod;
+
+          await ctx.runMutation(api.subscriptions.upsertSubscription, {
+            userId: existingSub.userId,
+            email: existingSub.email,
+            planId,
+            billingPeriod,
+            status,
+            stripeSubscriptionId: subId,
+            stripeCustomerId: existingSub.stripeCustomerId,
+            currentPeriodStart: periodStart || existingSub.currentPeriodStart,
+            currentPeriodEnd: safePeriodEnd,
+          });
         }
       }
     }
@@ -192,7 +224,12 @@ http.route({
       if (subId) {
         const existingSub = await ctx.runQuery(api.subscriptions.getSubscriptionByStripeId, { stripeSubscriptionId: subId });
         if (existingSub) {
-          await ctx.runMutation(api.subscriptions.updateSubscriptionPeriod, { subscriptionId: existingSub._id, status: "expired", currentPeriodEnd: Date.now() });
+          const periodEnd = (dataObj.current_period_end || 0) * 1000;
+          await ctx.runMutation(api.subscriptions.updateSubscriptionPeriod, {
+            subscriptionId: existingSub._id,
+            status: "expired",
+            currentPeriodEnd: periodEnd || existingSub.currentPeriodEnd,
+          });
         }
       }
     }

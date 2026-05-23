@@ -14,7 +14,7 @@
       "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
+  "start_url": "/login",
   "display": "standalone",
   "orientation": "portrait",
   "theme_color": "#6366f1",

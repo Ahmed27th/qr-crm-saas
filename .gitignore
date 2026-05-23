@@ -39,3 +39,6 @@ ultimate-yearly-*
 opencode.json
 database.json
 firecrawl.json
+
+# Local Netlify folder
+.netlify
