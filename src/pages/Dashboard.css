@@ -1259,7 +1259,7 @@
     left: 0;
     right: 0;
     z-index: 100;
-    padding: 0.35rem 0.15rem;
+    padding: 0.5rem 0.25rem;
     overflow-x: auto;
     gap: 0;
     order: 2;
@@ -1284,10 +1284,10 @@
 
   .nav-item {
     flex-direction: column;
-    gap: 0.15rem;
-    padding: 0.3rem 0.5rem;
+    gap: 0.2rem;
+    padding: 0.4rem 0.6rem;
     font-size: 0.6rem;
-    min-width: 48px;
+    min-width: 52px;
     border-radius: 8px;
     white-space: nowrap;
   }
@@ -1331,7 +1331,7 @@
   /* === MAIN CONTENT === */
   .dashboard-main {
     order: 1;
-    padding-bottom: 80px; /* Space for fixed bottom tab bar */
+    padding-bottom: 90px; /* Space for fixed bottom tab bar */
   }
 
   .dashboard-scroll-area {
