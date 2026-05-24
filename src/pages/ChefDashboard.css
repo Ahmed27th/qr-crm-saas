@@ -125,6 +125,10 @@
   .chef-grid {
     grid-template-columns: 1fr;
     height: auto;
+    gap: 12px;
+  }
+  .chef-column {
+    max-height: calc(100vh - 200px);
   }
 }
 
