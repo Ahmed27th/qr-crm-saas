@@ -20,7 +20,7 @@ export function OnboardingSearch() {
     setError(null);
 
     try {
-      const res = await fetch('/api/get-place-id', {
+      const res = await fetch('/.netlify/functions/get-place-id', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ restaurantName, city }),
