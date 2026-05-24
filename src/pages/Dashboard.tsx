@@ -2514,8 +2514,8 @@ export function Dashboard() {
                   <div className="premium-input-group">
                     <label>{t('settings_google', 'Google Review')}</label>
                     <p className="google-search-hint">
-                      Entrez les informations de votre restaurant pour récupérer votre lien d'avis Google. 
-                      Les avis clients seront redirigés directement vers Google&nbsp;Maps.
+                      Entrez le nom exact de votre restaurant tel qu'il apparaît sur Google&nbsp;Maps, ainsi que sa ville et son pays.
+                      Les avis clients seront redirigés directement vers votre fiche Google&nbsp;Maps.
                     </p>
                     <div className="google-search-row">
                       <input type="text" value={googleSearchName} onChange={e => setGoogleSearchName(e.target.value)} className="premium-input" placeholder="Nom du restaurant" style={{ flex: 1 }} />
