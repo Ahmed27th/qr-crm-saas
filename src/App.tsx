@@ -14,6 +14,7 @@ import { ServerDashboard } from './pages/ServerDashboard';
 import { OrderTracking } from './pages/OrderTracking';
 import { PublicCheckReservation } from './pages/PublicCheckReservation';
 import { GoogleReviewRedirect } from './pages/GoogleReviewRedirect';
+import { OnboardingSearch } from './pages/OnboardingSearch';
 
 import { useEffect } from 'react';
 import { NotificationService } from './utils/notifications';
@@ -72,6 +73,7 @@ function App() {
           <Route path="/check-reservation/:restaurantId" element={<PublicCheckReservation />} />
           <Route path="/serveur/:restaurantId/:staffId" element={<ServerDashboard />} />
           <Route path="/google-review/:restaurantId" element={<GoogleReviewRedirect />} />
+          <Route path="/onboarding" element={<OnboardingSearch />} />
         </Routes>
       </Router>
     </ErrorBoundary>
