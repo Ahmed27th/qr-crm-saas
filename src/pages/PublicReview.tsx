@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Star, Send, Heart, MessageSquare, ArrowLeft, Loader2 } from 'lucide-react';
+import { Star, Send, Heart, MessageSquare, ArrowLeft } from 'lucide-react';
 import { DataStore } from '../dataStore';
 import type { RestaurantProfile } from '../dataStore';
 import './PublicReview.css';
@@ -12,7 +12,7 @@ export const PublicReview = () => {
   const [comment, setComment] = useState('');
   const [submitted, setSubmitted] = useState(false);
   const [hover, setHover] = useState(0);
-  const [redirecting, setRedirecting] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     // Real-time profile subscription
@@ -31,12 +31,22 @@ export const PublicReview = () => {
     e.preventDefault();
     if (rating === 0) return;
     await DataStore.addReview(rating, comment, undefined, restaurantId);
-    if (rating >= 4 && profile?.googleReviewUrl) {
-      setRedirecting(true);
-      window.location.href = profile.googleReviewUrl;
-      return;
-    }
     setSubmitted(true);
+  };
+
+  const handleGoogleShare = async () => {
+    if (comment) {
+      try {
+        await navigator.clipboard.writeText(comment);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 3000);
+      } catch {
+        // clipboard not available
+      }
+    }
+    if (profile?.googleReviewUrl) {
+      window.open(profile.googleReviewUrl, '_blank');
+    }
   };
 
   const getRatingLabel = (val: number) => {
@@ -68,21 +78,6 @@ export const PublicReview = () => {
     backgroundAttachment: 'fixed'
   } : {};
 
-  /* ── Redirecting State ───────────────────────────── */
-  if (redirecting) {
-    return (
-      <div className="review-container" style={containerStyle}>
-        <div className="review-background-overlay" />
-        <div className="review-card-wrapper" style={{ display: 'flex', alignItems: 'center', minHeight: '100vh' }}>
-          <div className="glass-panel p-10 w-full" style={{ textAlign: 'center' }}>
-            <Loader2 size={40} style={{ color: '#E2B36B', margin: '0 auto 1rem' }} className="animate-spin" />
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-tertiary)' }}>Redirection vers Google&nbsp;Maps…</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   /* ── Success State ───────────────────────────────── */
   if (submitted) {
     const isPositive = rating >= 4;
@@ -106,7 +101,18 @@ export const PublicReview = () => {
                 : `Votre retour nous aide à nous améliorer. À très bientôt chez ${profile?.name ?? 'nous'} !`}
             </p>
 
-            {!isPositive && <div className="flex flex-col gap-3" />}
+            <div className="flex flex-col gap-3">
+              {isPositive && profile?.googleReviewUrl && (
+                <button className="google-btn" onClick={handleGoogleShare}>
+                  <img
+                    src="https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_92x30dp.png"
+                    alt="Google"
+                    className="google-logo-mini"
+                  />
+                  {copied ? 'Commentaire copié ✓' : 'Publier sur Google'}
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
