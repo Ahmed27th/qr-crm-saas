@@ -101,6 +101,10 @@ export function Dashboard() {
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const [updatingReviewId, setUpdatingReviewId] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [googleSearchName, setGoogleSearchName] = useState('');
+  const [googleSearchCity, setGoogleSearchCity] = useState('');
+  const [googleSearchLoading, setGoogleSearchLoading] = useState(false);
+  const [googleSearchError, setGoogleSearchError] = useState<string | null>(null);
   const migrateRestaurantIds = useMutation(api.migrateRestaurantIds.run);
   useEffect(() => {
     let isAuthenticated = localStorage.getItem('qr_is_authenticated') === 'true';
@@ -2507,11 +2511,42 @@ export function Dashboard() {
                     </div>
                   </div>
                   <div className="premium-input-group">
-                    <label>{t('settings_google')}</label>
-                    <div className="premium-input-wrapper">
-                      <LinkIcon className="input-icon" size={18} />
-                      <input type="text" value={settingsForm.googleReviewUrl || ''} onChange={e => setSettingsForm({...settingsForm, googleReviewUrl: e.target.value})} className="premium-input" placeholder="https://search.google.com/local/writereview?placeid=..." />
+                    <label>{t('settings_google', 'Google Review')}</label>
+                    <div className="google-search-row">
+                      <input type="text" value={googleSearchName} onChange={e => setGoogleSearchName(e.target.value)} className="premium-input" placeholder="Nom du restaurant" style={{ flex: 1 }} />
+                      <input type="text" value={googleSearchCity} onChange={e => setGoogleSearchCity(e.target.value)} className="premium-input" placeholder="Ville" style={{ flex: 0.6 }} />
+                      <button
+                        className="google-search-btn"
+                        onClick={async () => {
+                          if (!googleSearchName || !googleSearchCity) return;
+                          setGoogleSearchLoading(true);
+                          setGoogleSearchError(null);
+                          try {
+                            const res = await fetch('/.netlify/functions/get-place-id', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              body: JSON.stringify({ restaurantName: googleSearchName, city: googleSearchCity }),
+                            });
+                            const data = await res.json();
+                            if (!res.ok) { setGoogleSearchError(data.error); return; }
+                            setSettingsForm({ ...settingsForm, googleReviewUrl: `https://search.google.com/local/writereview?placeid=${data.placeId}` });
+                          } catch { setGoogleSearchError('Erreur réseau'); }
+                          finally { setGoogleSearchLoading(false); }
+                        }}
+                        disabled={googleSearchLoading || !googleSearchName || !googleSearchCity}
+                      >
+                        {googleSearchLoading ? <Loader2 size={16} className="animate-spin" /> : <Search size={16} />}
+                        Chercher
+                      </button>
                     </div>
+                    {googleSearchError && <p className="google-search-error">{googleSearchError}</p>}
+                    {settingsForm.googleReviewUrl && (
+                      <div className="google-result-row">
+                        <LinkIcon size={14} />
+                        <span className="google-result-url">{settingsForm.googleReviewUrl}</span>
+                        <button className="google-clear-btn" onClick={() => setSettingsForm({...settingsForm, googleReviewUrl: ''})}><X size={14} /></button>
+                      </div>
+                    )}
                   </div>
                   <div className="premium-input-group">
                     <label>{t('settings_hours')}</label>
