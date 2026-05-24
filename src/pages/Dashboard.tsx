@@ -519,6 +519,9 @@ export function Dashboard() {
                   </div>
 
                   <div className="staff-card-actions">
+                    <button onClick={() => window.open(`${window.location.origin}/serveur/${profile?.id || 'demo'}/${member.id}`, '_blank')} className="staff-dash-btn">
+                      <ExternalLink size={15} /> {t('staff_dashboard', 'Dashboard')}
+                    </button>
                     <button onClick={() => setQrStaffId(member.id)} className="staff-qr-btn">
                       <QrCode size={15} /> {t('dash_qr')}
                     </button>
