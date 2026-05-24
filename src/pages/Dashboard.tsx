@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { 
   LayoutDashboard, ShoppingBag, Utensils, QrCode, Settings,
   Bell, Search, Plus, CheckCircle, Clock, TrendingUp, User, Users, Star, MessageSquare, ExternalLink, ShieldAlert, Smartphone, Calendar, Mail, Trash2, X, Tag, Image as ImageIcon, Link as LinkIcon, FileText, Sparkles,
-  BarChart3, Activity, PieChart as PieChartIcon, Target, Phone, Truck, Crown, Lock, CreditCard, Download, MoreHorizontal
+  BarChart3, Activity, PieChart as PieChartIcon, Target, Phone, Truck, Crown, Lock, CreditCard, Download, MoreHorizontal, Loader2
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
