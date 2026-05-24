@@ -322,6 +322,12 @@
   font-size: 0.9rem;
   color: var(--text-tertiary);
 }
+.tarifs-card-usd {
+  font-size: 0.8rem;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  margin-top: 0.2rem;
+}
 
 .tarifs-card-save {
   display: flex;
