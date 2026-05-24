@@ -2528,33 +2528,6 @@ export function Dashboard() {
                     </div>
                   </div>
 
-                  <div className="premium-input-group mt-6">
-                    <label>{t('settings_about_image', 'Photo de l\'annonce / À propos')}</label>
-                    <div className="flex gap-4 items-center">
-                      <label className="flex-1 cursor-pointer">
-                        <input 
-                          type="file" 
-                          accept="image/*" 
-                          style={{ display: 'none' }}
-                          onChange={(e) => handleImageUpload(e, (url) => setSettingsForm({...settingsForm, aboutImage: url}))}
-                        />
-                        <div className="premium-input-wrapper group">
-                          <ImageIcon className="input-icon group-hover:text-accent transition-colors" size={18} />
-                          <div className="premium-input flex items-center text-tertiary">
-                            {settingsForm.aboutImage ? t('image_selected') : t('choose_photo')}
-                          </div>
-                        </div>
-                      </label>
-                      {settingsForm.aboutImage && (
-                        <>
-                          <img src={settingsForm.aboutImage} className="w-16 h-16 rounded-lg object-cover border border-accent shadow-md" alt="About Preview" />
-                          <button type="button" onClick={() => setSettingsForm({...settingsForm, aboutImage: ''})} className="btn-icon text-red-400 hover:text-red-300 transition-colors" title={t('image_delete')}>
-                            <X size={18} />
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </div>
                 </div>
 
                 <div className="glass-panel p-8">
