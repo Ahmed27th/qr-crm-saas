@@ -29,7 +29,7 @@ export function PublicMenu() {
   const [deliveryAddress, setDeliveryAddress] = useState('');
   const [deliveryTime, setDeliveryTime] = useState('');
   const [deliveryInstructions, setDeliveryInstructions] = useState('');
-  const [tipPercentage, setTipPercentage] = useState(15);
+  const [tipPercentage, setTipPercentage] = useState(0);
   const [modalState, setModalState] = useState<'checkout' | 'success' | 'review'>('checkout');
   const [reviewRating, setReviewRating] = useState(0);
   const [reviewComment, setReviewComment] = useState('');

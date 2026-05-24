@@ -10,6 +10,7 @@ import { Tarifs } from './pages/Tarifs';
 
 import { DriverPortal } from './pages/DriverPortal';
 import { ChefDashboard } from './pages/ChefDashboard';
+import { ServerDashboard } from './pages/ServerDashboard';
 import { OrderTracking } from './pages/OrderTracking';
 import { PublicCheckReservation } from './pages/PublicCheckReservation';
 
@@ -68,6 +69,7 @@ function App() {
           <Route path="/chef/:restaurantId" element={<ChefDashboard />} />
           <Route path="/track/:orderId" element={<OrderTracking />} />
           <Route path="/check-reservation/:restaurantId" element={<PublicCheckReservation />} />
+        <Route path="/serveur/:restaurantId/:staffId" element={<ServerDashboard />} />
         </Routes>
       </Router>
     </ErrorBoundary>
