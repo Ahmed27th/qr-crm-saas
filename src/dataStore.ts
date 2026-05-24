@@ -162,6 +162,7 @@ export const DataStore = {
         source: d.source as any,
         orderItems: d.orderItems,
         driverId: d.driverId,
+        serverId: d.serverId,
         customerName: d.customerName,
         customerPhone: d.customerPhone,
         customerAddress: d.customerAddress,
