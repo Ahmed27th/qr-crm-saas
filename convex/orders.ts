@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { v, ConvexError } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
 export const getByRestaurant = query({
@@ -55,5 +55,74 @@ export const assignDriver = mutation({
   },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.id, { driverId: args.driverId });
+  },
+});
+
+/**
+ * Claim an order only if it's still unclaimed (status === 'ready', no serverId).
+ * Throws ConvexError with code 409 on conflict.
+ */
+export const claimOrder = mutation({
+  args: {
+    id: v.id("orders"),
+    serverId: v.string(),
+    expectedStatus: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const order = await ctx.db.get(args.id);
+    if (!order) throw new ConvexError({ code: 404, message: "Order not found" });
+    if (order.status !== "ready" || order.serverId) {
+      throw new ConvexError({
+        code: 409,
+        message: `Conflict: order ${args.id} has status "${order.status}", serverId "${order.serverId}". Expected "ready" / unclaimed.`,
+        currentStatus: order.status,
+        currentServerId: order.serverId,
+      });
+    }
+    await ctx.db.patch(args.id, { serverId: args.serverId });
+  },
+});
+
+/**
+ * Mark an order as served only if it's currently 'ready'.
+ */
+export const markServed = mutation({
+  args: {
+    id: v.id("orders"),
+    expectedStatus: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const order = await ctx.db.get(args.id);
+    if (!order) throw new ConvexError({ code: 404, message: "Order not found" });
+    if (order.status !== "ready") {
+      throw new ConvexError({
+        code: 409,
+        message: `Conflict: order ${args.id} has status "${order.status}". Expected "ready".`,
+        currentStatus: order.status,
+      });
+    }
+    await ctx.db.patch(args.id, { status: "served" });
+  },
+});
+
+/**
+ * Mark an order as paid only if it's currently 'served'.
+ */
+export const markPaid = mutation({
+  args: {
+    id: v.id("orders"),
+    expectedStatus: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const order = await ctx.db.get(args.id);
+    if (!order) throw new ConvexError({ code: 404, message: "Order not found" });
+    if (order.status !== "served") {
+      throw new ConvexError({
+        code: 409,
+        message: `Conflict: order ${args.id} has status "${order.status}". Expected "served".`,
+        currentStatus: order.status,
+      });
+    }
+    await ctx.db.patch(args.id, { status: "paid" });
   },
 });

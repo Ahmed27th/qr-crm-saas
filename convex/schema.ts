@@ -48,6 +48,7 @@ export default defineSchema({
     customerAddress: v.optional(v.string()),
     deliveryInstructions: v.optional(v.string()),
     createdAt: v.number(),
+    serverId: v.optional(v.string()),
   }).index("by_restaurantId", ["restaurantId"]),
 
   staff: defineTable({

@@ -12,11 +12,12 @@ export interface Order {
   table: string;
   items: number;
   total: number;
-  status: 'pending' | 'preparing' | 'ready' | 'delivered' | 'cancelled';
+  status: 'pending' | 'preparing' | 'ready' | 'served' | 'paid' | 'delivered' | 'cancelled';
   time: number;
   source: 'qr' | 'ubereats' | 'glovo';
   orderItems?: OrderItem[];
   driverId?: string;
+  serverId?: string;
   customerName?: string;
   customerPhone?: string;
   customerAddress?: string;
@@ -140,6 +141,7 @@ export const DataStore = {
       source: d.source as any,
       orderItems: d.orderItems,
       driverId: d.driverId,
+      serverId: d.serverId,
       customerName: d.customerName,
       customerPhone: d.customerPhone,
       customerAddress: d.customerAddress,
@@ -195,6 +197,18 @@ export const DataStore = {
 
   updateOrderStatus: async (id: string, status: Order['status'], _restaurantId?: string) => {
     await convex.mutation(api.orders.updateStatus, { id: id as any, status });
+  },
+
+  claimOrder: async (id: string, serverId: string) => {
+    await convex.mutation(api.orders.claimOrder, { id: id as any, serverId });
+  },
+
+  markServed: async (id: string) => {
+    await convex.mutation(api.orders.markServed, { id: id as any });
+  },
+
+  markPaid: async (id: string) => {
+    await convex.mutation(api.orders.markPaid, { id: id as any });
   },
 
   getAvailableDeliveryOrders: async (restaurantId?: string): Promise<Order[]> => {
