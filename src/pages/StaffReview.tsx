@@ -11,7 +11,6 @@ export function StaffReview() {
   const [hovered, setHovered] = useState(0);
   const [comment, setComment] = useState('');
   const [step, setStep] = useState<'rate' | 'comment' | 'done'>('rate');
-  const [copied, setCopied] = useState(false);
   const [redirecting, setRedirecting] = useState(false);
   const [staff, setStaff] = useState<any>(null);
   const [profile, setProfile] = useState<any>(null);
