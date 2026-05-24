@@ -24,13 +24,16 @@ export default async (req) => {
     });
   }
 
-  const { restaurantName, city } = body;
-  if (!restaurantName || !city) {
-    return new Response(JSON.stringify({ error: 'Champs restaurantName et city requis' }), {
+  const { restaurantName, city, country } = body;
+  if (!restaurantName) {
+    return new Response(JSON.stringify({ error: 'Champ restaurantName requis' }), {
       status: 400,
       headers: { 'Content-Type': 'application/json' },
     });
   }
+
+  const parts = [restaurantName, city, country].filter(Boolean);
+  const textQuery = parts.join(' ');
 
   const googleRes = await fetch('https://places.googleapis.com/v1/places:searchText', {
     method: 'POST',
@@ -39,7 +42,7 @@ export default async (req) => {
       'X-Goog-Api-Key': apiKey,
       'X-Goog-FieldMask': 'places.id',
     },
-    body: JSON.stringify({ textQuery: `${restaurantName} ${city}` }),
+    body: JSON.stringify({ textQuery }),
   });
 
   const data = await googleRes.json();

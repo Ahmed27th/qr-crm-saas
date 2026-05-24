@@ -159,14 +159,14 @@ export function Tarifs() {
                 <p className="tarifs-card-desc">{plan.desc}</p>
               </div>
               <div className="tarifs-card-price">
-                <span className="tarifs-card-currency">DH</span>
+                <span className="tarifs-card-currency">$</span>
                 <span className="tarifs-card-amount">{billingCycle === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice}</span>
                 <span className="tarifs-card-period">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
               </div>
               {billingCycle === 'yearly' && (
                 <div className="tarifs-card-save">
                   <Percent size={14} />
-                  <span>Save DH {plan.savings}/year</span>
+                  <span>Save ${plan.savings}/year</span>
                 </div>
               )}
               <ul className="tarifs-card-features">

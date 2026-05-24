@@ -103,6 +103,7 @@ export function Dashboard() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [googleSearchName, setGoogleSearchName] = useState('');
   const [googleSearchCity, setGoogleSearchCity] = useState('');
+  const [googleSearchCountry, setGoogleSearchCountry] = useState('');
   const [googleSearchLoading, setGoogleSearchLoading] = useState(false);
   const [googleSearchError, setGoogleSearchError] = useState<string | null>(null);
   const migrateRestaurantIds = useMutation(api.migrateRestaurantIds.run);
@@ -2512,9 +2513,14 @@ export function Dashboard() {
                   </div>
                   <div className="premium-input-group">
                     <label>{t('settings_google', 'Google Review')}</label>
+                    <p className="google-search-hint">
+                      Entrez les informations de votre restaurant pour récupérer votre lien d'avis Google. 
+                      Les avis clients seront redirigés directement vers Google&nbsp;Maps.
+                    </p>
                     <div className="google-search-row">
                       <input type="text" value={googleSearchName} onChange={e => setGoogleSearchName(e.target.value)} className="premium-input" placeholder="Nom du restaurant" style={{ flex: 1 }} />
                       <input type="text" value={googleSearchCity} onChange={e => setGoogleSearchCity(e.target.value)} className="premium-input" placeholder="Ville" style={{ flex: 0.6 }} />
+                      <input type="text" value={googleSearchCountry} onChange={e => setGoogleSearchCountry(e.target.value)} className="premium-input" placeholder="Pays" style={{ flex: 0.5 }} />
                       <button
                         className="google-search-btn"
                         onClick={async () => {
@@ -2522,10 +2528,11 @@ export function Dashboard() {
                           setGoogleSearchLoading(true);
                           setGoogleSearchError(null);
                           try {
+                            const query = googleSearchCountry ? `${googleSearchName} ${googleSearchCity} ${googleSearchCountry}` : `${googleSearchName} ${googleSearchCity}`;
                             const res = await fetch('/.netlify/functions/get-place-id', {
                               method: 'POST',
                               headers: { 'Content-Type': 'application/json' },
-                              body: JSON.stringify({ restaurantName: googleSearchName, city: googleSearchCity }),
+                              body: JSON.stringify({ restaurantName: query }),
                             });
                             const data = await res.json();
                             if (!res.ok) { setGoogleSearchError(data.error); return; }
