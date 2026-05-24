@@ -7,7 +7,7 @@ export const getByUserId = query({
     return await ctx.db
       .query("profiles")
       .withIndex("by_userId", (q) => q.eq("userId", args.userId))
-      .unique();
+      .first();
   },
 });
 
@@ -49,7 +49,7 @@ export const create = mutation({
     const existing = await ctx.db
       .query("profiles")
       .withIndex("by_userId", (q) => q.eq("userId", args.userId))
-      .unique();
+      .first();
     if (existing) return existing._id;
     return await ctx.db.insert("profiles", {
       ...args,

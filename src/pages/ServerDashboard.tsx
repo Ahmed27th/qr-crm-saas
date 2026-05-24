@@ -31,7 +31,7 @@ export function ServerDashboard() {
   const baseUrl = window.location.origin;
   const reviewUrl = staffId ? `${baseUrl}/staff-review/${restaurantId}/${staffId}` : '';
 
-  const sortedOrders = [...orders].sort((a, b) => b.time - a.time);
+  const sortedOrders = [...orders.filter(o => o.table !== 'Livraison')].sort((a, b) => b.time - a.time);
 
   return (
     <div className="server-page">
