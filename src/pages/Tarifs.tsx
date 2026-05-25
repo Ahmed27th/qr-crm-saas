@@ -112,9 +112,9 @@ export function Tarifs() {
             <span>QR CRM</span>
           </button>
           <div className="tarifs-nav-right">
-            <button className="landing-btn landing-btn--ghost" onClick={() => navigate('/login')}>
+            <button className="landing-btn landing-btn--ghost" onClick={() => navigate(isAuthenticated ? '/dashboard' : '/login')}>
               <ArrowLeft size={15} />
-              <span>{t('login')}</span>
+              <span>{isAuthenticated ? 'Dashboard' : t('login')}</span>
             </button>
           </div>
         </div>
