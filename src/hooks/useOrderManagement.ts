@@ -158,7 +158,7 @@ export function useOrderManagement({
   const claimOrder = useCallback(
     (orderId: string) =>
       withRollback(orderId, { serverId: staffId }, () =>
-        updateOrder(orderId, "ready", staffId, "pending")
+        updateOrder(orderId, "ready", staffId, "ready")
       ),
     [staffId, withRollback]
   );

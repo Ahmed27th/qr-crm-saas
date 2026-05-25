@@ -72,6 +72,7 @@ function App() {
           <Route path="/track/:orderId" element={<OrderTracking />} />
           <Route path="/check-reservation/:restaurantId" element={<PublicCheckReservation />} />
           <Route path="/serveur/:restaurantId/:staffId" element={<ServerDashboard />} />
+          <Route path="/server-dashboard/:restaurantId/:staffId" element={<ServerDashboard />} />
           <Route path="/google-review/:restaurantId" element={<GoogleReviewRedirect />} />
           <Route path="/onboarding" element={<OnboardingSearch />} />
         </Routes>
