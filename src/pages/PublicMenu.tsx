@@ -154,6 +154,35 @@ export function PublicMenu() {
         }, restaurantId);
       }
       if (newOrderId) setLastOrderId(newOrderId);
+      
+      // Sync order to Worker D1 so ChefDashboard can see it
+      try {
+        const workerUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8787";
+        await fetch(`${workerUrl}/api/add-order`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            restaurantId,
+            table: orderMode === 'dinein' ? tableNumber : 'Livraison',
+            items: cartTotalItems,
+            total: finalTotal,
+            orderItems: Object.entries(cart).map(([id, qty]) => {
+              const item = menuItems.find(m => m.id === id);
+              return { name: item?.name || 'Inconnu', qty, price: item?.price || 0 };
+            }),
+            source: 'qr',
+            customerName: orderMode === 'delivery' ? deliveryName : undefined,
+            customerPhone: orderMode === 'delivery' ? deliveryPhone : undefined,
+            customerAddress: orderMode === 'delivery' ? deliveryAddress : undefined,
+            deliveryInstructions: orderMode === 'delivery'
+              ? (deliveryTime ? `${deliveryTime} - ${deliveryInstructions}` : deliveryInstructions)
+              : undefined,
+          }),
+        });
+      } catch (err) {
+        console.error('Failed to sync order to Worker:', err);
+      }
+      
       setModalState('success');
       
       // Clear cart

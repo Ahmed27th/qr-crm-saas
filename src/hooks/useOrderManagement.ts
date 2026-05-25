@@ -11,7 +11,7 @@ interface OptimisticOverride {
 
 export interface UseOrderManagementOptions {
   restaurantId: string;
-  staffId: string;
+  staffId?: string;
   pollIntervalMs?: number;
 }
 
@@ -24,6 +24,8 @@ export interface UseOrderManagementReturn {
   claimOrder: (orderId: string) => Promise<void>;
   markServed: (orderId: string) => Promise<void>;
   markPaid: (orderId: string) => Promise<void>;
+  startPreparing: (orderId: string) => Promise<void>;
+  finishPreparing: (orderId: string) => Promise<void>;
 }
 
 async function fetchOrders(restaurantId: string, type: "active" | "history"): Promise<Order[]> {
@@ -177,19 +179,39 @@ export function useOrderManagement({
     [withRollback]
   );
 
+  const startPreparing = useCallback(
+    (orderId: string) =>
+      withRollback(orderId, { status: "preparing" }, () =>
+        updateOrder(orderId, "preparing", undefined, "pending")
+      ),
+    [withRollback]
+  );
+
+  const finishPreparing = useCallback(
+    (orderId: string) =>
+      withRollback(orderId, { status: "ready" }, () =>
+        updateOrder(orderId, "ready", undefined, "preparing")
+      ),
+    [withRollback]
+  );
+
   const dineIn = orders.filter((o) => o.table !== "Livraison");
 
-  const aServir = dineIn.filter(
-    (o) => o.status === "ready" && !o.serverId
-  );
-  const mesCommandes = dineIn.filter(
-    (o) =>
-      o.serverId === staffId &&
-      (o.status === "ready" || o.status === "served")
-  );
-  const payees = dineIn.filter(
-    (o) => o.serverId === staffId && o.status === "paid"
-  );
+  const aServir = staffId
+    ? dineIn.filter((o) => o.status === "ready" && !o.serverId)
+    : [];
+
+  const mesCommandes = staffId
+    ? dineIn.filter(
+        (o) =>
+          o.serverId === staffId &&
+          (o.status === "ready" || o.status === "served")
+      )
+    : [];
+
+  const payees = staffId
+    ? dineIn.filter((o) => o.serverId === staffId && o.status === "paid")
+    : [];
 
   return {
     orders,
@@ -200,5 +222,7 @@ export function useOrderManagement({
     claimOrder,
     markServed,
     markPaid,
+    startPreparing,
+    finishPreparing,
   };
 }

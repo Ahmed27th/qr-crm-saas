@@ -13,7 +13,7 @@ type OrderRow = {
   table_number: string;
   items: number;
   total_mad: number;
-  status: 'PENDING' | 'CLAIMED' | 'SERVED' | 'PAID';
+  status: 'PENDING' | 'PREPARING' | 'CLAIMED' | 'SERVED' | 'PAID';
   server_id: string | null;
   order_items: string | null;
   source: string | null;
@@ -59,6 +59,7 @@ type PlaceIdBody = {
 
 const FE_STATUS: Record<string, string> = {
   PENDING: 'pending',
+  PREPARING: 'preparing',
   CLAIMED: 'ready',
   SERVED: 'served',
   PAID: 'paid',
@@ -66,6 +67,7 @@ const FE_STATUS: Record<string, string> = {
 
 const D1_STATUS: Record<string, string> = {
   pending: 'PENDING',
+  preparing: 'PREPARING',
   ready: 'CLAIMED',
   served: 'SERVED',
   paid: 'PAID',
@@ -204,6 +206,48 @@ async function handleUpdateOrder(request: Request, env: Env): Promise<Response> 
   return json({ success: true });
 }
 
+async function handleAddOrder(request: Request, env: Env): Promise<Response> {
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json<Record<string, unknown>>();
+  } catch {
+    return error('Invalid JSON body', 400);
+  }
+
+  const restaurantId = body.restaurantId as string | undefined;
+  const table = body.table as string | undefined;
+  const items = body.items as number | undefined;
+  const total = body.total as number | undefined;
+  const orderItems = body.orderItems as unknown[] | undefined;
+  const source = (body.source as string) ?? 'qr';
+  const customerName = body.customerName as string | null | undefined;
+  const customerPhone = body.customerPhone as string | null | undefined;
+  const customerAddress = body.customerAddress as string | null | undefined;
+  const deliveryInstructions = body.deliveryInstructions as string | null | undefined;
+
+  if (!restaurantId) return error('restaurantId is required', 400);
+  if (table === undefined) return error('table is required', 400);
+  if (items === undefined) return error('items is required', 400);
+  if (total === undefined) return error('total is required', 400);
+
+  const result = await env.DB.prepare(
+    `INSERT INTO orders (restaurant_id, table_number, items, total_mad, status, order_items, source, customer_name, customer_phone, customer_address, delivery_instructions, created_at, updated_at) VALUES (?, ?, ?, ?, 'PENDING', ?, ?, ?, ?, ?, ?, unixepoch(), unixepoch())`
+  ).bind(
+    restaurantId,
+    String(table),
+    items,
+    total,
+    orderItems ? JSON.stringify(orderItems) : null,
+    source,
+    customerName ?? null,
+    customerPhone ?? null,
+    customerAddress ?? null,
+    deliveryInstructions ?? null,
+  ).run();
+
+  return json({ id: result.meta.last_row_id }, 201);
+}
+
 async function handleGetPlaceId(request: Request, env: Env): Promise<Response> {
   const apiKey = env.GOOGLE_MAPS_API_KEY;
   if (!apiKey) return error('Google Maps API key not configured on the server', 500);
@@ -252,6 +296,10 @@ export default {
 
         case '/api/update-order':
           if (request.method === 'POST') return handleUpdateOrder(request, env);
+          return error('Method not allowed', 405);
+
+        case '/api/add-order':
+          if (request.method === 'POST') return handleAddOrder(request, env);
           return error('Method not allowed', 405);
 
         case '/api/get-place-id':

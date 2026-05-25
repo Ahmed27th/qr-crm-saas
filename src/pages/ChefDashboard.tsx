@@ -10,18 +10,50 @@ import {
   Bell
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { DataStore, type Order } from '../dataStore';
+import type { Order } from '../dataStore';
 import { formatPrice } from '../utils/format';
 import { NotificationService } from '../utils/notifications';
+import { useOrderManagement } from '../hooks/useOrderManagement';
 import './ChefDashboard.css';
 
 export function ChefDashboard() {
   const { restaurantId } = useParams<{ restaurantId: string }>();
   const { t } = useTranslation();
-  const [orders, setOrders] = useState<Order[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevPendingCount = useRef(0);
+
+  const { orders, startPreparing, finishPreparing } = useOrderManagement({
+    restaurantId: restaurantId!,
+    pollIntervalMs: 3000,
+  });
+
+  useEffect(() => {
+    const pendingCount = orders.filter(o => o.status === 'pending').length;
+    if (pendingCount > prevPendingCount.current && prevPendingCount.current > 0) {
+      if (audioRef.current) {
+        audioRef.current.play().catch(e => console.log('Audio play failed:', e));
+      }
+      NotificationService.showNotification(t('order_sent', 'Nouvelle Commande !'), {
+        body: t('chef_new_order_msg', 'Une nouvelle commande vient d\'arriver.'),
+        tag: 'new-order',
+        renotify: true,
+      } as any);
+    }
+    prevPendingCount.current = pendingCount;
+  }, [orders, t]);
+
+  const playNotification = () => {
+    if (audioRef.current) {
+      audioRef.current.play().catch(e => console.log('Audio play failed:', e));
+    }
+    NotificationService.showNotification(t('order_sent', 'Nouvelle Commande !'), {
+      body: t('chef_new_order_msg', 'Une nouvelle commande vient d\'arriver.'),
+      tag: 'new-order',
+      renotify: true,
+    } as any);
+  };
 
   const startLongPress = (order: Order) => {
     longPressTimer.current = setTimeout(() => {
@@ -34,46 +66,6 @@ export function ChefDashboard() {
       clearTimeout(longPressTimer.current);
       longPressTimer.current = null;
     }
-  };
-
-  useEffect(() => {
-    if (!restaurantId) return;
-
-    // Real-time synchronization with Firestore
-    const unsubscribe = DataStore.subscribeToOrders((currentOrders) => {
-      const newOrders = currentOrders.filter(o => o.status === 'pending');
-      
-      setOrders(prevOrders => {
-        const prevNewCount = prevOrders.filter(o => o.status === 'pending').length;
-        if (newOrders.length > prevNewCount && prevNewCount !== 0) {
-          playNotification();
-        }
-        return currentOrders;
-      });
-    }, restaurantId);
-
-    return () => {
-      if (unsubscribe) unsubscribe();
-    };
-  }, [restaurantId]);
-
-
-  const playNotification = () => {
-    // Audio notification
-    if (audioRef.current) {
-      audioRef.current.play().catch(e => console.log('Audio play failed:', e));
-    }
-
-    // Browser notification
-    NotificationService.showNotification(t('order_sent', 'Nouvelle Commande !'), {
-      body: t('chef_new_order_msg', 'Une nouvelle commande vient d\'arriver.'),
-      tag: 'new-order',
-      renotify: true
-    } as any);
-  };
-
-  const updateStatus = async (id: string, status: Order['status']) => {
-    await DataStore.updateOrderStatus(id, status, restaurantId);
   };
 
   const getTimerInfo = (time: number) => {
@@ -130,7 +122,7 @@ export function ChefDashboard() {
           {order.status === 'pending' && (
             <button 
               className="chef-action-btn start"
-              onClick={() => updateStatus(order.id, 'preparing')}
+              onClick={() => startPreparing(order.id)}
             >
               <Play size={18} />
               {t('chef_start')}
@@ -139,7 +131,7 @@ export function ChefDashboard() {
           {order.status === 'preparing' && (
             <button 
               className="chef-action-btn finish"
-              onClick={async () => await updateStatus(order.id, 'ready')}
+              onClick={() => finishPreparing(order.id)}
             >
               <CheckCircle2 size={18} />
               {t('chef_finish')}
