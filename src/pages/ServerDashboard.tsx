@@ -28,7 +28,6 @@ export function ServerDashboard() {
 
   const {
     orders,
-    payees,
     acceptOrder,
     markServed: optimisticServe,
     markPaid: optimisticPay,
@@ -60,11 +59,12 @@ export function ServerDashboard() {
   const reviewUrl = staffId ? `${baseUrl}/staff-review/${restaurantId}/${staffId}` : '';
 
   const nouvelles = orders.filter(o => o.table !== 'Livraison' && (o.status === 'pending' || o.status === 'preparing') && !o.serverId);
-  const aServir = orders.filter(o => o.table !== 'Livraison' && o.serverId === staffId && o.status !== 'paid');
+  const aServir = orders.filter(o => o.table !== 'Livraison' && o.serverId === staffId && o.status !== 'paid' && o.status !== 'served');
+  const aPayer = orders.filter(o => o.table !== 'Livraison' && o.serverId === staffId && (o.status === 'served' || o.status === 'paid'));
 
   const filteredNouvelles = nouvelles.filter(o => o.table.toLowerCase().includes(search.toLowerCase()));
   const filteredAServir = aServir.filter(o => o.table.toLowerCase().includes(search.toLowerCase()));
-  const filteredPayees = payees.filter(o => o.table.toLowerCase().includes(search.toLowerCase()));
+  const filteredPayees = aPayer.filter(o => o.table.toLowerCase().includes(search.toLowerCase()));
 
   const handleAccept = async (orderId: string) => {
     try {
@@ -79,6 +79,7 @@ export function ServerDashboard() {
     try {
       setErrorMsg(null);
       await optimisticServe(orderId);
+      setTab('payees');
     } catch (err: any) {
       setErrorMsg('Erreur lors du marquage "servi"');
     }
@@ -192,7 +193,7 @@ export function ServerDashboard() {
           <span className="server-stat-label">À servir</span>
         </div>
         <div className="server-stat">
-          <span className="server-stat-value">{payees.length}</span>
+          <span className="server-stat-value">{aPayer.length}</span>
           <span className="server-stat-label">Payées</span>
         </div>
       </div>
@@ -418,7 +419,12 @@ function ServerOrderCard({ order, tab, onAccept, onServed, onPaid }: {
               <CreditCard size={14} /> Payé
             </button>
           )}
-          {tab === 'payees' && (
+          {tab === 'payees' && order.status === 'served' && onPaid && (
+            <button className="server-action-btn paid" onClick={onPaid}>
+              <CreditCard size={14} /> Payé
+            </button>
+          )}
+          {tab === 'payees' && order.status === 'paid' && (
             <span className="server-paid-badge"><Check size={14} /> Payée</span>
           )}
         </div>
