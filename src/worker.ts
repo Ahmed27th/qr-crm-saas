@@ -207,9 +207,9 @@ async function handleUpdateOrder(request: Request, env: Env): Promise<Response> 
 }
 
 async function handleAddOrder(request: Request, env: Env): Promise<Response> {
-  let body: Record<string, unknown>;
+  let body: any;
   try {
-    body = await request.json<Record<string, unknown>>();
+    body = await request.json();
   } catch {
     return error('Invalid JSON body', 400);
   }

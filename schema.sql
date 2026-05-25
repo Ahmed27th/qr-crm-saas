@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS orders (
   items         INTEGER NOT NULL DEFAULT 0,
   total_mad     REAL    NOT NULL DEFAULT 0,
   status        TEXT    NOT NULL DEFAULT 'PENDING'
-                        CHECK(status IN ('PENDING', 'CLAIMED', 'SERVED', 'PAID')),
+                        CHECK(status IN ('PENDING', 'PREPARING', 'CLAIMED', 'SERVED', 'PAID')),
   server_id     TEXT,
   order_items   TEXT,                   -- JSON array string
   source        TEXT    DEFAULT 'qr',
