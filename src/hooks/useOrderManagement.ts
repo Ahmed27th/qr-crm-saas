@@ -50,7 +50,7 @@ async function updateOrder(
     body: JSON.stringify({
       orderId,
       newStatus,
-      serverId: serverId ?? null,
+      ...(serverId !== undefined ? { serverId } : {}),
       expectedOldStatus,
     }),
   });
