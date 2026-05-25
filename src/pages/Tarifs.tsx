@@ -37,7 +37,7 @@ export function Tarifs() {
     if (!isAuthenticated) { window.location.href = '/login?redirectTo=/tarifs'; return; }
     try {
       await startTrial();
-      window.location.href = '/dashboard';
+      window.location.replace('/dashboard');
     } catch (err) {
       console.error("Trial failed:", err);
     }
@@ -134,6 +134,13 @@ export function Tarifs() {
           </div>
         </div>
       </nav>
+
+      {sub?.status === 'trialing' && (
+        <div className="tarifs-trial-banner">
+          <Crown size={18} />
+          <span>You're on a 7-day free trial of <strong>Ultimate</strong> — {Math.max(0, Math.ceil((sub.currentPeriodEnd - Date.now()) / (1000*60*60*24)))} days remaining</span>
+        </div>
+      )}
 
       <section className="tarifs-hero">
         <div className="tarifs-hero-bg">
