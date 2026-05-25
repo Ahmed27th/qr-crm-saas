@@ -21,7 +21,6 @@
   justify-content: center;
   background-color: var(--auth-bg-dark);
   font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
-  overflow: hidden;
 }
 
 .auth-page-container::before {

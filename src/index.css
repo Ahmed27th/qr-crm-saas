@@ -502,7 +502,7 @@ a:hover { color: var(--accent-secondary); }
 }
 
 /* ─── Language Switcher ─────────────────────────────────────────────── */
-.lang-switcher { position: relative; display: inline-flex; }
+.lang-switcher { position: relative; display: inline-flex; flex-shrink: 0; }
 .lang-switcher-trigger {
   display: flex; align-items: center; gap: 6px;
   padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border-color);
@@ -514,26 +514,36 @@ a:hover { color: var(--accent-secondary); }
   padding: 4px 8px; font-size: 1.1rem; border: none; background: transparent;
 }
 .lang-switcher-dropdown {
-  position: absolute; top: calc(100% + 4px); right: 0; z-index: 1000;
+  position: absolute; top: calc(100% + 4px); right: 0; z-index: 9999;
   background: var(--bg-secondary); border: 1px solid var(--border-color);
   border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-  min-width: 160px; overflow: hidden;
+  min-width: 170px; max-height: 80vh; overflow-y: auto;
 }
+.lang-switcher.minimal .lang-switcher-dropdown { right: 0; left: auto; }
 .lang-option {
   display: flex; align-items: center; gap: 8px; width: 100%;
-  padding: 10px 14px; border: none; background: none; color: var(--text-primary);
-  font-size: 0.9rem; cursor: pointer; text-align: left; transition: background 0.15s;
+  padding: 12px 16px; border: none; background: none; color: var(--text-primary);
+  font-size: 0.95rem; cursor: pointer; text-align: left; transition: background 0.15s;
 }
 .lang-option:hover { background: var(--bg-tertiary); }
 .lang-option.active { color: var(--accent-primary); font-weight: 600; }
 .lang-check { margin-left: auto; color: var(--accent-primary); }
-.lang-flag { font-size: 1.15rem; line-height: 1; }
+.lang-flag { font-size: 1.25rem; line-height: 1; }
 .lang-name { white-space: nowrap; }
 
 .sidebar-lang {
   padding: 0.5rem 1rem;
   display: flex;
   justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .lang-switcher.minimal .lang-switcher-dropdown {
+    right: 0; left: auto; min-width: 150px;
+  }
+  .lang-switcher:not(.minimal) .lang-switcher-dropdown {
+    right: 0; left: auto;
+  }
 }
 
 /* ─── RTL Support ────────────────────────────────────────────────────── */
