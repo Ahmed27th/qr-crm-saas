@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Clock, QrCode, User, UtensilsCrossed, Search, Check, CreditCard, Hand, History, Bell, AlertTriangle } from 'lucide-react';
+import { Clock, QrCode, User, UtensilsCrossed, Search, Check, CreditCard, Hand, History, Bell, AlertTriangle, ShoppingCart, Plus, Minus, X } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { DataStore, type Order, type StaffMember } from '../dataStore';
+import { DataStore, type Order, type StaffMember, type MenuItem } from '../dataStore';
 import { useOrderManagement } from '../hooks/useOrderManagement';
 import { formatPrice } from '../utils/format';
 import './ServerDashboard.css';
@@ -17,6 +17,14 @@ export function ServerDashboard() {
   const [tab, setTab] = useState<Tab>('a-servir');
   const [search, setSearch] = useState('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [activeCategory, setActiveCategory] = useState('');
+  const [cart, setCart] = useState<Record<string, number>>({});
+  const [showMenuModal, setShowMenuModal] = useState(false);
+  const [orderTable, setOrderTable] = useState('');
+  const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
   const {
     aServir,
@@ -37,6 +45,17 @@ export function ServerDashboard() {
       if (found) setStaff(found);
     });
   }, [restaurantId, staffId]);
+
+  useEffect(() => {
+    if (!restaurantId) return;
+    const unsub = DataStore.subscribeToMenu((items) => {
+      setMenuItems(items);
+      const cats = Array.from(new Set(items.map(i => i.category)));
+      setCategories(cats);
+      if (cats.length > 0 && !activeCategory) setActiveCategory(cats[0]);
+    }, restaurantId);
+    return () => unsub();
+  }, [restaurantId]);
 
   const baseUrl = window.location.origin;
   const reviewUrl = staffId ? `${baseUrl}/staff-review/${restaurantId}/${staffId}` : '';
@@ -84,6 +103,47 @@ export function ServerDashboard() {
     }
   };
 
+  const cartTotalItems = Object.values(cart).reduce((s, c) => s + c, 0);
+  const cartTotalPrice = Object.entries(cart).reduce((s, [id, c]) => {
+    const item = menuItems.find(m => m.id === id);
+    return s + (item?.price || 0) * c;
+  }, 0);
+
+  const handlePlaceOrder = async () => {
+    if (!restaurantId || !orderTable || cartTotalItems === 0) return;
+    setIsPlacingOrder(true);
+    try {
+      const workerUrl = import.meta.env.VITE_API_URL ?? "http://localhost:8787";
+      const res = await fetch(`${workerUrl}/api/add-order`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          restaurantId,
+          table: orderTable,
+          items: cartTotalItems,
+          total: cartTotalPrice,
+          orderItems: Object.entries(cart).map(([id, qty]) => {
+            const item = menuItems.find(m => m.id === id);
+            return { name: item?.name || 'Inconnu', qty, price: item?.price || 0 };
+          }),
+          source: 'server',
+        }),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      setCart({});
+      setOrderTable('');
+      setShowMenuModal(false);
+      setTab('mes-commandes');
+    } catch (err) {
+      console.error('Failed to place order:', err);
+      setErrorMsg('Erreur lors de la création de la commande');
+    } finally {
+      setIsPlacingOrder(false);
+    }
+  };
+
+  const displayItems = menuItems.filter(item => item.category === activeCategory);
+
   return (
     <div className="server-page">
       <header className="server-header">
@@ -96,9 +156,14 @@ export function ServerDashboard() {
             <p className="server-role">{staff?.role || ''}</p>
           </div>
         </div>
-        <button className="server-qr-btn" onClick={() => setShowQR(!showQR)}>
-          <QrCode size={20} /> QR Avis
-        </button>
+        <div className="server-header-actions">
+          <button className="server-qr-btn" onClick={() => setShowMenuModal(true)}>
+            <ShoppingCart size={16} /> Nouvelle commande
+          </button>
+          <button className="server-qr-btn" onClick={() => setShowQR(!showQR)}>
+            <QrCode size={20} /> QR Avis
+          </button>
+        </div>
       </header>
 
       {showQR && (
@@ -216,6 +281,91 @@ export function ServerDashboard() {
           )
         )}
       </div>
+
+      {/* Menu Ordering Modal */}
+      {showMenuModal && (
+        <div className="server-menu-overlay" onClick={() => { if (cartTotalItems === 0) { setShowMenuModal(false); setOrderTable(''); } }}>
+          <div className="server-menu-modal" onClick={e => e.stopPropagation()}>
+            <div className="server-menu-header">
+              <h2><ShoppingCart size={18} /> Nouvelle commande</h2>
+              <button className="server-menu-close" onClick={() => { setShowMenuModal(false); setCart({}); setOrderTable(''); }}>
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="server-menu-table-input">
+              <UtensilsCrossed size={16} />
+              <input
+                type="number"
+                placeholder="Numéro de table"
+                value={orderTable}
+                onChange={e => setOrderTable(e.target.value)}
+              />
+            </div>
+
+            <div className="server-menu-categories">
+              {categories.map(cat => (
+                <button
+                  key={cat}
+                  className={`server-menu-cat-btn ${activeCategory === cat ? 'active' : ''}`}
+                  onClick={() => setActiveCategory(cat)}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+
+            <div className="server-menu-items">
+              {displayItems.map(item => (
+                <div key={item.id} className={`server-menu-item ${!item.available ? 'sold-out' : ''}`}>
+                  <div className="server-menu-item-info">
+                    <span className="server-menu-item-name">{item.name}</span>
+                    <span className="server-menu-item-price">{formatPrice(item.price)}</span>
+                  </div>
+                  <div className="server-menu-item-actions">
+                    {item.available ? (
+                      cart[item.id] ? (
+                        <div className="server-menu-qty">
+                          <button onClick={() => setCart(prev => {
+                            const next = { ...prev };
+                            if (next[item.id] > 1) next[item.id] -= 1;
+                            else delete next[item.id];
+                            return next;
+                          })}><Minus size={14} /></button>
+                          <span>{cart[item.id]}</span>
+                          <button onClick={() => setCart(prev => ({ ...prev, [item.id]: (prev[item.id] || 0) + 1 }))}><Plus size={14} /></button>
+                        </div>
+                      ) : (
+                        <button className="server-menu-add-btn" onClick={() => setCart(prev => ({ ...prev, [item.id]: 1 }))}>
+                          <Plus size={14} /> Ajouter
+                        </button>
+                      )
+                    ) : (
+                      <span className="server-menu-sold-out">Épuisé</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {cartTotalItems > 0 && (
+              <div className="server-menu-cart-footer">
+                <div className="server-menu-cart-summary">
+                  <span>{cartTotalItems} article{cartTotalItems > 1 ? 's' : ''}</span>
+                  <span className="server-menu-cart-total">{formatPrice(cartTotalPrice)}</span>
+                </div>
+                <button
+                  className="server-menu-submit-btn"
+                  onClick={handlePlaceOrder}
+                  disabled={isPlacingOrder || !orderTable}
+                >
+                  {isPlacingOrder ? 'Envoi...' : `Valider la commande`}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
