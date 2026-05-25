@@ -17,6 +17,7 @@ export function LanguageSwitcher({ variant = 'default' }: { variant?: 'default' 
   const ref = useRef<HTMLDivElement>(null);
 
   const current = LANGUAGES.find(l => l.code === i18n.language) || LANGUAGES[0];
+  const sorted = [current, ...LANGUAGES.filter(l => l.code !== current.code)];
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -37,16 +38,16 @@ export function LanguageSwitcher({ variant = 'default' }: { variant?: 'default' 
         <button className="lang-switcher-trigger" onClick={() => setOpen(!open)} title={current.label}>
           {current.flag}
         </button>
-        {open && (
-          <div className="lang-switcher-dropdown">
-            {LANGUAGES.map(l => (
-              <button key={l.code} className={`lang-option ${l.code === current.code ? 'active' : ''}`} onClick={() => handleSelect(l.code)}>
-                <span className="lang-flag">{l.flag}</span>
-                <span className="lang-name">{l.label}</span>
-              </button>
-            ))}
-          </div>
-        )}
+          {open && (
+              <div className="lang-switcher-dropdown">
+                {sorted.map(l => (
+                  <button key={l.code} className={`lang-option ${l.code === current.code ? 'active' : ''}`} onClick={() => handleSelect(l.code)}>
+                    <span className="lang-flag">{l.flag}</span>
+                    <span className="lang-name">{l.label}</span>
+                  </button>
+                ))}
+              </div>
+            )}
       </div>
     );
   }
@@ -62,13 +63,13 @@ export function LanguageSwitcher({ variant = 'default' }: { variant?: 'default' 
       </button>
       {open && (
         <div className="lang-switcher-dropdown">
-          {LANGUAGES.map(l => (
-            <button key={l.code} className={`lang-option ${l.code === current.code ? 'active' : ''}`} onClick={() => handleSelect(l.code)}>
-              <span className="lang-flag">{l.flag}</span>
-              <span className="lang-name">{l.label}</span>
-              {l.code === current.code && <span className="lang-check">✓</span>}
-            </button>
-          ))}
+          {sorted.map(l => (
+              <button key={l.code} className={`lang-option ${l.code === current.code ? 'active' : ''}`} onClick={() => handleSelect(l.code)}>
+                <span className="lang-flag">{l.flag}</span>
+                <span className="lang-name">{l.label}</span>
+                {l.code === current.code && <span className="lang-check">✓</span>}
+              </button>
+            ))}
         </div>
       )}
     </div>
