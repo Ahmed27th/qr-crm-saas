@@ -514,7 +514,7 @@ a:hover { color: var(--accent-secondary); }
   padding: 4px 8px; font-size: 1.1rem; border: none; background: transparent;
 }
 .lang-switcher-dropdown {
-  position: absolute; bottom: calc(100% + 4px); right: 0; z-index: 9999;
+  position: absolute; top: calc(100% + 4px); right: 0; z-index: 9999;
   background: var(--bg-secondary); border: 1px solid var(--border-color);
   border-radius: 10px; box-shadow: 0 8px 24px rgba(0,0,0,0.15);
   min-width: 170px; max-height: 80vh; overflow-y: auto;
@@ -539,17 +539,17 @@ a:hover { color: var(--accent-secondary); }
 
 @media (max-width: 768px) {
   .lang-switcher.minimal .lang-switcher-dropdown {
-    right: 0; left: auto; min-width: 150px;
+    right: 0; left: auto; min-width: 150px; bottom: calc(100% + 4px); top: auto;
   }
   .lang-switcher:not(.minimal) .lang-switcher-dropdown {
-    right: 0; left: auto;
+    right: 0; left: auto; bottom: calc(100% + 4px); top: auto;
   }
 }
 
 /* ─── RTL Support ────────────────────────────────────────────────────── */
 [dir="rtl"] .lang-option { text-align: right; }
 [dir="rtl"] .lang-check { margin-left: 0; margin-right: auto; }
-[dir="rtl"] .lang-switcher-dropdown { right: auto; left: 0; bottom: calc(100% + 4px); }
+[dir="rtl"] .lang-switcher-dropdown { right: auto; left: 0; }
 [dir="rtl"] .server-title { text-align: right; }
 [dir="rtl"] .server-order-card { text-align: right; }
 [dir="rtl"] .server-order-top { flex-direction: row-reverse; }
