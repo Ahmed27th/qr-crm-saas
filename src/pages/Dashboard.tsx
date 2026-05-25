@@ -1963,6 +1963,9 @@ export function Dashboard() {
           <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => handleNavClick('settings')} data-tip={t('dash_settings')}>
             <Settings size={17} /><span>{t('dash_settings')}</span>
           </button>
+          <div className="sidebar-lang">
+            <LanguageSwitcher variant="minimal" />
+          </div>
           <button className="nav-item" onClick={() => {
             const prompt = (window as any).deferredPrompt;
             if (prompt) {
