@@ -271,6 +271,7 @@ export function ServerDashboard() {
                 key={order.id}
                 order={order}
                 tab={tab}
+                onPaid={() => handlePay(order.id)}
               />
             ))
           )
