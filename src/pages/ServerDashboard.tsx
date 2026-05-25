@@ -188,27 +188,27 @@ export function ServerDashboard() {
       <div className="server-stats">
         <div className="server-stat">
           <span className="server-stat-value">{nouvelles.length}</span>
-          <span className="server-stat-label">Nouvelles</span>
+          <span className="server-stat-label">{t('server_new_tab')}</span>
         </div>
         <div className="server-stat">
           <span className="server-stat-value">{aServir.length}</span>
-          <span className="server-stat-label">À servir</span>
+          <span className="server-stat-label">{t('server_serve_tab')}</span>
         </div>
         <div className="server-stat">
           <span className="server-stat-value">{aPayer.length}</span>
-          <span className="server-stat-label">Payées</span>
+          <span className="server-stat-label">{t('server_paid_tab')}</span>
         </div>
       </div>
 
       <div className="server-tabs">
         <button className={`server-tab ${tab === 'nouvelles' ? 'active' : ''}`} onClick={() => setTab('nouvelles')}>
-          <Bell size={16} /> Nouvelles
+          <Bell size={16} /> {t('server_new_tab')}
         </button>
         <button className={`server-tab ${tab === 'a-servir' ? 'active' : ''}`} onClick={() => setTab('a-servir')}>
-          <ChefHat size={16} /> À servir
+          <ChefHat size={16} /> {t('server_serve_tab')}
         </button>
         <button className={`server-tab ${tab === 'payees' ? 'active' : ''}`} onClick={() => setTab('payees')}>
-          <History size={16} /> Payées
+          <History size={16} /> {t('server_paid_tab')}
         </button>
       </div>
 
@@ -228,7 +228,7 @@ export function ServerDashboard() {
           filteredNouvelles.length === 0 ? (
             <div className="server-empty">
               <Bell size={48} className="server-empty-icon" />
-              <p>{search ? 'Aucune table trouvée' : 'Aucune nouvelle commande'}</p>
+              <p>{search ? t('server_empty_search') : t('server_empty_new')}</p>
             </div>
           ) : (
             filteredNouvelles.map(order => (
@@ -246,7 +246,7 @@ export function ServerDashboard() {
           filteredAServir.length === 0 ? (
             <div className="server-empty">
               <Bell size={48} className="server-empty-icon" />
-              <p>{search ? 'Aucune table trouvée' : 'Aucune commande en cours'}</p>
+              <p>{search ? t('server_empty_search') : t('server_empty_serve')}</p>
             </div>
           ) : (
             filteredAServir.map(order => (
@@ -265,7 +265,7 @@ export function ServerDashboard() {
           filteredPayees.length === 0 ? (
             <div className="server-empty">
               <History size={48} className="server-empty-icon" />
-              <p>{search ? 'Aucune table trouvée' : 'Aucun historique'}</p>
+              <p>{search ? t('server_empty_search') : t('server_empty_paid')}</p>
             </div>
           ) : (
             filteredPayees.map(order => (

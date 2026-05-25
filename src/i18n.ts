@@ -273,6 +273,13 @@ const en = {
   auth_order_delivery: "In Transit",
   auth_order_delivered: "Delivered",
   auth_scan_menu: "Scan the menu",
+  server_new_tab: "New",
+  server_serve_tab: "To Serve",
+  server_paid_tab: "Paid",
+  server_empty_new: "No new orders",
+  server_empty_serve: "No orders to serve",
+  server_empty_paid: "No paid orders",
+  server_empty_search: "No table found",
 };
 
 const fr: typeof en = {
@@ -547,6 +554,13 @@ const fr: typeof en = {
   auth_order_delivery: "En Route",
   auth_order_delivered: "Livré",
   auth_scan_menu: "Scanner le menu",
+  server_new_tab: "Nouvelles",
+  server_serve_tab: "À servir",
+  server_paid_tab: "Payées",
+  server_empty_new: "Aucune nouvelle commande",
+  server_empty_serve: "Aucune commande en cours",
+  server_empty_paid: "Aucun historique",
+  server_empty_search: "Aucune table trouvée",
 };
 
 const ar: typeof en = {
@@ -821,6 +835,13 @@ const ar: typeof en = {
   auth_order_delivery: "في الطريق",
   auth_order_delivered: "تم التوصيل",
   auth_scan_menu: "امسح القائمة",
+  server_new_tab: "جديد",
+  server_serve_tab: "للخدمة",
+  server_paid_tab: "مدفوعة",
+  server_empty_new: "لا توجد طلبات جديدة",
+  server_empty_serve: "لا توجد طلبات للخدمة",
+  server_empty_paid: "لا توجد طلبات مدفوعة",
+  server_empty_search: "لم يتم العثور على طاولة",
 };
 
 const es: typeof en = {
@@ -1095,6 +1116,13 @@ const es: typeof en = {
   auth_order_delivery: "En camino",
   auth_order_delivered: "Entregado",
   auth_scan_menu: "Escanea el menú",
+  server_new_tab: "Nuevos",
+  server_serve_tab: "Para servir",
+  server_paid_tab: "Pagadas",
+  server_empty_new: "No hay nuevos pedidos",
+  server_empty_serve: "No hay pedidos pendientes",
+  server_empty_paid: "Sin historial",
+  server_empty_search: "No se encontró mesa",
 };
 
 const resources = {
