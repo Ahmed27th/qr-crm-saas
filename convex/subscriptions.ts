@@ -22,7 +22,7 @@ export const getUserAccessLevel = query({
     const now = Date.now();
     const isExpired = sub?.currentPeriodEnd ? sub.currentPeriodEnd < now : false;
     const effectiveStatus = isExpired ? 'expired' : (sub?.status ?? 'none');
-    const isActive = effectiveStatus === "active";
+    const isActive = effectiveStatus === "active" || effectiveStatus === "trialing";
 
     return {
       isActive,

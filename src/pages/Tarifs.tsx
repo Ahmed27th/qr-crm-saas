@@ -14,6 +14,7 @@ export function Tarifs() {
   const { isAuthenticated, isLoading } = useConvexAuth();
   const user = useQuery(api.users.me);
   const createCheckout = useAction(api.stripe.createCheckoutSession);
+  const startTrial = useAction(api.trial.startTrial);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [scrolled, setScrolled] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<any>(null);
@@ -27,6 +28,20 @@ export function Tarifs() {
     });
     return () => window.removeEventListener('scroll', handler);
   }, []);
+
+  const sub = user?.subscription;
+  const hasActiveSub = sub && (sub.status === 'active' || sub.status === 'trialing') && sub.currentPeriodEnd > Date.now();
+
+  const handleStartTrial = async () => {
+    if (isLoading) return;
+    if (!isAuthenticated) { window.location.href = '/login?redirectTo=/tarifs'; return; }
+    try {
+      await startTrial();
+      window.location.href = '/dashboard';
+    } catch (err) {
+      console.error("Trial failed:", err);
+    }
+  };
 
   const handleInstall = async () => {
     if (installPrompt) {
@@ -179,14 +194,22 @@ export function Tarifs() {
                   </li>
                 ))}
               </ul>
-              <button
-                className={`tarifs-card-btn ${plan.popular ? 'tarifs-card-btn--primary' : 'tarifs-card-btn--ghost'}`}
-                onClick={() => handleCheckout(plan)}
-                disabled={isLoading || (isAuthenticated && !user)}
-              >
-                <span>{isLoading ? '...' : isAuthenticated && !user ? 'Chargement...' : 'Get Started'}</span>
-                <ArrowRight size={15} />
-              </button>
+              {(() => {
+                const label = !isAuthenticated ? 'Get Started' : hasActiveSub ? 'Dashboard' : plan.id === 'ultimate' ? 'Start Free Trial' : 'Get Started';
+                const action = !isAuthenticated ? () => window.location.href = '/login?redirectTo=/tarifs'
+                  : hasActiveSub ? () => window.location.href = '/dashboard'
+                  : plan.id === 'ultimate' ? handleStartTrial
+                  : () => handleCheckout(plan);
+                return (
+                  <button className={`tarifs-card-btn ${plan.popular ? 'tarifs-card-btn--primary' : 'tarifs-card-btn--ghost'}`}
+                    onClick={action}
+                    disabled={isLoading || (isAuthenticated && !user)}
+                  >
+                    <span>{isLoading ? '...' : isAuthenticated && !user ? 'Chargement...' : label}</span>
+                    <ArrowRight size={15} />
+                  </button>
+                );
+              })()}
             </div>
           ))}
         </div>

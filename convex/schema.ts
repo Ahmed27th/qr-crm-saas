@@ -100,7 +100,7 @@ export default defineSchema({
     email: v.optional(v.string()),
     planId: v.string(), // 'starter' | 'pro' | 'ultimate'
     billingPeriod: v.string(), // 'monthly' | 'yearly'
-    status: v.string(), // 'active' | 'cancelled' | 'expired' | 'past_due'
+    status: v.string(), // 'active' | 'cancelled' | 'expired' | 'past_due' | 'trialing'
     lemonSqueezyOrderId: v.optional(v.string()),
     lemonSqueezySubscriptionId: v.optional(v.string()),
     stripeSubscriptionId: v.optional(v.string()),

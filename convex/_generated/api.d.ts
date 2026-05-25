@@ -24,6 +24,7 @@ import type * as stripe from "../stripe.js";
 import type * as subscriptionConfig from "../subscriptionConfig.js";
 import type * as subscriptions from "../subscriptions.js";
 import type * as testSubscriptions from "../testSubscriptions.js";
+import type * as trial from "../trial.js";
 import type * as users from "../users.js";
 
 import type {
@@ -49,6 +50,7 @@ declare const fullApi: ApiFromModules<{
   subscriptionConfig: typeof subscriptionConfig;
   subscriptions: typeof subscriptions;
   testSubscriptions: typeof testSubscriptions;
+  trial: typeof trial;
   users: typeof users;
 }>;
 
