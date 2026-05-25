@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { DataStore } from '../dataStore';
 import type { Order, Driver } from '../dataStore';
+import { formatPrice } from '../utils/format';
 import './DriverPortal.css';
 
 const MISSION_STEPS = [
@@ -211,7 +212,7 @@ export function DriverPortal() {
                           <span className="driver-mission-id">Mission #{order.id.slice(-6)}</span>
                           <h3 className="driver-mission-title">Livraison</h3>
                         </div>
-                        <div className="driver-mission-price">{order.total.toFixed(2)} DH</div>
+                        <div className="driver-mission-price">{formatPrice(order.total)}</div>
                       </div>
 
                       <div className="driver-mission-info">
@@ -294,7 +295,7 @@ export function DriverPortal() {
                   <div key={order.id} className="driver-available-card">
                     <div className="driver-available-top">
                       <span className="driver-available-id">#{order.id.slice(-6)}</span>
-                      <span className="driver-available-price">{order.total.toFixed(2)} DH</span>
+                      <span className="driver-available-price">{formatPrice(order.total)}</span>
                     </div>
                     {order.customerAddress && <p className="driver-available-addr">{order.customerAddress}</p>}
                     <div className="driver-available-actions">
@@ -333,7 +334,7 @@ export function DriverPortal() {
                       </div>
                     </div>
                     <div className="driver-history-right">
-                      <div className="driver-history-price">{order.total.toFixed(2)} DH</div>
+                      <div className="driver-history-price">{formatPrice(order.total)}</div>
                       <ChevronRight size={14} className="driver-chevron" />
                     </div>
                   </div>
@@ -395,14 +396,14 @@ export function DriverPortal() {
                 {selectedHistoryOrder.orderItems?.map((item, idx) => (
                   <div key={idx} className="driver-detail-item">
                     <span>{item.qty}x {item.name}</span>
-                    <span>{((item.price ?? 0) * item.qty).toFixed(2)} DH</span>
+                    <span>{formatPrice((item.price ?? 0) * item.qty)}</span>
                   </div>
                 ))}
               </div>
               <div className="driver-detail-divider" />
               <div className="driver-detail-total">
                 <span>Total</span>
-                <strong>{selectedHistoryOrder.total.toFixed(2)} DH</strong>
+                <strong>{formatPrice(selectedHistoryOrder.total)}</strong>
               </div>
             </div>
           </div>

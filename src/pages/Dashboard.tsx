@@ -13,6 +13,7 @@ import { useQuery, useMutation, useAction, useConvex } from 'convex/react';
 import { useConvexAuth } from '@convex-dev/auth/react';
 import { api } from '../../convex/_generated/api';
 import { DataStore, setStableRestaurantId } from '../dataStore';
+import { formatPrice } from '../utils/format';
 import type { Order, Review, MenuItem, Reservation, Driver } from '../dataStore';
 import { QRCodeSVG } from 'qrcode.react';
 import { useNavigate } from 'react-router-dom';
@@ -799,7 +800,7 @@ export function Dashboard() {
             </div>
             <div className="stat-info">
               <span className="stat-title">{t('analytics_revenue')}</span>
-              <h3 className="stat-value">{totalRevenue.toFixed(0)} DH</h3>
+              <h3 className="stat-value">{formatPrice(totalRevenue, 0)}</h3>
               <span className="stat-trend positive" style={{ opacity: totalRevenue > 0 ? 1 : 0.5 }}>{totalRevenue > 0 ? '+100% (New)' : 'Aucun revenu'}</span>
             </div>
           </div>
@@ -819,7 +820,7 @@ export function Dashboard() {
             </div>
             <div className="stat-info">
               <span className="stat-title">{t('analytics_avg_ticket')}</span>
-              <h3 className="stat-value">{avgTicket.toFixed(0)} DH</h3>
+              <h3 className="stat-value">{formatPrice(avgTicket, 0)}</h3>
               <span className="stat-trend neutral">Moyenne globale</span>
             </div>
           </div>
@@ -976,7 +977,7 @@ export function Dashboard() {
                   </div>
                   <div className="order-body">
                     <div className="order-table">Table {order.table}</div>
-                    <div className="order-meta">{order.items} items • {order.total.toFixed(2)} DH</div>
+                    <div className="order-meta">{order.items} items • {formatPrice(order.total)}</div>
                   </div>
                   <div className="order-actions">
                     {status === 'pending' && <button className="btn-primary btn-full" disabled={updatingOrderId === order.id} onClick={() => handleUpdateOrderStatus(order.id, 'preparing')}>{updatingOrderId === order.id ? "..." : "Accepter"}</button>}
@@ -1024,7 +1025,7 @@ export function Dashboard() {
             </div>
             <div className="stat-info">
               <span className="stat-title">{t('today_sales', "Ventes")}</span>
-              <h3 className="stat-value">{todaySales.toFixed(0)} <span style={{ fontSize: '0.85rem', fontWeight: 600, opacity: 0.6 }}>DH</span></h3>
+              <h3 className="stat-value">{formatPrice(todaySales, 0)}</h3>
               <span className="stat-trend positive">+{orders.length} {t('orders', 'commandes')}</span>
             </div>
           </div>
@@ -1370,14 +1371,14 @@ export function Dashboard() {
           <div className="stat-card glass-panel" style={{ borderColor: 'var(--accent-primary)', position: 'relative', overflow: 'hidden' }}>
             <div className="stat-info">
               <span className="stat-title">Ventes QR Menu</span>
-              <h3 className="stat-value">{qrSales.toFixed(2)} DH</h3>
+              <h3 className="stat-value">{formatPrice(qrSales)}</h3>
               <span className="stat-trend positive"><Activity size={12}/> En direct</span>
             </div>
           </div>
           <div className="stat-card glass-panel" style={{ borderColor: 'var(--success)' }}>
             <div className="stat-info">
               <span className="stat-title">Ventes Livraison</span>
-              <h3 className="stat-value">{deliverySales.toFixed(2)} DH</h3>
+              <h3 className="stat-value">{formatPrice(deliverySales)}</h3>
               <span className="stat-trend positive"><ShoppingBag size={12}/> Flotte Manager</span>
             </div>
           </div>
@@ -1540,7 +1541,7 @@ export function Dashboard() {
                     </span>
                   </td>
                   <td>{order.items} articles</td>
-                  <td>{order.total.toFixed(2)} DH</td>
+                  <td>{formatPrice(order.total)}</td>
                   <td>
                     <span className={`status-badge ${order.status === 'pending' ? 'inactive' : 'active'}`}>
                       {order.status === 'pending' ? t('status_new', 'Nouveau') : order.status === 'preparing' ? t('status_preparing', 'En cours') : order.status === 'ready' ? t('status_ready', 'Prêt') : 'Terminé'}
@@ -1921,7 +1922,7 @@ export function Dashboard() {
             <span className="plan-badge-label">{isDemoUltimate ? 'Ultimate (Demo)' : (subscription?.planId === 'ultimate' ? 'Ultimate' : subscription?.planId === 'pro' ? 'Pro' : 'Starter')}</span>
             {!isDemoUltimate && subscription?.currentPeriodEnd && (
               <span style={{ fontSize: '0.6rem', color: 'var(--text-tertiary)', marginLeft: '0.2rem' }}>
-                Exp. {new Date(subscription.currentPeriodEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                Exp. {new Date(subscription.currentPeriodEnd).toLocaleDateString('fr-FR', { month: 'short', day: 'numeric', year: 'numeric' })}
               </span>
             )}
             {!isDemoUltimate && (
@@ -2180,7 +2181,7 @@ export function Dashboard() {
                 <span className="header-plan-label">{isDemoUltimate ? 'Ultimate (Demo)' : (subscription?.planId === 'ultimate' ? 'Ultimate' : subscription?.planId === 'pro' ? 'Pro' : 'Starter')}</span>
                 {!isDemoUltimate && subscription?.currentPeriodEnd && (
                   <span className="header-plan-expiry">
-                    Exp. {new Date(subscription.currentPeriodEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    Exp. {new Date(subscription.currentPeriodEnd).toLocaleDateString('fr-FR', { month: 'short', day: 'numeric', year: 'numeric' })}
                   </span>
                 )}
                 {!isDemoUltimate && (

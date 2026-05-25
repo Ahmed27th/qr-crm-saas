@@ -6,6 +6,7 @@ import { api } from '../../convex/_generated/api';
 import { ShoppingCart, Plus, Minus, Search, Info, Flame, AlertCircle, X, Sparkles, HeartHandshake, Star, Clock, FileText, ChevronRight, Home, UtensilsCrossed, Truck, MapPin } from 'lucide-react';
 import { DataStore } from '../dataStore';
 import type { MenuItem, RestaurantProfile } from '../dataStore';
+import { formatPrice } from '../utils/format';
 import './PublicMenu.css';
 
 
@@ -281,7 +282,7 @@ export function PublicMenu() {
               )}
 
               <div className="item-price-row">
-                <span className="item-price">{item.price.toFixed(2)} DH</span>
+                <span className="item-price">{formatPrice(item.price)}</span>
                 {item.available ? (
                   cart[item.id] ? (
                     <div className="quantity-controls">
@@ -311,7 +312,7 @@ export function PublicMenu() {
               <span className="cart-badge">{cartTotalItems}</span>
             </div>
             <span className="cart-text">{t('your_order')}</span>
-            <span className="cart-total">{cartTotalPrice.toFixed(2)} DH</span>
+            <span className="cart-total">{formatPrice(cartTotalPrice)}</span>
           </button>
         </div>
       )}
@@ -468,7 +469,7 @@ export function PublicMenu() {
                             <span className="summary-qty">{count}x</span>
                             <span className="summary-name">{item.name}</span>
                           </div>
-                          <span className="summary-price">{(item.price * count).toFixed(2)} DH</span>
+                          <span className="summary-price">{formatPrice(item.price * count)}</span>
                         </div>
                       );
                     })}
@@ -482,7 +483,7 @@ export function PublicMenu() {
                           <div className="upsell-img" style={{ backgroundImage: `url(${item.image})` }} />
                           <div className="upsell-info">
                             <span className="upsell-name">{item.name}</span>
-                            <span className="upsell-price">{item.price.toFixed(2)} DH</span>
+                            <span className="upsell-price">{formatPrice(item.price)}</span>
                           </div>
                           <button className="upsell-add-btn" onClick={() => addToCart(item.id)}><Plus size={16} /></button>
                         </div>
@@ -503,17 +504,17 @@ export function PublicMenu() {
                   <div className="totals-breakdown">
                     <div className="total-row">
                       <span className="total-label">{t('subtotal')}</span>
-                      <span className="total-val">{cartTotalPrice.toFixed(2)} DH</span>
+                      <span className="total-val">{formatPrice(cartTotalPrice)}</span>
                     </div>
                     {tipAmount > 0 && (
                       <div className="total-row text-success">
                         <span className="total-label">{t('tip_label')} ({tipPercentage}%)</span>
-                        <span className="total-val">+{tipAmount.toFixed(2)} DH</span>
+                        <span className="total-val">+{formatPrice(tipAmount)}</span>
                       </div>
                     )}
                     <div className="total-row final">
                       <span>{t('total_label')}</span>
-                      <span className="final-price">{finalTotal.toFixed(2)} DH</span>
+                      <span className="final-price">{formatPrice(finalTotal)}</span>
                     </div>
                   </div>
                     <button 

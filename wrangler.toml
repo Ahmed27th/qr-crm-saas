@@ -1,0 +1,13 @@
+# Cloudflare API Worker — handles /api/* routes
+name = "qr-crm-saas-api"
+main = "src/worker.ts"
+compatibility_date = "2024-12-18"
+compatibility_flags = ["nodejs_compat"]
+
+# D1 database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "crm-db"
+database_id = "3d36aac5-408f-47fa-8e2e-25edb86f216f"
+
+# Variables (set secrets via `npx wrangler secret put`) — don't add secrets here

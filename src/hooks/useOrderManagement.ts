@@ -1,5 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { DataStore, type Order } from "../dataStore";
+import type { Order } from "../dataStore";
+
+// Set via VITE_API_URL env var, or default to local wrangler dev server
+const API_BASE = import.meta.env.VITE_API_URL ?? "http://localhost:8787";
 
 interface OptimisticOverride {
   status?: Order["status"];
@@ -23,22 +26,88 @@ export interface UseOrderManagementReturn {
   markPaid: (orderId: string) => Promise<void>;
 }
 
+async function fetchOrders(restaurantId: string, type: "active" | "history"): Promise<Order[]> {
+  const res = await fetch(
+    `${API_BASE}/api/orders?restaurantId=${encodeURIComponent(restaurantId)}&type=${type}`
+  );
+  if (!res.ok) {
+    throw new Error(await res.text());
+  }
+  return res.json();
+}
+
+async function updateOrder(
+  orderId: string,
+  newStatus: Order["status"],
+  serverId?: string,
+  expectedOldStatus?: Order["status"]
+): Promise<void> {
+  const res = await fetch(`${API_BASE}/api/update-order`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      orderId,
+      newStatus,
+      serverId: serverId ?? null,
+      expectedOldStatus,
+    }),
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({ message: res.statusText }));
+    throw Object.assign(new Error(body.message || "Update failed"), {
+      data: body,
+      status: res.status,
+    });
+  }
+}
+
 export function useOrderManagement({
   restaurantId,
   staffId,
+  pollIntervalMs = 3000,
 }: UseOrderManagementOptions): UseOrderManagementReturn {
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const optimisticRef = useRef<Map<string, OptimisticOverride>>(new Map());
-  const rollbackRef = useRef<Map<string, { snapshot: Order; overrides: Map<string, OptimisticOverride> }>>(new Map());
+  const rollbackRef = useRef<
+    Map<string, { snapshot: Order; overrides: Map<string, OptimisticOverride> }>
+  >(new Map());
 
   useEffect(() => {
-    const unsub = DataStore.subscribeToOrders((next) => {
-      setOrders(next);
-      setIsLoading(false);
-    }, restaurantId);
-    return () => { if (unsub) unsub(); };
-  }, [restaurantId]);
+    let mounted = true;
+    let busy = false;
+
+    const poll = async () => {
+      if (busy) return;
+      busy = true;
+      try {
+        const [active, history] = await Promise.all([
+          fetchOrders(restaurantId, "active"),
+          fetchOrders(restaurantId, "history"),
+        ]);
+        if (!mounted) return;
+
+        const merged = [...active, ...history].map((o) => {
+          const override = optimisticRef.current.get(o.id);
+          return override ? { ...o, ...override } : o;
+        });
+        setOrders(merged);
+        setIsLoading(false);
+      } catch {
+        // Will retry on next tick
+      } finally {
+        busy = false;
+      }
+    };
+
+    poll();
+    const interval = setInterval(poll, pollIntervalMs);
+    return () => {
+      mounted = false;
+      clearInterval(interval);
+    };
+  }, [restaurantId, pollIntervalMs]);
 
   const applyOptimistic = useCallback((orderId: string, patch: OptimisticOverride) => {
     optimisticRef.current.set(orderId, {
@@ -74,7 +143,7 @@ export function useOrderManagement({
         optimisticRef.current = prevOptimistic;
         setOrders(prevOrders);
         const data = err?.data;
-        const isConflict = data?.code === 409;
+        const isConflict = data?.code === 409 || err?.status === 409;
         throw Object.assign(
           new Error(isConflict ? "CONFLICT" : "ORDER_UPDATE_FAILED"),
           { data, orderId, isConflict }
@@ -87,7 +156,7 @@ export function useOrderManagement({
   const claimOrder = useCallback(
     (orderId: string) =>
       withRollback(orderId, { serverId: staffId }, () =>
-        DataStore.claimOrder(orderId, staffId)
+        updateOrder(orderId, "ready", staffId, "pending")
       ),
     [staffId, withRollback]
   );
@@ -95,7 +164,7 @@ export function useOrderManagement({
   const markServed = useCallback(
     (orderId: string) =>
       withRollback(orderId, { status: "served" }, () =>
-        DataStore.markServed(orderId)
+        updateOrder(orderId, "served", undefined, "ready")
       ),
     [withRollback]
   );
@@ -103,7 +172,7 @@ export function useOrderManagement({
   const markPaid = useCallback(
     (orderId: string) =>
       withRollback(orderId, { status: "paid" }, () =>
-        DataStore.markPaid(orderId)
+        updateOrder(orderId, "paid", undefined, "served")
       ),
     [withRollback]
   );

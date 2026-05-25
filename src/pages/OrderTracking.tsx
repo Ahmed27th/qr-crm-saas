@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { ShoppingBag, ChefHat, CheckCircle, Truck, Home, MapPin, Phone, User, Navigation, ArrowLeft } from 'lucide-react';
 import { DataStore } from '../dataStore';
 import type { Order } from '../dataStore';
+import { formatPrice } from '../utils/format';
 import './OrderTracking.css';
 
 const STATUS_STEPS = [
@@ -125,13 +126,13 @@ export function OrderTracking() {
             {order.orderItems?.map((item, idx) => (
               <div key={idx} className="ot-item-row">
                 <span>{item.qty}x {item.name}</span>
-                <span>{((item.price ?? 0) * item.qty).toFixed(2)} DH</span>
+                <span>{formatPrice((item.price ?? 0) * item.qty)}</span>
               </div>
             ))}
             <div className="ot-divider" />
             <div className="ot-total-row">
               <span>Total</span>
-              <span>{order.total.toFixed(2)} DH</span>
+              <span>{formatPrice(order.total)}</span>
             </div>
           </div>
         </div>

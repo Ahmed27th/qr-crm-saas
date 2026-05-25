@@ -22,5 +22,5 @@
     "noFallthroughCasesInSwitch": true
   },
   "include": ["src"],
-  "exclude": ["convex"]
+  "exclude": ["convex", "src/worker.ts"]
 }

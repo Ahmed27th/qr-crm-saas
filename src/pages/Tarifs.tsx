@@ -5,6 +5,7 @@ import { useQuery, useAction } from 'convex/react';
 import { useConvexAuth } from '@convex-dev/auth/react';
 import { api } from '../../convex/_generated/api';
 import { Check, X, ArrowLeft, Zap, Star, Crown, ArrowRight, Percent, Monitor, Smartphone } from 'lucide-react';
+import { formatPrice, formatNumber } from '../utils/format';
 import './Tarifs.css';
 
 export function Tarifs() {
@@ -159,15 +160,15 @@ export function Tarifs() {
                 <p className="tarifs-card-desc">{plan.desc}</p>
               </div>
               <div className="tarifs-card-price">
-                <span className="tarifs-card-currency">DH</span>
-                <span className="tarifs-card-amount">{billingCycle === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice}</span>
+                <span className="tarifs-card-currency">MAD</span>
+                <span className="tarifs-card-amount">{formatNumber(billingCycle === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice)}</span>
                 <span className="tarifs-card-period">/{billingCycle === 'monthly' ? 'mo' : 'yr'}</span>
-                <div className="tarifs-card-usd">~{Math.round((billingCycle === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice) / 10)}$</div>
+                <div className="tarifs-card-usd">~{formatNumber(Math.round((billingCycle === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice) / 10))} USD</div>
               </div>
               {billingCycle === 'yearly' && (
                 <div className="tarifs-card-save">
                   <Percent size={14} />
-                  <span>Save {plan.savings} DH (${Math.round(plan.savings / 10)})/year</span>
+                  <span>Save {formatPrice(plan.savings, 0)} ({formatNumber(Math.round(plan.savings / 10))} USD)/year</span>
                 </div>
               )}
               <ul className="tarifs-card-features">

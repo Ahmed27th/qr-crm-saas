@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { DataStore, type Order } from '../dataStore';
+import { formatPrice } from '../utils/format';
 import { NotificationService } from '../utils/notifications';
 import './ChefDashboard.css';
 
@@ -18,7 +19,22 @@ export function ChefDashboard() {
   const { restaurantId } = useParams<{ restaurantId: string }>();
   const { t } = useTranslation();
   const [orders, setOrders] = useState<Order[]>([]);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const startLongPress = (order: Order) => {
+    longPressTimer.current = setTimeout(() => {
+      setSelectedOrder(order);
+    }, 500);
+  };
+
+  const cancelLongPress = () => {
+    if (longPressTimer.current) {
+      clearTimeout(longPressTimer.current);
+      longPressTimer.current = null;
+    }
+  };
 
   useEffect(() => {
     if (!restaurantId) return;
@@ -73,7 +89,14 @@ export function ChefDashboard() {
     const { minutes, colorClass } = getTimerInfo(order.time);
     
     return (
-      <div key={order.id} className={`chef-order-card ${minutes > 15 ? 'urgent' : ''}`}>
+      <div key={order.id} className={`chef-order-card ${minutes > 15 ? 'urgent' : ''}`}
+        onMouseDown={() => startLongPress(order)}
+        onMouseUp={cancelLongPress}
+        onMouseLeave={cancelLongPress}
+        onTouchStart={() => startLongPress(order)}
+        onTouchEnd={cancelLongPress}
+        onTouchMove={cancelLongPress}
+      >
         <div className="order-top-row">
           <span className="order-number">{order.id}</span>
           <span className={`order-timer ${colorClass}`}>
@@ -210,6 +233,48 @@ export function ChefDashboard() {
           </div>
         </section>
       </main>
+
+      {selectedOrder && (
+        <div className="chef-modal-overlay" onClick={() => setSelectedOrder(null)}>
+          <div className="chef-modal-card" onClick={e => e.stopPropagation()}>
+            <button className="chef-modal-close" onClick={() => setSelectedOrder(null)}>×</button>
+            <div className="chef-order-card">
+              <div className="order-top-row">
+                <span className="order-number">{selectedOrder.id}</span>
+                <span className={`order-timer ${getTimerInfo(selectedOrder.time).colorClass}`}>
+                  <Clock size={14} />
+                  {getTimerInfo(selectedOrder.time).minutes}m
+                </span>
+              </div>
+              <div className="order-table-info">
+                <UtensilsCrossed size={18} />
+                {t('chef_table')} {selectedOrder.table}
+              </div>
+              <div className="order-items-list">
+                {selectedOrder.orderItems ? (
+                  selectedOrder.orderItems.map((item, idx) => (
+                    <div key={idx} className="order-item-row">
+                      <span className="order-item-qty">x{item.qty}</span>
+                      <span>{item.name}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="order-item-row">
+                    <span className="order-item-qty">x{selectedOrder.items}</span>
+                    <span>{t('chef_misc_items')}</span>
+                  </div>
+                )}
+              </div>
+              {selectedOrder.orderItems && (
+                <div className="order-modal-total">
+                  <span className="order-modal-total-label">Commande #{selectedOrder.id.slice(-6)}</span>
+                  <span className="order-modal-total-price">{formatPrice(selectedOrder.total)}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

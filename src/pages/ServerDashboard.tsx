@@ -4,6 +4,7 @@ import { Clock, QrCode, User, UtensilsCrossed, Search, Check, CreditCard, Hand, 
 import { useTranslation } from 'react-i18next';
 import { DataStore, type Order, type StaffMember } from '../dataStore';
 import { useOrderManagement } from '../hooks/useOrderManagement';
+import { formatPrice } from '../utils/format';
 import './ServerDashboard.css';
 
 type Tab = 'a-servir' | 'mes-commandes' | 'payees';
@@ -254,7 +255,7 @@ function ServerOrderCard({ order, tab, onClaim, onServed, onPaid }: {
       </div>
       <div className="server-order-footer">
         <div className="server-order-footer-left">
-          <span className="server-order-price">{order.total.toFixed(2)} DH</span>
+          <span className="server-order-price">{formatPrice(order.total)}</span>
           <span className="server-order-time"><Clock size={12} /> {Math.floor((Date.now() - order.time) / 60000)} min</span>
         </div>
         <div className="server-order-actions">
