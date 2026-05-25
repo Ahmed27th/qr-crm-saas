@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Clock, QrCode, User, UtensilsCrossed, Search, Check, CreditCard, Hand, History, Bell, AlertTriangle, ShoppingCart, Plus, Minus, X } from 'lucide-react';
+import { Clock, QrCode, User, UtensilsCrossed, Search, Check, CreditCard, Hand, History, Bell, AlertTriangle, ShoppingCart, Plus, Minus, X, ChefHat } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { DataStore, type Order, type StaffMember, type MenuItem } from '../dataStore';
 import { useOrderManagement } from '../hooks/useOrderManagement';
 import { formatPrice } from '../utils/format';
 import './ServerDashboard.css';
 
-type Tab = 'a-servir' | 'mes-commandes' | 'payees';
+type Tab = 'nouvelles' | 'a-servir' | 'mes-commandes' | 'payees';
 
 export function ServerDashboard() {
   const { restaurantId, staffId } = useParams<{ restaurantId: string; staffId: string }>();
@@ -27,6 +27,7 @@ export function ServerDashboard() {
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
   const {
+    orders,
     aServir,
     mesCommandes,
     payees,
@@ -60,6 +61,9 @@ export function ServerDashboard() {
   const baseUrl = window.location.origin;
   const reviewUrl = staffId ? `${baseUrl}/staff-review/${restaurantId}/${staffId}` : '';
 
+  const nouvelles = orders.filter(o => o.table !== 'Livraison' && (o.status === 'pending' || o.status === 'preparing'));
+
+  const filteredNouvelles = nouvelles.filter(o => o.table.toLowerCase().includes(search.toLowerCase()));
   const filteredAServir = aServir.filter(o => o.table.toLowerCase().includes(search.toLowerCase()));
   const filteredMesCommandes = mesCommandes.filter(o => o.table.toLowerCase().includes(search.toLowerCase()));
   const filteredPayees = payees.filter(o => o.table.toLowerCase().includes(search.toLowerCase()));
@@ -190,6 +194,10 @@ export function ServerDashboard() {
 
       <div className="server-stats">
         <div className="server-stat">
+          <span className="server-stat-value">{nouvelles.length}</span>
+          <span className="server-stat-label">Nouvelles</span>
+        </div>
+        <div className="server-stat">
           <span className="server-stat-value">{aServir.length}</span>
           <span className="server-stat-label">À servir</span>
         </div>
@@ -197,15 +205,14 @@ export function ServerDashboard() {
           <span className="server-stat-value">{mesCommandes.length}</span>
           <span className="server-stat-label">Mes commandes</span>
         </div>
-        <div className="server-stat">
-          <span className="server-stat-value">{payees.length}</span>
-          <span className="server-stat-label">Payées (hist.)</span>
-        </div>
       </div>
 
       <div className="server-tabs">
+        <button className={`server-tab ${tab === 'nouvelles' ? 'active' : ''}`} onClick={() => setTab('nouvelles')}>
+          <Bell size={16} /> Nouvelles
+        </button>
         <button className={`server-tab ${tab === 'a-servir' ? 'active' : ''}`} onClick={() => setTab('a-servir')}>
-          <Bell size={16} /> À servir
+          <ChefHat size={16} /> À servir
         </button>
         <button className={`server-tab ${tab === 'mes-commandes' ? 'active' : ''}`} onClick={() => setTab('mes-commandes')}>
           <Hand size={16} /> Mes commandes
@@ -227,6 +234,23 @@ export function ServerDashboard() {
       </div>
 
       <div className="server-orders-list">
+        {tab === 'nouvelles' && (
+          filteredNouvelles.length === 0 ? (
+            <div className="server-empty">
+              <Bell size={48} className="server-empty-icon" />
+              <p>{search ? 'Aucune table trouvée' : 'Aucune nouvelle commande'}</p>
+            </div>
+          ) : (
+            filteredNouvelles.map(order => (
+              <ServerOrderCard
+                key={order.id}
+                order={order}
+                tab={tab}
+              />
+            ))
+          )
+        )}
+
         {tab === 'a-servir' && (
           filteredAServir.length === 0 ? (
             <div className="server-empty">
