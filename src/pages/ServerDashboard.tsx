@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { DataStore, type Order, type StaffMember, type MenuItem } from '../dataStore';
 import { useOrderManagement } from '../hooks/useOrderManagement';
 import { formatPrice } from '../utils/format';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import './ServerDashboard.css';
 
 type Tab = 'nouvelles' | 'a-servir' | 'payees';
@@ -152,6 +153,7 @@ export function ServerDashboard() {
           </div>
         </div>
         <div className="server-header-actions">
+          <LanguageSwitcher variant="minimal" />
           <button className="server-qr-btn" onClick={() => setShowMenuModal(true)}>
             <ShoppingCart size={16} /> Nouvelle commande
           </button>

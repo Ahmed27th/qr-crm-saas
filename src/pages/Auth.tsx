@@ -1,12 +1,15 @@
 import { useState, useEffect, type FormEvent } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Mail, Lock, User, AlertCircle, QrCode, Zap, Star, ArrowRight, Eye, EyeOff, Users, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 
 import { useAuthActions } from "@convex-dev/auth/react";
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
 
 import './Auth.css';
 
 export function Auth() {
+  const { t } = useTranslation();
   const location = useLocation();
   const [isLogin, setIsLogin] = useState(location.pathname !== '/signup');
   const [isForgotPassword, setIsForgotPassword] = useState(false);
@@ -142,9 +145,9 @@ export function Auth() {
     if (/[0-9]/.test(pass)) score++;
     if (/[^A-Za-z0-9]/.test(pass)) score++;
     
-    if (score <= 1) return { score, label: 'Faible', color: '#ef4444' };
-    if (score === 2) return { score, label: 'Moyen', color: '#f59e0b' };
-    if (score >= 3) return { score, label: 'Fort', color: '#10b981' };
+    if (score <= 1) return { score, label: t('auth_weak'), color: '#ef4444' };
+    if (score === 2) return { score, label: t('auth_medium'), color: '#f59e0b' };
+    if (score >= 3) return { score, label: t('auth_strong'), color: '#10b981' };
     return { score: 0, label: '', color: 'transparent' };
   };
 
@@ -181,12 +184,8 @@ export function Auth() {
           </div>
 
           <div className="auth-branding-body">
-            <h1 className="auth-main-headline auth-animate-slide-up auth-delay-1">
-              L'ère de la restauration <span className="text-gradient">intelligente</span>
-            </h1>
-            <p className="auth-subheadline auth-animate-slide-up auth-delay-2">
-              Digitalisez votre menu, automatisez la récolte d'avis clients, et pilotez votre équipe en temps réel.
-            </p>
+            <h1 className="auth-main-headline auth-animate-slide-up auth-delay-1" dangerouslySetInnerHTML={{ __html: t('auth_brand_headline') }} />
+            <p className="auth-subheadline auth-animate-slide-up auth-delay-2">{t('auth_brand_sub')}</p>
 
             {/* Features list */}
             <div className="auth-features-list auth-animate-slide-up auth-delay-3">
@@ -195,8 +194,8 @@ export function Auth() {
                   <Zap size={18} />
                 </div>
                 <div className="feature-text">
-                  <h4>Menu Interactif</h4>
-                  <p>QR Code instantané, mis à jour en temps réel.</p>
+                  <h4>{t('auth_feature_1_title')}</h4>
+                  <p>{t('auth_feature_1_desc')}</p>
                 </div>
               </div>
               
@@ -205,8 +204,8 @@ export function Auth() {
                   <Star size={18} />
                 </div>
                 <div className="feature-text">
-                  <h4>CRM & Avis Automatiques</h4>
-                  <p>Boostez votre note Google Maps sans effort.</p>
+                  <h4>{t('auth_feature_2_title')}</h4>
+                  <p>{t('auth_feature_2_desc')}</p>
                 </div>
               </div>
               
@@ -215,8 +214,8 @@ export function Auth() {
                   <Users size={18} />
                 </div>
                 <div className="feature-text">
-                  <h4>Gestion d'Équipe</h4>
-                  <p>Portail Serveurs, Cuisine et Livreurs unifié.</p>
+                  <h4>{t('auth_feature_3_title')}</h4>
+                  <p>{t('auth_feature_3_desc')}</p>
                 </div>
               </div>
             </div>
@@ -230,7 +229,7 @@ export function Auth() {
                     <span className="dot dot-yellow"></span>
                     <span className="dot dot-green"></span>
                   </div>
-                  <div className="mockup-search">dashboard.qrcrm.ma</div>
+                  <div className="mockup-search">{t('auth_mockup_search')}</div>
                 </div>
                 <div className="mockup-body">
                   <div className="mockup-sidebar">
@@ -265,10 +264,10 @@ export function Auth() {
                           <div className="order-info">
                             <span className="order-name">{order.target}</span>
                             <span className={`order-status ${order.status} font-semibold`}>
-                              {order.status === 'preparing' && 'En Cuisine'}
-                              {order.status === 'ready' && 'Prêt à Servir'}
-                              {order.status === 'delivery' && 'En Route'}
-                              {order.status === 'delivered' && 'Livré'}
+                              {order.status === 'preparing' && t('auth_order_preparing')}
+                              {order.status === 'ready' && t('auth_order_ready')}
+                              {order.status === 'delivery' && t('auth_order_delivery')}
+                              {order.status === 'delivered' && t('auth_order_delivered')}
                             </span>
                           </div>
                           <span className="order-time">{order.item}</span>
@@ -281,7 +280,7 @@ export function Auth() {
               <div className="mockup-decor-qr">
                 <div className="qr-scanner-line"></div>
                 <QrCode size={32} className="text-accent" />
-                <span className="font-semibold">Scanner le menu</span>
+                <span className="font-semibold">{t('auth_scan_menu')}</span>
               </div>
             </div>
             
@@ -302,10 +301,8 @@ export function Auth() {
                       <CheckCircle2 size={32} />
                     </div>
                     <div className="auth-form-header text-center">
-                      <h2>Vérifiez votre boîte mail</h2>
-                      <p className="auth-form-subtitle">
-                        Nous avons envoyé un lien de réinitialisation à <strong>{email}</strong>.
-                      </p>
+                      <h2>{t('auth_forgot_sent_title')}</h2>
+                      <p className="auth-form-subtitle" dangerouslySetInnerHTML={{ __html: t('auth_forgot_sent_desc', { email }) }} />
                     </div>
                     <button 
                       type="button" 
@@ -314,27 +311,25 @@ export function Auth() {
                       onClick={() => { setIsForgotPassword(false); setResetSent(false); }}
                     >
                       <ArrowLeft size={16} />
-                      <span>Retour à la connexion</span>
+                      <span>{t('auth_forgot_sent_back')}</span>
                     </button>
                   </div>
                 ) : (
                   <div className="auth-animate-fade-in">
                     <div className="auth-form-header">
-                      <h2>Mot de passe oublié ?</h2>
-                      <p className="auth-form-subtitle">
-                        Saisissez votre e-mail et nous vous enverrons un lien pour réinitialiser votre mot de passe.
-                      </p>
+                      <h2>{t('auth_forgot_title')}</h2>
+                      <p className="auth-form-subtitle">{t('auth_forgot_desc')}</p>
                     </div>
 
                     <form onSubmit={handleForgotPassword} className="auth-main-form" style={{ marginTop: '24px' }}>
                       <div className="form-input-group">
-                        <label htmlFor="reset-email">Adresse Email</label>
+                        <label htmlFor="reset-email">{t('auth_forgot_email_label')}</label>
                         <div className="input-field-wrapper">
                           <Mail size={18} className="field-icon" />
                           <input
                             id="reset-email"
                             type="email"
-                            placeholder="Ex: contact@bistro.com"
+                            placeholder="contact@bistro.com"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
@@ -347,7 +342,7 @@ export function Auth() {
                           <span className="btn-spinner"></span>
                         ) : (
                           <>
-                            <span>Envoyer le lien</span>
+                            <span>{t('auth_forgot_send')}</span>
                             <ArrowRight size={18} className="btn-arrow" />
                           </>
                         )}
@@ -360,7 +355,7 @@ export function Auth() {
                         onClick={() => setIsForgotPassword(false)}
                       >
                         <ArrowLeft size={16} />
-                        <span>Retour</span>
+                        <span>{t('auth_forgot_back')}</span>
                       </button>
                     </form>
                   </div>
@@ -370,9 +365,12 @@ export function Auth() {
               // DEFAULT LOGIN / SIGNUP STATE
               <>
                 <div className="auth-form-header">
-                  <h2>{isLogin ? 'Bon retour !' : 'Rejoignez-nous'}</h2>
+                  <div className="auth-form-header-top">
+                    <h2>{isLogin ? t('auth_welcome') : t('auth_join')}</h2>
+                    <LanguageSwitcher variant="minimal" />
+                  </div>
                   <p className="auth-form-subtitle">
-                    {isLogin ? 'Entrez vos identifiants pour gérer votre établissement' : 'Créez votre compte restaurateur en quelques secondes'}
+                    {isLogin ? t('auth_subtitle_login') : t('auth_subtitle_signup')}
                   </p>
                 </div>
 
@@ -383,14 +381,14 @@ export function Auth() {
                     className={`toggle-slider-btn ${isLogin ? 'active' : ''}`}
                     onClick={() => { setIsLogin(true); setError(''); }}
                   >
-                    Connexion
+                    {t('auth_login_tab')}
                   </button>
                   <button 
                     type="button" 
                     className={`toggle-slider-btn ${!isLogin ? 'active' : ''}`}
                     onClick={() => { setIsLogin(false); setError(''); }}
                   >
-                    Créer un compte
+                    {t('auth_signup_tab')}
                   </button>
                   <div className={`sliding-bg ${isLogin ? 'left' : 'right'}`}></div>
                 </div>
@@ -399,7 +397,7 @@ export function Auth() {
                 <form onSubmit={handleAuth} className="auth-main-form">
                   {!isLogin && (
                     <div className="form-input-group auth-animate-fade-in">
-                      <label htmlFor="restaurant-name">Nom du Restaurant</label>
+                      <label htmlFor="restaurant-name">{t('auth_restaurant_name')}</label>
                       <div className="input-field-wrapper">
                         <User size={18} className="field-icon" />
                         <input
@@ -415,13 +413,13 @@ export function Auth() {
                   )}
 
                   <div className="form-input-group">
-                    <label htmlFor="auth-email">Adresse Email</label>
+                    <label htmlFor="auth-email">{t('auth_email')}</label>
                     <div className="input-field-wrapper">
                       <Mail size={18} className="field-icon" />
                       <input
                         id="auth-email"
                         type="email"
-                        placeholder="Ex: contact@bistro.com"
+                        placeholder="contact@bistro.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required
@@ -430,7 +428,7 @@ export function Auth() {
                   </div>
 
                   <div className="form-input-group">
-                    <label htmlFor="auth-password">Mot de passe</label>
+                    <label htmlFor="auth-password">{t('auth_password')}</label>
                     <div className="input-field-wrapper">
                       <Lock size={18} className="field-icon" />
                       <input
@@ -471,7 +469,7 @@ export function Auth() {
                           ></div>
                         </div>
                         <div className="strength-label">
-                          <span>Sécurité du mot de passe:</span>
+                          <span>{t('auth_password_strength')}</span>
                           <span className="strength-label-text" style={{ color: strength.color }}>
                             {strength.label}
                           </span>
@@ -489,14 +487,14 @@ export function Auth() {
                           onChange={(e) => setRememberMe(e.target.checked)} 
                         />
                         <span className="checkbox-custom"></span>
-                        <span className="checkbox-label">Se souvenir de moi</span>
+                        <span className="checkbox-label">{t('auth_remember')}</span>
                       </label>
                       <button 
                         type="button" 
                         className="forgot-pass-link"
                         onClick={() => setIsForgotPassword(true)}
                       >
-                        Mot de passe oublié ?
+                        {t('auth_forgot')}
                       </button>
                     </div>
                   )}
@@ -513,7 +511,7 @@ export function Auth() {
                       <span className="btn-spinner"></span>
                     ) : (
                       <>
-                        <span>{isLogin ? 'Se connecter' : 'Créer mon restaurant'}</span>
+                        <span>{isLogin ? t('auth_signin') : t('auth_signup')}</span>
                         <ArrowRight size={18} className="btn-arrow" />
                       </>
                     )}
@@ -523,7 +521,7 @@ export function Auth() {
 
 
                 <div className="auth-card-footer">
-                  <p>En continuant, vous acceptez nos <span>Conditions d'utilisation</span> et notre <span>Politique de confidentialité</span>.</p>
+                  <p dangerouslySetInnerHTML={{ __html: t('auth_accept_terms') }} />
                 </div>
               </>
             )}

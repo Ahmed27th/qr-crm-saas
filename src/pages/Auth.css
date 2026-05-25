@@ -1125,3 +1125,14 @@
     grid-template-columns: 1fr;
   }
 }
+
+.auth-form-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+[dir="rtl"] .auth-form-header-top {
+  direction: rtl;
+}

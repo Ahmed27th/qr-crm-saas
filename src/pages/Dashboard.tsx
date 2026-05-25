@@ -18,6 +18,7 @@ import type { Order, Review, MenuItem, Reservation, Driver } from '../dataStore'
 import { QRCodeSVG } from 'qrcode.react';
 import { useNavigate } from 'react-router-dom';
 import { NotificationService } from '../utils/notifications';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import { PushService } from '../utils/pushService';
 import './Dashboard.css';
 
@@ -2014,6 +2015,10 @@ export function Dashboard() {
             <span>Plus</span>
           </button>
         </nav>
+
+        <div className="sidebar-lang">
+          <LanguageSwitcher />
+        </div>
 
         <div className="sidebar-footer">
           <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')} data-tip={t('dash_settings')}>

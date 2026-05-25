@@ -14,6 +14,7 @@ import type { Order } from '../dataStore';
 import { formatPrice } from '../utils/format';
 import { NotificationService } from '../utils/notifications';
 import { useOrderManagement } from '../hooks/useOrderManagement';
+import { LanguageSwitcher } from '../components/LanguageSwitcher';
 import './ChefDashboard.css';
 
 export function ChefDashboard() {
@@ -174,6 +175,7 @@ export function ChefDashboard() {
         </div>
 
         <div className="chef-actions">
+          <LanguageSwitcher variant="minimal" />
            <button 
              className="chef-icon-btn sound-test-btn" 
              onClick={playNotification}
