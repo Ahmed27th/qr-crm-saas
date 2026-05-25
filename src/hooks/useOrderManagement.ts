@@ -18,9 +18,9 @@ export interface UseOrderManagementOptions {
 export interface UseOrderManagementReturn {
   orders: Order[];
   aServir: Order[];
-  mesCommandes: Order[];
   payees: Order[];
   isLoading: boolean;
+  acceptOrder: (orderId: string) => Promise<void>;
   claimOrder: (orderId: string) => Promise<void>;
   markServed: (orderId: string) => Promise<void>;
   markPaid: (orderId: string) => Promise<void>;
@@ -40,7 +40,7 @@ async function fetchOrders(restaurantId: string, type: "active" | "history"): Pr
 
 async function updateOrder(
   orderId: string,
-  newStatus: Order["status"],
+  newStatus?: Order["status"],
   serverId?: string,
   expectedOldStatus?: Order["status"]
 ): Promise<void> {
@@ -155,6 +155,14 @@ export function useOrderManagement({
     [orders, applyOptimistic, clearOptimistic]
   );
 
+  const acceptOrder = useCallback(
+    (orderId: string) =>
+      withRollback(orderId, { serverId: staffId }, () =>
+        updateOrder(orderId, undefined, staffId, undefined)
+      ),
+    [staffId, withRollback]
+  );
+
   const claimOrder = useCallback(
     (orderId: string) =>
       withRollback(orderId, { serverId: staffId }, () =>
@@ -166,7 +174,7 @@ export function useOrderManagement({
   const markServed = useCallback(
     (orderId: string) =>
       withRollback(orderId, { status: "served" }, () =>
-        updateOrder(orderId, "served", undefined, "ready")
+        updateOrder(orderId, "served", undefined, undefined)
       ),
     [withRollback]
   );
@@ -198,15 +206,7 @@ export function useOrderManagement({
   const dineIn = orders.filter((o) => o.table !== "Livraison");
 
   const aServir = staffId
-    ? dineIn.filter((o) => o.status === "ready" && !o.serverId)
-    : [];
-
-  const mesCommandes = staffId
-    ? dineIn.filter(
-        (o) =>
-          o.serverId === staffId &&
-          (o.status === "ready" || o.status === "served")
-      )
+    ? dineIn.filter((o) => o.serverId === staffId && o.status !== "paid")
     : [];
 
   const payees = staffId
@@ -216,9 +216,9 @@ export function useOrderManagement({
   return {
     orders,
     aServir,
-    mesCommandes,
     payees,
     isLoading,
+    acceptOrder,
     claimOrder,
     markServed,
     markPaid,

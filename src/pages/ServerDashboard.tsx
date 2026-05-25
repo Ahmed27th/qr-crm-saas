@@ -7,7 +7,7 @@ import { useOrderManagement } from '../hooks/useOrderManagement';
 import { formatPrice } from '../utils/format';
 import './ServerDashboard.css';
 
-type Tab = 'nouvelles' | 'a-servir' | 'mes-commandes' | 'payees';
+type Tab = 'nouvelles' | 'a-servir' | 'payees';
 
 export function ServerDashboard() {
   const { restaurantId, staffId } = useParams<{ restaurantId: string; staffId: string }>();
@@ -28,10 +28,8 @@ export function ServerDashboard() {
 
   const {
     orders,
-    aServir,
-    mesCommandes,
     payees,
-    claimOrder: optimisticClaim,
+    acceptOrder,
     markServed: optimisticServe,
     markPaid: optimisticPay,
   } = useOrderManagement({
@@ -61,23 +59,19 @@ export function ServerDashboard() {
   const baseUrl = window.location.origin;
   const reviewUrl = staffId ? `${baseUrl}/staff-review/${restaurantId}/${staffId}` : '';
 
-  const nouvelles = orders.filter(o => o.table !== 'Livraison' && (o.status === 'pending' || o.status === 'preparing'));
+  const nouvelles = orders.filter(o => o.table !== 'Livraison' && (o.status === 'pending' || o.status === 'preparing') && !o.serverId);
+  const aServir = orders.filter(o => o.table !== 'Livraison' && o.serverId === staffId && o.status !== 'paid');
 
   const filteredNouvelles = nouvelles.filter(o => o.table.toLowerCase().includes(search.toLowerCase()));
   const filteredAServir = aServir.filter(o => o.table.toLowerCase().includes(search.toLowerCase()));
-  const filteredMesCommandes = mesCommandes.filter(o => o.table.toLowerCase().includes(search.toLowerCase()));
   const filteredPayees = payees.filter(o => o.table.toLowerCase().includes(search.toLowerCase()));
 
-  const handleClaim = async (orderId: string) => {
+  const handleAccept = async (orderId: string) => {
     try {
       setErrorMsg(null);
-      await optimisticClaim(orderId);
+      await acceptOrder(orderId);
     } catch (err: any) {
-      if (err?.isConflict) {
-        setErrorMsg(t('server_conflict', 'Cette commande a déjà été prise par un autre serveur'));
-      } else {
-        setErrorMsg(t('server_error', 'Erreur lors de la mise à jour de la commande'));
-      }
+      setErrorMsg(t('server_error', 'Erreur lors de la prise en charge'));
     }
   };
 
@@ -86,11 +80,7 @@ export function ServerDashboard() {
       setErrorMsg(null);
       await optimisticServe(orderId);
     } catch (err: any) {
-      if (err?.isConflict) {
-        setErrorMsg(t('server_conflict_serve', 'Cette commande a déjà été servie'));
-      } else {
-        setErrorMsg('Erreur lors du marquage "servi"');
-      }
+      setErrorMsg('Erreur lors du marquage "servi"');
     }
   };
 
@@ -137,7 +127,7 @@ export function ServerDashboard() {
       setCart({});
       setOrderTable('');
       setShowMenuModal(false);
-      setTab('mes-commandes');
+      setTab('a-servir');
     } catch (err) {
       console.error('Failed to place order:', err);
       setErrorMsg('Erreur lors de la création de la commande');
@@ -202,8 +192,8 @@ export function ServerDashboard() {
           <span className="server-stat-label">À servir</span>
         </div>
         <div className="server-stat">
-          <span className="server-stat-value">{mesCommandes.length}</span>
-          <span className="server-stat-label">Mes commandes</span>
+          <span className="server-stat-value">{payees.length}</span>
+          <span className="server-stat-label">Payées</span>
         </div>
       </div>
 
@@ -213,9 +203,6 @@ export function ServerDashboard() {
         </button>
         <button className={`server-tab ${tab === 'a-servir' ? 'active' : ''}`} onClick={() => setTab('a-servir')}>
           <ChefHat size={16} /> À servir
-        </button>
-        <button className={`server-tab ${tab === 'mes-commandes' ? 'active' : ''}`} onClick={() => setTab('mes-commandes')}>
-          <Hand size={16} /> Mes commandes
         </button>
         <button className={`server-tab ${tab === 'payees' ? 'active' : ''}`} onClick={() => setTab('payees')}>
           <History size={16} /> Payées
@@ -246,6 +233,7 @@ export function ServerDashboard() {
                 key={order.id}
                 order={order}
                 tab={tab}
+                onAccept={() => handleAccept(order.id)}
               />
             ))
           )
@@ -255,28 +243,10 @@ export function ServerDashboard() {
           filteredAServir.length === 0 ? (
             <div className="server-empty">
               <Bell size={48} className="server-empty-icon" />
-              <p>{search ? 'Aucune table trouvée' : 'Aucune commande prête à servir'}</p>
-            </div>
-          ) : (
-            filteredAServir.map(order => (
-              <ServerOrderCard
-                key={order.id}
-                order={order}
-                tab={tab}
-                onClaim={() => handleClaim(order.id)}
-              />
-            ))
-          )
-        )}
-
-        {tab === 'mes-commandes' && (
-          filteredMesCommandes.length === 0 ? (
-            <div className="server-empty">
-              <Hand size={48} className="server-empty-icon" />
               <p>{search ? 'Aucune table trouvée' : 'Aucune commande en cours'}</p>
             </div>
           ) : (
-            filteredMesCommandes.map(order => (
+            filteredAServir.map(order => (
               <ServerOrderCard
                 key={order.id}
                 order={order}
@@ -394,10 +364,10 @@ export function ServerDashboard() {
   );
 }
 
-function ServerOrderCard({ order, tab, onClaim, onServed, onPaid }: {
+function ServerOrderCard({ order, tab, onAccept, onServed, onPaid }: {
   order: Order;
   tab: Tab;
-  onClaim?: () => void;
+  onAccept?: () => void;
   onServed?: () => void;
   onPaid?: () => void;
 }) {
@@ -433,17 +403,17 @@ function ServerOrderCard({ order, tab, onClaim, onServed, onPaid }: {
           <span className="server-order-time"><Clock size={12} /> {Math.floor((Date.now() - order.time) / 60000)} min</span>
         </div>
         <div className="server-order-actions">
-          {tab === 'a-servir' && onClaim && (
-            <button className="server-action-btn claim" onClick={onClaim}>
+          {tab === 'nouvelles' && onAccept && (
+            <button className="server-action-btn claim" onClick={onAccept}>
               <Hand size={14} /> Prendre
             </button>
           )}
-          {tab === 'mes-commandes' && order.status === 'ready' && onServed && (
+          {tab === 'a-servir' && order.status !== 'served' && onServed && (
             <button className="server-action-btn served" onClick={onServed}>
               <Check size={14} /> Servi
             </button>
           )}
-          {tab === 'mes-commandes' && order.status === 'served' && onPaid && (
+          {tab === 'a-servir' && order.status === 'served' && onPaid && (
             <button className="server-action-btn paid" onClick={onPaid}>
               <CreditCard size={14} /> Payé
             </button>
