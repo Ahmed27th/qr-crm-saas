@@ -1889,6 +1889,48 @@ export function Dashboard() {
     );
   }
 
+  // Full-screen lock until an activation code is redeemed
+  if (!isSubActive) {
+    return (
+      <div className="dashboard-loading" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ maxWidth: 420, width: '90%', textAlign: 'center' }}>
+          <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'var(--accent-gradient)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem', boxShadow: '0 0 40px rgba(226,179,107,0.3)' }}>
+            <Lock size={32} style={{ color: '#fff' }} />
+          </div>
+          <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem' }}>Activer votre abonnement</h1>
+          <p style={{ color: 'var(--text-tertiary)', fontSize: '0.9rem', marginBottom: '1.5rem', lineHeight: 1.5 }}>
+            Saisissez le code d'activation que vous avez reçu pour débloquer toutes les fonctionnalités de votre tableau de bord.
+          </p>
+          <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.75rem' }}>
+            <input
+              type="text"
+              value={codeInput}
+              onChange={e => setCodeInput(e.target.value.toUpperCase())}
+              placeholder="EX: ABC12345"
+              onKeyDown={e => { if (e.key === 'Enter' && codeInput.trim() && !redeeming) handleRedeemCode(); }}
+              style={{ flex: 1, padding: '0.75rem 1rem', borderRadius: '12px', border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: '1rem', fontWeight: 600, letterSpacing: '0.15em', textAlign: 'center', outline: 'none' }}
+            />
+            <button
+              onClick={handleRedeemCode}
+              disabled={redeeming || !codeInput.trim()}
+              style={{ padding: '0.75rem 1.5rem', borderRadius: '12px', border: 'none', background: 'var(--accent-gradient)', color: '#fff', fontWeight: 700, cursor: redeeming || !codeInput.trim() ? 'not-allowed' : 'pointer', opacity: redeeming || !codeInput.trim() ? 0.6 : 1, whiteSpace: 'nowrap' }}
+            >
+              {redeeming ? '...' : 'Activer'}
+            </button>
+          </div>
+          {redeemResult && (
+            <div style={{ padding: '0.75rem', borderRadius: '12px', fontSize: '0.875rem', fontWeight: 500, marginBottom: '1rem', background: redeemResult.ok ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', color: redeemResult.ok ? '#22C55E' : '#EF4444' }}>
+              {redeemResult.msg}
+            </div>
+          )}
+          <p style={{ color: 'var(--text-tertiary)', fontSize: '0.8rem' }}>
+            Vous n'avez pas de code ? <button onClick={() => window.open('https://wa.me/212634716033', '_blank')} style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', cursor: 'pointer', textDecoration: 'underline', padding: 0, fontSize: '0.8rem' }}>Contactez-nous sur WhatsApp</button>
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="dashboard-layout">
 
