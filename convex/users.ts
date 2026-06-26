@@ -29,7 +29,8 @@ export const me = query({
         .first();
     }
 
-    if (!subscription) return {
+    if (!subscription)     return {
+      userId,
       subject: identity.subject,
       email: userEmail,
       name: userName,
@@ -41,6 +42,7 @@ export const me = query({
     const effectiveStatus = isExpired ? 'expired' : subscription.status;
 
     return {
+      userId,
       subject: identity.subject,
       email: userEmail,
       name: userName,

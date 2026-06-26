@@ -58,9 +58,7 @@ function ProtectedDevRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/login" replace />;
   }
 
-  console.log('DevRoute email check:', authUser.email, '=== am.ahmed5maher.am@gmail.com?', authUser.email === 'am.ahmed5maher.am@gmail.com');
-
-  if (authUser.email !== 'am.ahmed5maher.am@gmail.com') {
+  if (authUser.userId !== 'kx7f11ha5j2x0j5m32nvq757f5872181') {
     return <Navigate to="/dashboard" replace />;
   }
 
