@@ -54,11 +54,11 @@ function ProtectedDevRoute({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !authUser) {
     return <Navigate to="/login" replace />;
   }
 
-  if (authUser?.email !== 'am.ahmed5maher.am@gmail.com') {
+  if (authUser.email !== 'am.ahmed5maher.am@gmail.com') {
     return <Navigate to="/dashboard" replace />;
   }
 
