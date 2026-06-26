@@ -11,6 +11,7 @@ import { DashboardDev } from './pages/DashboardDev';
 
 import { DriverPortal } from './pages/DriverPortal';
 import { ChefDashboard } from './pages/ChefDashboard';
+import { ReservationDashboard } from './pages/ReservationDashboard';
 import { ServerDashboard } from './pages/ServerDashboard';
 import { OrderTracking } from './pages/OrderTracking';
 import { PublicCheckReservation } from './pages/PublicCheckReservation';
@@ -90,6 +91,7 @@ function App() {
           <Route path="/driver/:restaurantId/:driverId" element={<DriverPortal />} />
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/chef/:restaurantId" element={<ChefDashboard />} />
+          <Route path="/reservation/:restaurantId" element={<ReservationDashboard />} />
           <Route path="/track/:orderId" element={<OrderTracking />} />
           <Route path="/check-reservation/:restaurantId" element={<PublicCheckReservation />} />
           <Route path="/serveur/:restaurantId/:staffId" element={<ServerDashboard />} />
