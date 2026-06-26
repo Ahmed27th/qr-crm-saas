@@ -2039,6 +2039,13 @@ export function Dashboard() {
               </span>
             );
           })}
+          {/* Hostess / Reservation page — external link */}
+          {planId !== 'starter' && (
+            <button className="nav-item" onClick={() => window.open(`/reservation/${profile?.id || 'demo'}`, '_blank')} data-tip="Reservations">
+              <Calendar size={17} />
+              <span>H&ocirc;tesse</span>
+            </button>
+          )}
           {/* "More" button — hidden on desktop, appears in bottom bar on phone */}
           <button className="nav-item mobile-more-btn mobile-only" onClick={() => setMoreSheetOpen(true)} data-tip="Plus">
             <MoreHorizontal size={17} />
@@ -2098,6 +2105,11 @@ export function Dashboard() {
               </span>
             );
           })}
+          {planId !== 'starter' && (
+            <button className="nav-item" onClick={() => { window.open(`/reservation/${profile?.id || 'demo'}`, '_blank'); setMoreSheetOpen(false); }}>
+              <Calendar size={17} /><span>H&ocirc;tesse</span>
+            </button>
+          )}
         </div>
         <div className="bottom-sheet-footer">
           <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => { setActiveTab('settings'); setMoreSheetOpen(false); }}>
