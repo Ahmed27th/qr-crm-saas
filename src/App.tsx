@@ -24,11 +24,6 @@ import { useConvexAuth } from '@convex-dev/auth/react';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useConvexAuth();
-  const hasDemoParam = new URLSearchParams(window.location.search).has('demo');
-
-  if (hasDemoParam) {
-    return <>{children}</>;
-  }
 
   if (isLoading) {
     return (

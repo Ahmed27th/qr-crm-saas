@@ -118,7 +118,7 @@ export function DriverPortal() {
           <div className="driver-empty-icon"><Truck size={48} /></div>
           <h2>Portail Livreur</h2>
           <p>Scannez votre QR code personnel depuis le tableau de bord pour accéder à vos missions.</p>
-          <a href="/dashboard?demo=ultimate" className="driver-btn-primary">Accéder au Dashboard</a>
+           <a href="/login" className="driver-btn-primary">Se connecter</a>
         </div>
       </div>
     );

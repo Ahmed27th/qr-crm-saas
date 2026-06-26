@@ -24,7 +24,7 @@ export function OrderTracking() {
   useEffect(() => {
     const loadOrder = async () => {
       if (!orderId) return;
-      const rid = localStorage.getItem('qr_restaurant_id') || 'demo-ultimate';
+      const rid = localStorage.getItem('qr_restaurant_id') || '';
       const orders = await DataStore.getOrders(rid);
       const found = orders.find((o: Order) => o.id === orderId);
       if (found) {
@@ -75,7 +75,7 @@ export function OrderTracking() {
   return (
     <div className="order-tracking-page">
       <header className="ot-header">
-        <Link to={`/menu/${localStorage.getItem('qr_restaurant_id') || 'demo-ultimate'}`} className="ot-back-btn">
+        <Link to={`/menu/${localStorage.getItem('qr_restaurant_id') || ''}`} className="ot-back-btn">
           <ArrowLeft size={18} />
         </Link>
         <div className="ot-header-info">
@@ -204,7 +204,7 @@ export function OrderTracking() {
           </div>
         )}
 
-        <Link to={`/menu/${localStorage.getItem('qr_restaurant_id') || 'demo-ultimate'}`} className="ot-btn-secondary">
+        <Link to={`/menu/${localStorage.getItem('qr_restaurant_id') || ''}`} className="ot-btn-secondary">
           Retour au menu
         </Link>
       </div>

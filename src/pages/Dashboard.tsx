@@ -33,11 +33,9 @@ export function Dashboard() {
   });
   const subscription = authUser?.subscription;
   const searchParams = new URLSearchParams(window.location.search);
-  const demoParam = searchParams.get('demo');
   const checkoutSuccess = searchParams.get('checkout') === 'success';
-  const isDemoUltimate = demoParam === 'ultimate';
-  const isSubActive = isDemoUltimate || subscription?.status === 'active';
-  const planId = isDemoUltimate ? 'ultimate' : (isSubActive ? (subscription?.planId ?? 'none') : 'none');
+  const isSubActive = subscription?.status === 'active';
+  const planId = isSubActive ? (subscription?.planId ?? 'none') : 'none';
 
   const handleManageSubscription = () => {
     window.location.href = 'mailto:sales@qrcrm.com?subject=Subscription%20Management';
@@ -148,13 +146,7 @@ export function Dashboard() {
     // Wait for Convex Auth to finish loading before making redirect decisions
     if (authUser === undefined) return;
 
-    if (isDemoUltimate) {
-      restaurantId = 'demo-ultimate';
-      isAuthenticated = true;
-      localStorage.setItem('qr_restaurant_id', 'demo-ultimate');
-      localStorage.setItem('qr_is_authenticated', 'true');
-      // Continue to subscribe with demo restaurant ID
-    } else if (!isAuthenticated || !restaurantId) {
+    if (!isAuthenticated || !restaurantId) {
       // Only redirect if Convex Auth confirms we're not authenticated.
       // Prevents race condition where me query returns null before auth
       // token propagates to the Convex client.
@@ -1934,20 +1926,18 @@ export function Dashboard() {
           </button>
         </div>
 
-        {isSubActive && (subscription || isDemoUltimate) && (
+        {isSubActive && subscription && (
           <div className="sidebar-plan-badge" style={{ margin: '0.5rem 1rem' }}>
             <span className="plan-badge-dot" />
-            <span className="plan-badge-label">{isDemoUltimate ? 'Ultimate (Demo)' : (subscription?.planId === 'ultimate' ? 'Ultimate' : subscription?.planId === 'pro' ? 'Pro' : 'Starter')}</span>
-            {!isDemoUltimate && subscription?.currentPeriodEnd && (
+            <span className="plan-badge-label">{subscription?.planId === 'ultimate' ? 'Ultimate' : subscription?.planId === 'pro' ? 'Pro' : 'Starter'}</span>
+            {subscription?.currentPeriodEnd && (
               <span style={{ fontSize: '0.6rem', color: 'var(--text-tertiary)', marginLeft: '0.2rem' }}>
                 Exp. {new Date(subscription.currentPeriodEnd).toLocaleDateString('fr-FR', { month: 'short', day: 'numeric', year: 'numeric' })}
               </span>
             )}
-            {!isDemoUltimate && (
-              <button className="manage-sub-btn" onClick={handleManageSubscription} style={{ marginLeft: 'auto', fontSize: '0.65rem', padding: '0.15rem 0.4rem', background: 'transparent', border: '1px solid rgba(var(--accent-primary-rgb),0.2)', borderRadius: '6px', color: 'var(--accent-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                <CreditCard size={10} />
-              </button>
-            )}
+            <button className="manage-sub-btn" onClick={handleManageSubscription} style={{ marginLeft: 'auto', fontSize: '0.65rem', padding: '0.15rem 0.4rem', background: 'transparent', border: '1px solid rgba(var(--accent-primary-rgb),0.2)', borderRadius: '6px', color: 'var(--accent-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+              <CreditCard size={10} />
+            </button>
           </div>
         )}
         
@@ -2109,7 +2099,7 @@ export function Dashboard() {
       </div>
 
       {/* Expiring Soon Banner */}
-      {isSubActive && !isDemoUltimate && subscription?.currentPeriodEnd && (
+      {isSubActive && subscription?.currentPeriodEnd && (
         (() => {
           const daysLeft = Math.ceil((subscription.currentPeriodEnd - Date.now()) / 86400000);
           if (daysLeft <= 0) {
@@ -2197,20 +2187,18 @@ export function Dashboard() {
           <div className="header-actions">
 
             {/* Subscription Badge */}
-            {isSubActive && (subscription || isDemoUltimate) && (
+            {isSubActive && subscription && (
               <div className="header-plan-badge">
                 <span className="plan-badge-dot" />
-                <span className="header-plan-label">{isDemoUltimate ? 'Ultimate (Demo)' : (subscription?.planId === 'ultimate' ? 'Ultimate' : subscription?.planId === 'pro' ? 'Pro' : 'Starter')}</span>
-                {!isDemoUltimate && subscription?.currentPeriodEnd && (
+                <span className="header-plan-label">{subscription?.planId === 'ultimate' ? 'Ultimate' : subscription?.planId === 'pro' ? 'Pro' : 'Starter'}</span>
+                {subscription?.currentPeriodEnd && (
                   <span className="header-plan-expiry">
                     Exp. {new Date(subscription.currentPeriodEnd).toLocaleDateString('fr-FR', { month: 'short', day: 'numeric', year: 'numeric' })}
                   </span>
                 )}
-                {!isDemoUltimate && (
-                  <button className="header-manage-sub-btn" onClick={handleManageSubscription} title="Gérer l'abonnement">
-                    <CreditCard size={12} />
-                  </button>
-                )}
+                <button className="header-manage-sub-btn" onClick={handleManageSubscription} title="Gérer l'abonnement">
+                  <CreditCard size={12} />
+                </button>
               </div>
             )}
 

@@ -9,6 +9,7 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as dev from "../dev.js";
 import type * as driverLocations from "../driverLocations.js";
 import type * as drivers from "../drivers.js";
 import type * as http from "../http.js";
@@ -17,14 +18,13 @@ import type * as migrateRestaurantIds from "../migrateRestaurantIds.js";
 import type * as orders from "../orders.js";
 import type * as profiles from "../profiles.js";
 import type * as push from "../push.js";
+import type * as redeemCode from "../redeemCode.js";
 import type * as reservations from "../reservations.js";
 import type * as reviews from "../reviews.js";
 import type * as staff from "../staff.js";
-import type * as stripe from "../stripe.js";
 import type * as subscriptionConfig from "../subscriptionConfig.js";
 import type * as subscriptions from "../subscriptions.js";
 import type * as testSubscriptions from "../testSubscriptions.js";
-import type * as trial from "../trial.js";
 import type * as users from "../users.js";
 
 import type {
@@ -35,6 +35,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  dev: typeof dev;
   driverLocations: typeof driverLocations;
   drivers: typeof drivers;
   http: typeof http;
@@ -43,14 +44,13 @@ declare const fullApi: ApiFromModules<{
   orders: typeof orders;
   profiles: typeof profiles;
   push: typeof push;
+  redeemCode: typeof redeemCode;
   reservations: typeof reservations;
   reviews: typeof reviews;
   staff: typeof staff;
-  stripe: typeof stripe;
   subscriptionConfig: typeof subscriptionConfig;
   subscriptions: typeof subscriptions;
   testSubscriptions: typeof testSubscriptions;
-  trial: typeof trial;
   users: typeof users;
 }>;
 
