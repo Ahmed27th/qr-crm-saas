@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════
    KDS — Kitchen Display System
-   Professional ticket-style display
+   Professional ticket-style with metrics
    ═══════════════════════════════════════════ */
 
 .kds-page {
@@ -18,28 +18,29 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 24px;
+  padding: 10px 20px;
   background: #14141f;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   flex-shrink: 0;
-  gap: 16px;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .kds-header-left {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
 }
 
 .kds-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   color: var(--accent-primary, #E2B36B);
 }
 
 .kds-brand h1 {
-  font-size: 1.3rem;
+  font-size: 1.2rem;
   font-weight: 900;
   letter-spacing: -0.03em;
   margin: 0;
@@ -48,12 +49,12 @@
 .kds-status {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.7rem;
+  gap: 5px;
+  font-size: 0.65rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  padding: 4px 10px;
+  padding: 3px 8px;
   border-radius: 6px;
 }
 
@@ -63,55 +64,61 @@
 }
 
 .kds-status.off {
-  color: #f87171;
-  background: rgba(248, 113, 113, 0.1);
+  color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.04);
 }
 
-/* ── Stats ── */
+/* ── Stats in header ── */
 .kds-stats {
   display: flex;
-  gap: 20px;
+  gap: 8px;
+  align-items: center;
 }
 
 .kds-stat {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  border-radius: 10px;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.04);
 }
 
 .kds-stat-num {
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   font-weight: 900;
   line-height: 1;
 }
 
 .kds-stat-new .kds-stat-num { color: #f87171; }
 .kds-stat-prep .kds-stat-num { color: #fbbf24; }
+.kds-stat-urgent .kds-stat-num { color: #ef4444; }
+.kds-stat-urgent { background: rgba(239, 68, 68, 0.12); animation: kdsPulse 1.5s infinite; }
+.kds-stat-risk .kds-stat-num { color: #f97316; }
+.kds-stat-risk { background: rgba(249, 115, 22, 0.1); }
 
 .kds-stat-label {
-  font-size: 0.65rem;
+  font-size: 0.6rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.45);
 }
 
 .kds-header-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
+.kds-metrics-toggle,
 .kds-sound-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.04);
-  color: rgba(255, 255, 255, 0.5);
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.03);
+  color: rgba(255, 255, 255, 0.4);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -119,9 +126,189 @@
   transition: all 0.15s;
 }
 
+.kds-metrics-toggle:hover,
 .kds-sound-btn:hover {
   background: rgba(255, 255, 255, 0.08);
   color: #fff;
+}
+
+.kds-metrics-toggle.active {
+  color: var(--accent-primary, #E2B36B);
+  background: rgba(226, 179, 107, 0.1);
+  border-color: rgba(226, 179, 107, 0.2);
+}
+
+/* ── Metrics Panel ── */
+.kds-metrics {
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+  animation: kdsSlideIn 0.25s ease;
+}
+
+.kds-metrics-grid {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.kds-metric-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  min-width: 120px;
+}
+
+.kds-metric-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.5);
+  flex-shrink: 0;
+}
+
+.kds-metric-icon.avg { color: #4ade80; background: rgba(74, 222, 128, 0.1); }
+.kds-metric-icon.max { color: #fbbf24; background: rgba(251, 191, 36, 0.1); }
+.kds-metric-icon.warn { color: #f97316; background: rgba(249, 115, 22, 0.12); }
+.kds-metric-icon.ok { color: #4ade80; background: rgba(74, 222, 128, 0.08); }
+
+.kds-metric-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.kds-metric-value {
+  font-size: 1.1rem;
+  font-weight: 900;
+  line-height: 1;
+  color: #fff;
+}
+
+.kds-metric-unit {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.35);
+  margin-left: 2px;
+}
+
+.kds-metric-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* ── Bottleneck section ── */
+.kds-bottleneck-section {
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.12);
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+
+.kds-bottleneck-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #f87171;
+  margin-bottom: 6px;
+}
+
+.kds-bottleneck-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.kds-bottleneck-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  background: rgba(239, 68, 68, 0.08);
+  border-radius: 6px;
+  border: 1px solid rgba(239, 68, 68, 0.1);
+}
+
+.kds-bottleneck-name {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #fca5a5;
+}
+
+.kds-bottleneck-badge {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+  padding: 1px 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+/* ── Hot items section ── */
+.kds-hot-section {
+  background: rgba(251, 191, 36, 0.05);
+  border: 1px solid rgba(251, 191, 36, 0.1);
+  border-radius: 10px;
+  padding: 8px 12px;
+}
+
+.kds-hot-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #fbbf24;
+  margin-bottom: 6px;
+}
+
+.kds-hot-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.kds-hot-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba(251, 191, 36, 0.08);
+  border-radius: 6px;
+  border: 1px solid rgba(251, 191, 36, 0.1);
+}
+
+.kds-hot-name {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fde68a;
+}
+
+.kds-hot-qty {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #fbbf24;
 }
 
 /* ── Body ── */
@@ -129,16 +316,16 @@
   flex: 1;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  padding: 12px;
+  gap: 10px;
+  padding: 10px;
   min-height: 0;
 }
 
 /* ── Column ── */
 .kds-col {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -148,88 +335,83 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  background: rgba(255, 255, 255, 0.04);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   flex-shrink: 0;
 }
 
 .kds-col-header h2 {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   margin: 0;
 }
 
-.kds-col-header:first-child h2 { color: #f87171; }
-.kds-col-header:last-child h2 { color: #fbbf24; }
+.kds-col:first-child .kds-col-header h2 { color: #f87171; }
+.kds-col:last-child .kds-col-header h2 { color: #fbbf24; }
 
 .kds-col-count {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 800;
-  padding: 2px 10px;
+  padding: 2px 8px;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.5);
 }
 
-/* ── Orders container (auto-scroll) ── */
+/* ── Orders container ── */
 .kds-col-orders {
   flex: 1;
   overflow-y: auto;
-  padding: 10px;
+  padding: 8px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   scroll-behavior: smooth;
 }
 
-.kds-col-orders::-webkit-scrollbar {
-  width: 4px;
-}
-
-.kds-col-orders::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.kds-col-orders::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 2px;
-}
+.kds-col-orders::-webkit-scrollbar { width: 3px; }
+.kds-col-orders::-webkit-scrollbar-track { background: transparent; }
+.kds-col-orders::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.08); border-radius: 2px; }
 
 /* ── Ticket Card ── */
 .kds-ticket {
   background: #1a1a2e;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 12px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   animation: kdsSlideIn 0.3s ease;
   flex-shrink: 0;
-  transition: border-color 0.3s;
+  transition: border-color 0.3s, box-shadow 0.3s;
 }
 
 .kds-ticket.urgent {
-  border-color: rgba(248, 113, 113, 0.4);
-  box-shadow: 0 0 20px rgba(248, 113, 113, 0.06);
+  border-color: rgba(248, 113, 113, 0.35);
+  box-shadow: 0 0 20px rgba(248, 113, 113, 0.05);
 }
 
 .kds-ticket.warning {
-  border-color: rgba(251, 191, 36, 0.3);
+  border-color: rgba(251, 191, 36, 0.25);
+}
+
+.kds-ticket.has-bottleneck {
+  border-left: 3px solid #ef4444;
 }
 
 @keyframes kdsSlideIn {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Ticket Header ── */
+/* ── Ticket header ── */
 .kds-ticket-header {
   display: flex;
   justify-content: space-between;
@@ -237,7 +419,7 @@
 }
 
 .kds-ticket-id {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 900;
   color: var(--accent-primary, #E2B36B);
   letter-spacing: 0.02em;
@@ -248,141 +430,142 @@
   align-items: baseline;
   gap: 2px;
   font-weight: 900;
-  font-size: 1.3rem;
-  padding: 4px 12px;
+  font-size: 1.2rem;
+  padding: 3px 10px;
   border-radius: 8px;
   line-height: 1;
 }
 
-.kds-ticket-timer.fresh {
-  color: #4ade80;
-  background: rgba(74, 222, 128, 0.1);
-}
-
-.kds-ticket-timer.warning {
-  color: #fbbf24;
-  background: rgba(251, 191, 36, 0.12);
-}
-
-.kds-ticket-timer.urgent {
-  color: #f87171;
-  background: rgba(248, 113, 113, 0.15);
-  animation: kdsPulse 2s infinite;
-}
+.kds-ticket-timer.fresh { color: #4ade80; background: rgba(74, 222, 128, 0.1); }
+.kds-ticket-timer.warning { color: #fbbf24; background: rgba(251, 191, 36, 0.12); }
+.kds-ticket-timer.urgent { color: #f87171; background: rgba(248, 113, 113, 0.15); animation: kdsPulse 2s infinite; }
 
 @keyframes kdsPulse {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.6; }
+  50% { opacity: 0.55; }
 }
 
 .kds-timer-unit {
-  font-size: 0.6rem;
+  font-size: 0.55rem;
   font-weight: 700;
-  opacity: 0.6;
+  opacity: 0.5;
   margin-left: 2px;
 }
 
-/* ── Meta row (table + source) ── */
+/* ── Meta row ── */
 .kds-ticket-meta {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
 }
 
 .kds-ticket-table {
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 700;
   display: flex;
   align-items: center;
-  gap: 6px;
-  color: rgba(255, 255, 255, 0.8);
+  gap: 5px;
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .kds-ticket-source {
-  font-size: 0.6rem;
+  font-size: 0.55rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  padding: 3px 10px;
-  border-radius: 6px;
+  padding: 2px 8px;
+  border-radius: 5px;
 }
 
 /* ── Items ── */
 .kds-ticket-items {
-  background: rgba(255, 255, 255, 0.04);
-  border-radius: 10px;
-  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  padding: 6px 8px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
 }
 
 .kds-item-row {
   display: flex;
   align-items: baseline;
-  gap: 10px;
-  padding: 5px 0;
+  gap: 8px;
+  padding: 4px 0;
 }
 
 .kds-item-row + .kds-item-row {
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.kds-item-row.bottleneck-item {
+  background: rgba(239, 68, 68, 0.06);
+  margin: 0 -4px;
+  padding: 4px;
+  border-radius: 4px;
 }
 
 .kds-item-qty {
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 900;
   color: var(--accent-primary, #E2B36B);
-  min-width: 32px;
+  min-width: 28px;
   text-align: right;
 }
 
 .kds-item-name {
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(255, 255, 255, 0.85);
+  flex: 1;
+}
+
+.kds-item-warn {
+  color: #ef4444;
+  flex-shrink: 0;
 }
 
 /* ── Note ── */
 .kds-ticket-note {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #fb923c;
-  padding: 6px 10px;
+  padding: 5px 8px;
   background: rgba(251, 146, 60, 0.08);
-  border-radius: 8px;
-  border: 1px solid rgba(251, 146, 60, 0.15);
+  border-radius: 6px;
+  border: 1px solid rgba(251, 146, 60, 0.12);
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 }
 
-/* ── Customer name ── */
+/* ── Customer ── */
 .kds-ticket-customer {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.4);
 }
 
 /* ── Action Buttons ── */
 .kds-ticket-actions {
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 
 .kds-btn {
   flex: 1;
-  padding: 14px;
-  border-radius: 10px;
+  padding: 12px;
+  border-radius: 9px;
   border: none;
   font-weight: 800;
-  font-size: 1rem;
+  font-size: 0.9rem;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  transition: all 0.15s;
+  gap: 6px;
+  transition: all 0.12s;
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
@@ -390,18 +573,18 @@
 .kds-btn-start {
   background: linear-gradient(135deg, #f59e0b, #d97706);
   color: #0a0a1a;
-  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.25);
+  box-shadow: 0 3px 12px rgba(245, 158, 11, 0.2);
 }
 
 .kds-btn-finish {
   background: linear-gradient(135deg, #10b981, #059669);
   color: #fff;
-  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.25);
+  box-shadow: 0 3px 12px rgba(16, 185, 129, 0.2);
 }
 
 .kds-btn:hover {
   transform: translateY(-1px);
-  filter: brightness(1.1);
+  filter: brightness(1.08);
 }
 
 .kds-btn:active {
@@ -414,51 +597,46 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px 20px;
-  color: rgba(255, 255, 255, 0.15);
+  padding: 50px 20px;
+  color: rgba(255, 255, 255, 0.12);
   text-align: center;
   height: 100%;
-  gap: 12px;
+  gap: 10px;
 }
 
 .kds-empty p {
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 600;
-  color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.15);
 }
 
 /* ── Responsive ── */
 @media (max-width: 900px) {
-  .kds-body {
-    grid-template-columns: 1fr;
-    gap: 8px;
-    padding: 8px;
-  }
-
-  .kds-header {
-    padding: 8px 12px;
-    gap: 10px;
-    flex-wrap: wrap;
-  }
-
+  .kds-body { grid-template-columns: 1fr; gap: 8px; padding: 8px; }
+  .kds-header { padding: 8px 12px; gap: 8px; }
   .kds-brand h1 { font-size: 1rem; }
+  .kds-stats { gap: 4px; flex-wrap: wrap; }
+  .kds-stat { padding: 3px 8px; gap: 4px; }
+  .kds-stat-num { font-size: 1rem; }
+  .kds-stat-label { font-size: 0.5rem; }
+  .kds-metrics { padding: 8px 12px; }
+  .kds-metrics-grid { gap: 6px; }
+  .kds-metric-card { padding: 6px 10px; min-width: 90px; gap: 8px; }
+  .kds-metric-icon { width: 30px; height: 30px; }
+  .kds-metric-icon svg { width: 16px; height: 16px; }
+  .kds-metric-value { font-size: 0.95rem; }
+  .kds-ticket { padding: 10px; gap: 6px; }
+  .kds-ticket-id { font-size: 0.85rem; }
+  .kds-ticket-timer { font-size: 1rem; padding: 2px 8px; }
+  .kds-ticket-table { font-size: 0.8rem; }
+  .kds-item-qty { font-size: 0.8rem; min-width: 24px; }
+  .kds-item-name { font-size: 0.8rem; }
+  .kds-btn { padding: 10px; font-size: 0.8rem; }
+  .kds-col-header h2 { font-size: 0.7rem; }
+}
 
-  .kds-stats { gap: 8px; }
-  .kds-stat { padding: 4px 10px; }
-  .kds-stat-num { font-size: 1.1rem; }
-  .kds-stat-label { font-size: 0.55rem; }
-
-  .kds-ticket {
-    padding: 10px;
-    gap: 8px;
-  }
-
-  .kds-ticket-id { font-size: 0.95rem; }
-  .kds-ticket-timer { font-size: 1.1rem; padding: 3px 10px; }
-  .kds-ticket-table { font-size: 0.85rem; }
-  .kds-item-qty { font-size: 0.85rem; min-width: 26px; }
-  .kds-item-name { font-size: 0.85rem; }
-  .kds-btn { padding: 12px; font-size: 0.85rem; }
-
-  .kds-col-header h2 { font-size: 0.75rem; }
+@media (max-width: 500px) {
+  .kds-header { padding: 6px 8px; }
+  .kds-metrics-grid { flex-direction: column; }
+  .kds-metric-card { min-width: auto; }
 }
