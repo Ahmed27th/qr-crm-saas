@@ -2372,6 +2372,32 @@ export function Dashboard() {
                   </div>
                 </div>
                 )}
+
+                {planId !== 'starter' && (
+                <div className="glass-panel p-8 text-center qr-premium-card">
+                  <div className="qr-preview-container" style={{ minHeight: '180px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <QRCodeSVG 
+                      value={`${window.location.origin}/reservation/${profile?.id || 'demo'}`}
+                      size={180}
+                      level="H"
+                      includeMargin={true}
+                      fgColor="#000000"
+                      bgColor="#FFFFFF"
+                      style={{ width: 180, height: 180 }}
+                    />
+                  </div>
+                  <h3 className="text-xl font-bold mb-2">{t('qr_reservation_mgmt_title', 'QR Réservation')}</h3>
+                  <p className="text-tertiary text-sm mb-6">{t('qr_reservation_mgmt_desc', 'Gérez les réservations et l\'arrivée des clients.')}</p>
+                  <div className="flex gap-2 w-full">
+                    <button className="btn-primary flex-1" onClick={() => window.open(`${window.location.origin}/reservation/${profile?.id || 'demo'}`, '_blank')}>
+                      {t('staff_test_link')}
+                    </button>
+                    <button className="btn-secondary qr-dl-btn" onClick={(e) => downloadQR(e.currentTarget, 'qr-reservation-mgmt')} title="Télécharger QR Réservation">
+                      <Download size={15} />
+                    </button>
+                  </div>
+                </div>
+                )}
               </div>
 
               {/* Personnel QR Codes */}
