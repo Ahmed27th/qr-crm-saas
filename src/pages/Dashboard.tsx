@@ -2121,29 +2121,20 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Expiring Soon Banner — directs to activation code in settings */}
-      {isSubActive && subscription?.currentPeriodEnd && (
-        (() => {
-          const daysLeft = Math.ceil((subscription.currentPeriodEnd - Date.now()) / 86400000);
-          if (daysLeft <= 0) {
-            return (
-              <div className="glass-panel" style={{ margin: '0 1.5rem', padding: '0.75rem 1rem', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
-                <span style={{ color: 'var(--danger)', fontSize: '0.85rem', fontWeight: 500 }}>⚠ Votre abonnement a expiré. Utilisez un code d'activation dans Paramètres pour le réactiver.</span>
-                <button className="manage-sub-btn" onClick={() => setActiveTab('settings')} style={{ fontSize: '0.8rem', padding: '0.35rem 0.75rem', background: 'var(--accent)', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', whiteSpace: 'nowrap' }}>Paramètres</button>
-              </div>
-            );
-          }
-          if (daysLeft <= 7) {
-            return (
-              <div className="glass-panel" style={{ margin: '0 1.5rem', padding: '0.75rem 1rem', background: 'rgba(234,179,8,0.1)', border: '1px solid rgba(234,179,8,0.3)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
-                <span style={{ color: 'var(--warning)', fontSize: '0.85rem', fontWeight: 500 }}>⚠ Votre abonnement expire dans {daysLeft} jour{daysLeft > 1 ? 's' : ''}. Utilisez un code d'activation dans Paramètres pour le prolonger.</span>
-                <button className="manage-sub-btn" onClick={() => setActiveTab('settings')} style={{ fontSize: '0.8rem', padding: '0.35rem 0.75rem', background: 'var(--accent)', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', whiteSpace: 'nowrap' }}>Paramètres</button>
-              </div>
-            );
-          }
-          return null;
-        })()
-      )}
+      {/* Small subscription expiry notice */}
+      {isSubActive && subscription?.currentPeriodEnd && (() => {
+        const daysLeft = Math.ceil((subscription.currentPeriodEnd - Date.now()) / 86400000);
+        if (daysLeft > 3) return null;
+        const isExpired = daysLeft <= 0;
+        return (
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 9999, padding: '6px 16px', textAlign: 'center', fontSize: '0.75rem', fontWeight: 500, background: isExpired ? 'rgba(239,68,68,0.15)' : 'rgba(234,179,8,0.12)', color: isExpired ? 'var(--danger)' : 'var(--warning)', borderBottom: isExpired ? '1px solid rgba(239,68,68,0.25)' : '1px solid rgba(234,179,8,0.2)', backdropFilter: 'blur(8px)' }}>
+            {isExpired
+              ? "Abonnement expiré — "
+              : `Abonnement expire dans ${daysLeft} jour${daysLeft > 1 ? 's' : ''} — `}
+            <button onClick={() => setActiveTab('settings')} style={{ background: 'none', border: 'none', color: 'var(--accent-primary)', cursor: 'pointer', textDecoration: 'underline', padding: 0, fontSize: '0.75rem' }}>utiliser un code d'activation</button>
+          </div>
+        );
+      })()}
 
 
 
