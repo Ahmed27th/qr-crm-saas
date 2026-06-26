@@ -415,7 +415,7 @@ export function ChefDashboard() {
         <div className="kds-header-left">
           <div className="kds-brand">
             <ChefHat size={22} />
-            <h1>KDS</h1>
+            <h1>Kitchen</h1>
           </div>
           <div className={`kds-status ${orders.length > 0 ? 'live' : 'off'}`}>
             {orders.length > 0 ? <Wifi size={14} /> : <WifiOff size={14} />}
