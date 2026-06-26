@@ -9,7 +9,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   PieChart, Pie, Cell, AreaChart, Area 
 } from 'recharts';
-import { useQuery, useMutation, useAction, useConvex } from 'convex/react';
+import { useQuery, useMutation, useConvex } from 'convex/react';
 import { useConvexAuth } from '@convex-dev/auth/react';
 import { api } from '../../convex/_generated/api';
 import { DataStore, setStableRestaurantId } from '../dataStore';
@@ -38,14 +38,26 @@ export function Dashboard() {
   const isDemoUltimate = demoParam === 'ultimate';
   const isSubActive = isDemoUltimate || subscription?.status === 'active';
   const planId = isDemoUltimate ? 'ultimate' : (isSubActive ? (subscription?.planId ?? 'none') : 'none');
-  const createPortal = useAction(api.stripe.createPortalSession);
 
-  const handleManageSubscription = async () => {
+  const handleManageSubscription = () => {
+    window.location.href = 'mailto:sales@qrcrm.com?subject=Subscription%20Management';
+  };
+
+  const handleRedeemCode = async () => {
+    if (!codeInput.trim() || redeeming) return;
+    setRedeeming(true);
+    setRedeemResult(null);
     try {
-      const { url } = await createPortal({ returnUrl: window.location.href });
-      window.location.href = url;
-    } catch (err) {
-      console.error("Failed to open portal:", err);
+      const result = await redeemCode({ code: codeInput.trim().toUpperCase(), email: authUser?.email || undefined });
+      setRedeemResult({
+        ok: true,
+        msg: `Abonnement ${result.planId} activé pour ${result.durationDays} jours !`,
+      });
+      setCodeInput('');
+    } catch (err: any) {
+      setRedeemResult({ ok: false, msg: err.message || 'Code invalide ou déjà utilisé.' });
+    } finally {
+      setRedeeming(false);
     }
   };
 
@@ -54,7 +66,8 @@ export function Dashboard() {
     pro: new Set(['overview', 'analytics', 'orders', 'reservations', 'reviews', 'staff', 'menu', 'qr', 'settings']),
     ultimate: new Set(['overview', 'analytics', 'orders', 'collection', 'reservations', 'reviews', 'staff', 'drivers', 'menu', 'qr', 'settings']),
   };
-  const allowedTabs = PLAN_TABS[planId] ?? new Set<string>();
+  const baseTabs = new Set(['overview', 'settings']);
+  const allowedTabs = PLAN_TABS[planId] ?? baseTabs;
   const PRIMARY_NAV_IDS = new Set(['overview', 'orders', 'menu', 'reviews', 'qr']);
 
   const [activeTab, setActiveTab] = useState('overview');
@@ -96,6 +109,10 @@ export function Dashboard() {
   const [qrStaffId, setQrStaffId] = useState<string | null>(null);
   const [qrDriverId, setQrDriverId] = useState<string | null>(null);
   const [isAddingDishLoading, setIsAddingDishLoading] = useState(false);
+  const redeemCode = useMutation(api.redeemCode.redeemCode);
+  const [codeInput, setCodeInput] = useState('');
+  const [redeeming, setRedeeming] = useState(false);
+  const [redeemResult, setRedeemResult] = useState<{ ok: boolean; msg: string } | null>(null);
   const [isAddingStaffLoading, setIsAddingStaffLoading] = useState(false);
   const [deletingStaffId, setDeletingStaffId] = useState<string | null>(null);
   const [deletingDriverId, setDeletingDriverId] = useState<string | null>(null);
@@ -1963,9 +1980,6 @@ export function Dashboard() {
           <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => handleNavClick('settings')} data-tip={t('dash_settings')}>
             <Settings size={17} /><span>{t('dash_settings')}</span>
           </button>
-          <div className="sidebar-lang">
-            <LanguageSwitcher variant="minimal" />
-          </div>
           <button className="nav-item" onClick={() => {
             const prompt = (window as any).deferredPrompt;
             if (prompt) {
@@ -2631,6 +2645,43 @@ export function Dashboard() {
                       <p className="text-[10px] text-tertiary">{t('recommended_size')} • {t('click_to_change')}</p>
                     </div>
                   </div>
+                </div>
+
+                <div className="glass-panel p-8">
+                  <h3 className="text-lg font-bold mb-6 flex items-center gap-2"><CreditCard size={20} className="text-accent"/> Activer un abonnement</h3>
+                  <p className="text-tertiary text-sm mb-4">Saisissez le code d'activation que vous avez reçu pour activer ou prolonger votre abonnement.</p>
+                  <div className="flex gap-3 items-end">
+                    <div className="premium-input-group flex-1" style={{ marginBottom: 0 }}>
+                      <label>Code d'activation</label>
+                      <div className="premium-input-wrapper">
+                        <input
+                          type="text"
+                          value={codeInput}
+                          onChange={e => setCodeInput(e.target.value.toUpperCase())}
+                          className="premium-input"
+                          placeholder="EX: ABC12345"
+                          onKeyDown={e => {
+                            if (e.key === 'Enter' && codeInput.trim() && !redeeming) {
+                              handleRedeemCode();
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+                    <button
+                      className="btn-primary"
+                      onClick={handleRedeemCode}
+                      disabled={redeeming || !codeInput.trim()}
+                      style={{ padding: '0.65rem 1.25rem', borderRadius: '12px', border: 'none', background: 'var(--accent-gradient)', color: 'white', fontWeight: 700, cursor: redeeming || !codeInput.trim() ? 'not-allowed' : 'pointer', opacity: redeeming || !codeInput.trim() ? 0.6 : 1, whiteSpace: 'nowrap', height: '45px' }}
+                    >
+                      {redeeming ? 'Activation...' : 'Activer'}
+                    </button>
+                  </div>
+                  {redeemResult && (
+                    <div style={{ marginTop: '1rem', padding: '0.75rem', borderRadius: '12px', fontSize: '0.875rem', fontWeight: 500, background: redeemResult.ok ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)', color: redeemResult.ok ? '#22C55E' : '#EF4444' }}>
+                      {redeemResult.msg}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

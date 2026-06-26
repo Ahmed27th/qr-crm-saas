@@ -7,6 +7,7 @@ import { PublicReview } from './pages/PublicReview';
 import { StaffReview } from './pages/StaffReview';
 import { Auth } from './pages/Auth';
 import { Tarifs } from './pages/Tarifs';
+import { DashboardDev } from './pages/DashboardDev';
 
 import { DriverPortal } from './pages/DriverPortal';
 import { ChefDashboard } from './pages/ChefDashboard';
@@ -75,6 +76,7 @@ function App() {
           <Route path="/server-dashboard/:restaurantId/:staffId" element={<ServerDashboard />} />
           <Route path="/google-review/:restaurantId" element={<GoogleReviewRedirect />} />
           <Route path="/onboarding" element={<OnboardingSearch />} />
+          <Route path="/dev" element={<ProtectedRoute><DashboardDev /></ProtectedRoute>} />
         </Routes>
       </Router>
     </ErrorBoundary>

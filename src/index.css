@@ -539,10 +539,10 @@ a:hover { color: var(--accent-secondary); }
 
 @media (max-width: 768px) {
   .lang-switcher.minimal .lang-switcher-dropdown {
-    right: 0; left: auto; min-width: 150px;
+    right: 0; left: auto; min-width: 150px; bottom: calc(100% + 4px); top: auto;
   }
   .lang-switcher:not(.minimal) .lang-switcher-dropdown {
-    right: 0; left: auto;
+    right: 0; left: auto; bottom: calc(100% + 4px); top: auto;
   }
 }
 

@@ -71,13 +71,6 @@
 }
 
 /* ─── Hero ──────────────────────────────────────────── */
-.tarifs-trial-banner {
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-  padding: 14px 1.5rem; background: linear-gradient(135deg, rgba(226,179,107,0.12), rgba(226,179,107,0.04));
-  border-bottom: 1px solid rgba(226,179,107,0.15); color: var(--gold); font-size: 0.95rem;
-  text-align: center; flex-wrap: wrap;
-}
-
 .tarifs-hero {
   position: relative;
   padding: 140px 1.5rem 60px;

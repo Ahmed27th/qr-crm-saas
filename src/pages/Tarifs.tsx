@@ -1,20 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { useQuery, useAction } from 'convex/react';
-import { useConvexAuth } from '@convex-dev/auth/react';
-import { api } from '../../convex/_generated/api';
-import { Check, X, ArrowLeft, Zap, Star, Crown, ArrowRight, Percent, Monitor, Smartphone } from 'lucide-react';
+import { Check, X, ArrowLeft, Zap, Star, Crown, Percent, Monitor, Smartphone, Mail } from 'lucide-react';
 import { formatPrice, formatNumber } from '../utils/format';
 import './Tarifs.css';
 
 export function Tarifs() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { isAuthenticated, isLoading } = useConvexAuth();
-  const user = useQuery(api.users.me);
-  const createCheckout = useAction(api.stripe.createCheckoutSession);
-  const startTrial = useAction(api.trial.startTrial);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('monthly');
   const [scrolled, setScrolled] = useState(false);
   const [installPrompt, setInstallPrompt] = useState<any>(null);
@@ -29,20 +22,6 @@ export function Tarifs() {
     return () => window.removeEventListener('scroll', handler);
   }, []);
 
-  const sub = user?.subscription;
-  const hasActiveSub = sub && (sub.status === 'active' || sub.status === 'trialing') && sub.currentPeriodEnd > Date.now();
-
-  const handleStartTrial = async () => {
-    if (isLoading) return;
-    if (!isAuthenticated) { window.location.href = '/login?redirectTo=/tarifs'; return; }
-    try {
-      await startTrial();
-      window.location.replace('/dashboard');
-    } catch (err) {
-      console.error("Trial failed:", err);
-    }
-  };
-
   const handleInstall = async () => {
     if (installPrompt) {
       installPrompt.prompt();
@@ -53,21 +32,8 @@ export function Tarifs() {
     }
   };
 
-  const handleCheckout = async (plan: typeof plans[0]) => {
-    if (isLoading) return;
-    if (!isAuthenticated) { window.location.href = '/login?redirectTo=/tarifs'; return; }
-    try {
-      const origin = window.location.origin;
-      const { url } = await createCheckout({
-        planId: plan.id,
-        billingPeriod: billingCycle,
-        successUrl: origin + '/dashboard?checkout=success',
-        cancelUrl: origin + '/tarifs',
-      });
-      window.location.href = url;
-    } catch (err) {
-      console.error("Checkout failed:", err);
-    }
+  const handleContact = () => {
+    window.location.href = 'mailto:sales@qrcrm.com?subject=Subscription%20Inquiry';
   };
 
   const monthlyPrices = {
@@ -127,20 +93,13 @@ export function Tarifs() {
             <span>QR CRM</span>
           </button>
           <div className="tarifs-nav-right">
-            <button className="landing-btn landing-btn--ghost" onClick={() => navigate(isAuthenticated ? '/dashboard' : '/login')}>
+            <button className="landing-btn landing-btn--ghost" onClick={() => navigate('/login')}>
               <ArrowLeft size={15} />
-              <span>{isAuthenticated ? 'Dashboard' : t('login')}</span>
+              <span>{t('login')}</span>
             </button>
           </div>
         </div>
       </nav>
-
-      {sub?.status === 'trialing' && (
-        <div className="tarifs-trial-banner">
-          <Crown size={18} />
-          <span>You're on a 7-day free trial of <strong>Ultimate</strong> — {Math.max(0, Math.ceil((sub.currentPeriodEnd - Date.now()) / (1000*60*60*24)))} days remaining</span>
-        </div>
-      )}
 
       <section className="tarifs-hero">
         <div className="tarifs-hero-bg">
@@ -201,22 +160,13 @@ export function Tarifs() {
                   </li>
                 ))}
               </ul>
-              {(() => {
-                const label = !isAuthenticated ? 'Get Started' : hasActiveSub ? 'Dashboard' : plan.id === 'ultimate' ? 'Start Free Trial' : 'Get Started';
-                const action = !isAuthenticated ? () => window.location.href = '/login?redirectTo=/tarifs'
-                  : hasActiveSub ? () => window.location.href = '/dashboard'
-                  : plan.id === 'ultimate' ? handleStartTrial
-                  : () => handleCheckout(plan);
-                return (
-                  <button className={`tarifs-card-btn ${plan.popular ? 'tarifs-card-btn--primary' : 'tarifs-card-btn--ghost'}`}
-                    onClick={action}
-                    disabled={isLoading || (isAuthenticated && !user)}
-                  >
-                    <span>{isLoading ? '...' : isAuthenticated && !user ? 'Chargement...' : label}</span>
-                    <ArrowRight size={15} />
-                  </button>
-                );
-              })()}
+              <button
+                className={`tarifs-card-btn ${plan.popular ? 'tarifs-card-btn--primary' : 'tarifs-card-btn--ghost'}`}
+                onClick={handleContact}
+              >
+                <Mail size={15} />
+                <span>Contact Sales</span>
+              </button>
             </div>
           ))}
         </div>

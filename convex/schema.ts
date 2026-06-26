@@ -100,7 +100,7 @@ export default defineSchema({
     email: v.optional(v.string()),
     planId: v.string(), // 'starter' | 'pro' | 'ultimate'
     billingPeriod: v.string(), // 'monthly' | 'yearly'
-    status: v.string(), // 'active' | 'cancelled' | 'expired' | 'past_due' | 'trialing'
+    status: v.string(), // 'active' | 'cancelled' | 'expired' | 'past_due'
     lemonSqueezyOrderId: v.optional(v.string()),
     lemonSqueezySubscriptionId: v.optional(v.string()),
     stripeSubscriptionId: v.optional(v.string()),
@@ -113,6 +113,18 @@ export default defineSchema({
     .index("by_lemonSqueezyOrderId", ["lemonSqueezyOrderId"])
     .index("by_lemonSqueezySubscriptionId", ["lemonSqueezySubscriptionId"])
     .index("by_stripeSubscriptionId", ["stripeSubscriptionId"]),
+
+  subscriptionCodes: defineTable({
+    code: v.string(),
+    planId: v.string(),
+    durationDays: v.number(),
+    used: v.boolean(),
+    usedByUserId: v.optional(v.string()),
+    usedByEmail: v.optional(v.string()),
+    usedAt: v.optional(v.number()),
+    createdBy: v.string(),
+    createdAt: v.number(),
+  }).index("by_code", ["code"]),
 
   pushSubscriptions: defineTable({
     userId: v.string(),
