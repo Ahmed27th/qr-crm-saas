@@ -33,7 +33,7 @@ export function Tarifs() {
   };
 
   const handleContact = () => {
-    window.location.href = 'mailto:sales@qrcrm.com?subject=Subscription%20Inquiry';
+    window.open('https://wa.me/212634716033', '_blank');
   };
 
   const monthlyPrices = {

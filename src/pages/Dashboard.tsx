@@ -32,13 +32,11 @@ export function Dashboard() {
     userId: localStorage.getItem('qr_restaurant_id') || 'demo' 
   });
   const subscription = authUser?.subscription;
-  const searchParams = new URLSearchParams(window.location.search);
-  const checkoutSuccess = searchParams.get('checkout') === 'success';
   const isSubActive = subscription?.status === 'active';
   const planId = isSubActive ? (subscription?.planId ?? 'none') : 'none';
 
   const handleManageSubscription = () => {
-    window.location.href = 'mailto:sales@qrcrm.com?subject=Subscription%20Management';
+    window.open('https://wa.me/212634716033', '_blank');
   };
 
   const handleRedeemCode = async () => {
@@ -349,7 +347,7 @@ export function Dashboard() {
           </div>
           <h2 className="text-2xl font-bold mb-4">Fonctionnalité Premium</h2>
           <p className="text-tertiary max-w-md mx-auto mb-8">La gestion du personnel et les QR codes personnalisés pour les avis sont réservés aux abonnés Pro et Ultimate.</p>
-          <button className="btn-primary" style={{ padding: '0.75rem 1.5rem', borderRadius: '12px' }} onClick={() => navigate('/tarifs')}>Découvrir les offres</button>
+          <button className="btn-primary" style={{ padding: '0.75rem 1.5rem', borderRadius: '12px' }} onClick={() => window.open('https://wa.me/212634716033', '_blank')}>Nous contacter</button>
         </div>
       );
     }
@@ -744,7 +742,7 @@ export function Dashboard() {
           </div>
           <h2 className="text-2xl font-bold mb-4">Fonctionnalité Premium</h2>
           <p className="text-tertiary max-w-md mx-auto mb-8">Les statistiques et analyses de performances détaillées sont réservées aux abonnés Pro et Ultimate.</p>
-          <button className="btn-primary" style={{ padding: '0.75rem 1.5rem', borderRadius: '12px' }} onClick={() => navigate('/tarifs')}>Découvrir les offres</button>
+          <button className="btn-primary" style={{ padding: '0.75rem 1.5rem', borderRadius: '12px' }} onClick={() => window.open('https://wa.me/212634716033', '_blank')}>Nous contacter</button>
         </div>
       );
     }
@@ -1699,24 +1697,7 @@ export function Dashboard() {
 
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [moreSheetOpen, setMoreSheetOpen] = useState(false);
-  const [dismissCheckout, setDismissCheckout] = useState(false);
-  const [checkoutTimedOut, setCheckoutTimedOut] = useState(false);
-
-  // If checkout success but subscription hasn't appeared in 30s, show contact-support message
-  useEffect(() => {
-    if (checkoutSuccess && !isSubActive && !dismissCheckout) {
-      const timer = setTimeout(() => setCheckoutTimedOut(true), 30000);
-      return () => clearTimeout(timer);
-    }
-    if (isSubActive) setCheckoutTimedOut(false);
-  }, [checkoutSuccess, isSubActive, dismissCheckout]);
-
-  useEffect(() => {
-    if (isAuth && authUser && !authUser.subject) return;
-    if (isAuth && authUser?.subject && !isSubActive && !checkoutSuccess) {
-      navigate('/tarifs');
-    }
-  }, [isAuth, authUser, isSubActive, navigate, checkoutSuccess]);
+  // Activation codes are the only subscription path — no checkout/pricing flow
 
   // Redirect hook removed to allow users to view locked tabs with premium overlays
   /*
@@ -1892,8 +1873,8 @@ export function Dashboard() {
               </div>
             ))}
           </div>
-          <button className="btn-primary upgrade-cta-btn w-full py-4 text-sm font-bold flex items-center justify-center gap-2" onClick={() => navigate('/tarifs')}>
-            <Sparkles size={16} /> Débloquer maintenant
+          <button className="btn-primary upgrade-cta-btn w-full py-4 text-sm font-bold flex items-center justify-center gap-2" onClick={() => window.open('https://wa.me/212634716033', '_blank')}>
+            <MessageSquare size={16} /> Nous contacter
           </button>
         </div>
       </div>
@@ -2098,23 +2079,23 @@ export function Dashboard() {
         </div>
       </div>
 
-      {/* Expiring Soon Banner */}
+      {/* Expiring Soon Banner — directs to activation code in settings */}
       {isSubActive && subscription?.currentPeriodEnd && (
         (() => {
           const daysLeft = Math.ceil((subscription.currentPeriodEnd - Date.now()) / 86400000);
           if (daysLeft <= 0) {
             return (
               <div className="glass-panel" style={{ margin: '0 1.5rem', padding: '0.75rem 1rem', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
-                <span style={{ color: 'var(--danger)', fontSize: '0.85rem', fontWeight: 500 }}>⚠ Votre abonnement a expiré. Renouvelez-le pour continuer à utiliser toutes les fonctionnalités.</span>
-                <button className="manage-sub-btn" onClick={handleManageSubscription} style={{ fontSize: '0.8rem', padding: '0.35rem 0.75rem', background: 'var(--accent)', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', whiteSpace: 'nowrap' }}>Renouveler</button>
+                <span style={{ color: 'var(--danger)', fontSize: '0.85rem', fontWeight: 500 }}>⚠ Votre abonnement a expiré. Utilisez un code d'activation dans Paramètres pour le réactiver.</span>
+                <button className="manage-sub-btn" onClick={() => setActiveTab('settings')} style={{ fontSize: '0.8rem', padding: '0.35rem 0.75rem', background: 'var(--accent)', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', whiteSpace: 'nowrap' }}>Paramètres</button>
               </div>
             );
           }
           if (daysLeft <= 7) {
             return (
               <div className="glass-panel" style={{ margin: '0 1.5rem', padding: '0.75rem 1rem', background: 'rgba(234,179,8,0.1)', border: '1px solid rgba(234,179,8,0.3)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap' }}>
-                <span style={{ color: 'var(--warning)', fontSize: '0.85rem', fontWeight: 500 }}>⚠ Votre abonnement expire dans {daysLeft} jour{daysLeft > 1 ? 's' : ''}. Gérez votre abonnement pour éviter toute interruption.</span>
-                <button className="manage-sub-btn" onClick={handleManageSubscription} style={{ fontSize: '0.8rem', padding: '0.35rem 0.75rem', background: 'var(--accent)', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', whiteSpace: 'nowrap' }}>Gérer</button>
+                <span style={{ color: 'var(--warning)', fontSize: '0.85rem', fontWeight: 500 }}>⚠ Votre abonnement expire dans {daysLeft} jour{daysLeft > 1 ? 's' : ''}. Utilisez un code d'activation dans Paramètres pour le prolonger.</span>
+                <button className="manage-sub-btn" onClick={() => setActiveTab('settings')} style={{ fontSize: '0.8rem', padding: '0.35rem 0.75rem', background: 'var(--accent)', border: 'none', borderRadius: '6px', color: '#fff', cursor: 'pointer', whiteSpace: 'nowrap' }}>Paramètres</button>
               </div>
             );
           }
@@ -2122,51 +2103,7 @@ export function Dashboard() {
         })()
       )}
 
-      {/* Checkout success banner — pending */}
-      {checkoutSuccess && !dismissCheckout && !isSubActive && !checkoutTimedOut && (
-        <div className="glass-panel" style={{ margin: '0 1.5rem', padding: '1rem 1.25rem', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.35)', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(34,197,94,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          </div>
-          <div style={{ flex: 1 }}>
-            <strong style={{ color: '#22c55e', fontSize: '0.95rem', display: 'block' }}>Paiement confirmé !</strong>
-            <span style={{ color: 'var(--text-secondary)', fontSize: '0.82rem' }}>Merci pour votre abonnement. L'activation de votre compte est en cours...</span>
-          </div>
-          <div className="spinner" style={{ width: 20, height: 20, border: '2px solid rgba(34,197,94,0.3)', borderTopColor: '#22c55e', borderRadius: '50%', animation: 'spin 0.8s linear infinite', flexShrink: 0 }} />
-        </div>
-      )}
 
-      {/* Checkout success banner — timed out */}
-      {checkoutSuccess && !dismissCheckout && !isSubActive && checkoutTimedOut && (
-        <div className="glass-panel" style={{ margin: '0 1.5rem', padding: '1rem 1.25rem', background: 'rgba(234,179,8,0.12)', border: '1px solid rgba(234,179,8,0.35)', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(234,179,8,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <span style={{ fontSize: '1.1rem' }}>⏳</span>
-          </div>
-          <div style={{ flex: 1 }}>
-            <strong style={{ color: 'var(--warning)', fontSize: '0.95rem', display: 'block' }}>Activation en attente</strong>
-            <span style={{ color: 'var(--text-secondary)', fontSize: '0.82rem' }}>Votre paiement a bien été reçu mais l'activation prend plus de temps que prévu. Si le problème persiste, contactez le support.</span>
-          </div>
-          <button onClick={() => setDismissCheckout(true)} style={{ background: 'rgba(234,179,8,0.2)', border: 'none', borderRadius: '8px', padding: '0.4rem 0.75rem', color: 'var(--warning)', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, flexShrink: 0 }}>
-            OK
-          </button>
-        </div>
-      )}
-
-      {/* Success banner after subscription activates */}
-      {checkoutSuccess && !dismissCheckout && isSubActive && (
-        <div className="glass-panel" style={{ margin: '0 1.5rem', padding: '1rem 1.25rem', background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.35)', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(34,197,94,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-          </div>
-          <div style={{ flex: 1 }}>
-            <strong style={{ color: '#22c55e', fontSize: '0.95rem', display: 'block' }}>Abonnement activé !</strong>
-            <span style={{ color: 'var(--text-secondary)', fontSize: '0.82rem' }}>Votre abonnement {subscription?.planId === 'ultimate' ? 'Ultimate' : subscription?.planId === 'pro' ? 'Pro' : 'Starter'} est maintenant actif. Profitez de toutes les fonctionnalités !</span>
-          </div>
-          <button onClick={() => setDismissCheckout(true)} style={{ background: 'rgba(34,197,94,0.2)', border: 'none', borderRadius: '8px', padding: '0.4rem 0.75rem', color: '#22c55e', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600, flexShrink: 0 }}>
-            OK
-          </button>
-        </div>
-      )}
 
       {/* Main Content */}
       <main className="dashboard-main">
@@ -2495,6 +2432,9 @@ export function Dashboard() {
               <div className="page-header">
                 <h2 className="page-title">{t('settings_title')}</h2>
                 <div className="flex items-center gap-3">
+                  <button className="btn-primary" style={{ padding: '0.5rem 1rem', borderRadius: '10px', fontSize: '0.85rem', fontWeight: 600 }} onClick={() => setActiveTab('overview')}>
+                    <LayoutDashboard size={16} style={{ marginRight: '0.4rem' }} /> Tableau de bord
+                  </button>
                   {isSavingSettings && <span className="text-xs text-accent animate-pulse font-bold flex items-center gap-2"><Clock size={12}/> Sauvegarde automatique...</span>}
                 </div>
               </div>
