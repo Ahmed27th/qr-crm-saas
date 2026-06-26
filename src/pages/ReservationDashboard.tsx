@@ -4,7 +4,7 @@ import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import {
   CalendarDays, Users, Phone, Clock, CheckCircle2,
-  XCircle, AlertCircle, ArrowLeft, ArrowRight, User,
+  XCircle, AlertCircle, ArrowLeft, User,
   Mail, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import './ReservationDashboard.css';
