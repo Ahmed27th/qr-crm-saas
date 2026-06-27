@@ -91,6 +91,58 @@
   white-space: nowrap;
 }
 
+/* ── Search ── */
+.reservation-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  margin-bottom: 10px;
+  transition: border-color 0.15s;
+}
+
+.reservation-search-bar:focus-within {
+  border-color: rgba(226, 179, 107, 0.4);
+}
+
+.reservation-search-bar svg {
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.25);
+}
+
+.reservation-search-input {
+  flex: 1;
+  background: none;
+  border: none;
+  color: #f0f0f0;
+  font-size: 0.8rem;
+  font-weight: 500;
+  font-family: inherit;
+  outline: none;
+}
+
+.reservation-search-input::placeholder {
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.reservation-search-clear {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.25);
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 0 4px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+
+.reservation-search-clear:hover {
+  color: #fff;
+}
+
 /* ── Stats ── */
 .reservation-stats {
   display: flex;
