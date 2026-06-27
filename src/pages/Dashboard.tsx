@@ -2039,13 +2039,6 @@ export function Dashboard() {
               </span>
             );
           })}
-          {/* Hostess / Reservation page — external link */}
-          {planId !== 'starter' && (
-            <button className="nav-item" onClick={() => window.open(`/reservation/${profile?.id || 'demo'}`, '_blank')} data-tip="Reservations">
-              <Calendar size={17} />
-              <span>H&ocirc;tesse</span>
-            </button>
-          )}
           {/* "More" button — hidden on desktop, appears in bottom bar on phone */}
           <button className="nav-item mobile-more-btn mobile-only" onClick={() => setMoreSheetOpen(true)} data-tip="Plus">
             <MoreHorizontal size={17} />
@@ -2105,11 +2098,6 @@ export function Dashboard() {
               </span>
             );
           })}
-          {planId !== 'starter' && (
-            <button className="nav-item" onClick={() => { window.open(`/reservation/${profile?.id || 'demo'}`, '_blank'); setMoreSheetOpen(false); }}>
-              <Calendar size={17} /><span>H&ocirc;tesse</span>
-            </button>
-          )}
         </div>
         <div className="bottom-sheet-footer">
           <button className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => { setActiveTab('settings'); setMoreSheetOpen(false); }}>
@@ -2398,7 +2386,7 @@ export function Dashboard() {
                       style={{ width: 180, height: 180 }}
                     />
                   </div>
-                  <h3 className="text-xl font-bold mb-2">{t('qr_reservation_mgmt_title', 'QR Réservation')}</h3>
+                  <h3 className="text-xl font-bold mb-2">{t('qr_reservation_mgmt_title', 'Hôtesse')}</h3>
                   <p className="text-tertiary text-sm mb-6">{t('qr_reservation_mgmt_desc', 'Gérez les réservations et l\'arrivée des clients.')}</p>
                   <div className="flex gap-2 w-full">
                     <button className="btn-primary flex-1" onClick={() => window.open(`${window.location.origin}/reservation/${profile?.id || 'demo'}`, '_blank')}>

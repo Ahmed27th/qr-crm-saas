@@ -1,0 +1,782 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content":
+    - /url: "#geist-skip-nav"
+  - main [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - generic [ref=e7]:
+            - generic [ref=e10]:
+              - link "amahmed5maheram-gmailcom's projects Hobby" [ref=e11] [cursor=pointer]:
+                - /url: /amahmed5maheram-gmailcoms-projects
+                - img [ref=e12]
+                - generic [ref=e13]:
+                  - generic [ref=e14]: amahmed5maheram-gmailcom's projects
+                  - generic [ref=e15]: Hobby
+              - button [ref=e16] [cursor=pointer]:
+                - img [ref=e18]
+            - button "Find… F" [ref=e21]:
+              - generic [ref=e23]:
+                - img [ref=e25]
+                - generic [ref=e27]: Find…
+                - generic [ref=e29]: F
+          - navigation [ref=e31]:
+            - generic [ref=e34]:
+              - link "Other Overview" [ref=e1244] [cursor=pointer]:
+                - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um
+                - img "Other" [ref=e1245]:
+                  - img "Other" [ref=e1246]
+                - generic [ref=e39]: Overview
+              - link "Deployments" [ref=e40] [cursor=pointer]:
+                - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/deployments
+                - img [ref=e42]
+                - generic [ref=e45]: Deployments
+              - link "Logs" [ref=e46] [cursor=pointer]:
+                - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/logs
+                - img [ref=e48]
+                - generic [ref=e51]: Logs
+              - link "Analytics" [ref=e52] [cursor=pointer]:
+                - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/analytics
+                - img [ref=e54]
+                - generic [ref=e57]: Analytics
+              - link "Speed Insights" [ref=e58] [cursor=pointer]:
+                - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/speed-insights
+                - img [ref=e60]
+                - generic [ref=e63]: Speed Insights
+              - link "Observability" [ref=e64] [cursor=pointer]:
+                - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/observability
+                - img [ref=e66]
+                - generic [ref=e69]: Observability
+                - img [ref=e71]
+              - link "Firewall" [ref=e73] [cursor=pointer]:
+                - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/firewall
+                - img [ref=e75]
+                - generic [ref=e79]: Firewall
+                - img [ref=e81]
+              - link "CDN" [ref=e83] [cursor=pointer]:
+                - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/cdn
+                - img [ref=e85]
+                - generic [ref=e88]: CDN
+                - img [ref=e90]
+              - separator [ref=e92]
+              - link "Environment Variables" [ref=e93] [cursor=pointer]:
+                - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/settings/environment-variables
+                - img [ref=e95]
+                - generic [ref=e98]: Environment Variables
+              - link "Domains" [ref=e99] [cursor=pointer]:
+                - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/settings/domains
+                - img [ref=e101]
+                - generic [ref=e104]: Domains
+              - link "Connect Beta" [ref=e105] [cursor=pointer]:
+                - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/connect
+                - img [ref=e107]
+                - generic [ref=e109]:
+                  - generic [ref=e110]: Connect
+                  - generic [ref=e111]: Beta
+              - link "Integrations" [ref=e112] [cursor=pointer]:
+                - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/settings/integrations
+                - img [ref=e114]
+                - generic [ref=e117]: Integrations
+              - link "Storage" [ref=e118] [cursor=pointer]:
+                - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/stores
+                - img [ref=e120]
+                - generic [ref=e123]: Storage
+              - link "Flags" [ref=e124] [cursor=pointer]:
+                - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/flags
+                - img [ref=e126]
+                - generic [ref=e129]: Flags
+                - img [ref=e131]
+              - link "Agent" [ref=e133] [cursor=pointer]:
+                - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/agent
+                - img [ref=e135]
+                - generic [ref=e138]: Agent
+                - img [ref=e140]
+              - link "AI Gateway" [ref=e142] [cursor=pointer]:
+                - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/ai-gateway
+                - img [ref=e144]
+                - generic [ref=e147]: AI Gateway
+                - img [ref=e149]
+              - link "Sandboxes" [ref=e151] [cursor=pointer]:
+                - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/sandboxes
+                - img [ref=e153]
+                - generic [ref=e156]: Sandboxes
+                - img [ref=e158]
+              - link "Workflows" [ref=e160] [cursor=pointer]:
+                - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/workflows
+                - img [ref=e162]
+                - generic [ref=e165]: Workflows
+              - separator [ref=e166]
+              - link "Usage" [ref=e167] [cursor=pointer]:
+                - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/usage
+                - img [ref=e169]
+                - generic [ref=e172]: Usage
+              - link "Support" [ref=e173] [cursor=pointer]:
+                - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/support
+                - img [ref=e175]
+                - generic [ref=e178]: Support
+              - link "Settings" [ref=e179] [cursor=pointer]:
+                - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/settings
+                - img [ref=e181]
+                - generic [ref=e184]: Settings
+                - img [ref=e186]
+          - generic [ref=e192]:
+            - button "Avatar for amahmed5maheram-4613 amahmed5maheram-4613" [ref=e193] [cursor=pointer]:
+              - img "Avatar for amahmed5maheram-4613" [ref=e194]:
+                - img "Avatar for amahmed5maheram-4613" [ref=e195]
+              - generic [ref=e197]: amahmed5maheram-4613
+              - img [ref=e199]
+            - button "117 unseen notifications" [ref=e1248] [cursor=pointer]:
+              - generic [ref=e1249]:
+                - generic [ref=e1250]:
+                  - img
+                - img [ref=e1251]
+        - button [ref=e206] [cursor=pointer]:
+          - img [ref=e207]
+      - generic [ref=e210]:
+        - generic [ref=e211]:
+          - generic [ref=e214]:
+            - link "Other qr-crm-saas-r8um" [ref=e1253] [cursor=pointer]:
+              - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um
+              - img "Other" [ref=e1254]:
+                - img "Other" [ref=e1255]
+              - generic [ref=e218]: qr-crm-saas-r8um
+            - button [ref=e219] [cursor=pointer]:
+              - img [ref=e221]
+            - link "Back to team view" [ref=e225] [cursor=pointer]:
+              - /url: /amahmed5maheram-gmailcoms-projects/~/deployments
+              - img [ref=e227]
+          - generic [ref=e231]: Deployments
+        - generic [ref=e236]:
+          - generic [ref=e237]:
+            - combobox [ref=e239]:
+              - generic [ref=e240]:
+                - generic:
+                  - img
+                - searchbox "All Branches…" [ref=e241]
+                - button "Open menu" [ref=e242] [cursor=pointer]:
+                  - img [ref=e243]
+            - combobox [ref=e246]:
+              - generic [ref=e247]:
+                - generic:
+                  - img
+                - searchbox "All Authors…" [ref=e248]
+                - button "Open menu" [ref=e249] [cursor=pointer]:
+                  - img [ref=e250]
+            - button "Menu" [ref=e254] [cursor=pointer]:
+              - generic [ref=e256]:
+                - generic [ref=e258]: All Environments
+                - img [ref=e260]
+            - button "Select Date Range" [ref=e266] [cursor=pointer]:
+              - img [ref=e268]
+              - generic [ref=e270]: Select Date Range
+            - generic [ref=e271]:
+              - button "Filter by deployment status. 6 of 7 statuses selected" [ref=e275] [cursor=pointer]:
+                - generic [ref=e276]:
+                  - generic [ref=e282]: Status
+                  - generic "6 of 7 statuses selected" [ref=e283]: 6/7
+                - img [ref=e286]
+              - button "Deployments actions" [ref=e289] [cursor=pointer]:
+                - img [ref=e292]
+          - generic [ref=e295]:
+            - generic [ref=e296] [cursor=pointer]:
+              - generic [ref=e297]:
+                - link "View deployment qr-crm-saas-r8um-1x7zmd5d3-amahmed5maheram-gmailcoms-projects.vercel.app" [ref=e298]:
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/ASWNCUuqxRcv67NhrWJ5m2v9opVA
+                - link "Add Hôtesse nav link in sidebar + bottom sheet" [ref=e302]:
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/ASWNCUuqxRcv67NhrWJ5m2v9opVA
+                - generic [ref=e303]:
+                  - generic "This deployment had an error." [ref=e304]:
+                    - generic [ref=e308]: Error
+                  - generic [ref=e309]: 13s
+                - link "Production" [ref=e313]:
+                  - /url: https://qr-crm-saas-r8um-1x7zmd5d3-amahmed5maheram-gmailcoms-projects.vercel.app
+                  - img [ref=e314]
+                  - text: Production
+              - generic [ref=e316]:
+                - link "54c9846" [ref=e318]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/commit/54c9846ba512332a15d671ad83dedd5eaaf27717
+                  - img [ref=e319]
+                  - generic [ref=e321]: 54c9846
+                - link "main" [ref=e323]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/tree/main
+                  - img [ref=e324]
+                  - generic [ref=e326]: main
+                - generic [ref=e327]:
+                  - generic [ref=e329]: 3m ago
+                  - img "github/ah56m" [ref=e335]:
+                    - img "github/ah56m" [ref=e336]
+              - button "Deployment Actions" [ref=e338]:
+                - img [ref=e341]
+            - generic [ref=e343] [cursor=pointer]:
+              - generic [ref=e344]:
+                - link "View deployment qr-crm-saas-r8um-finc253k4-amahmed5maheram-gmailcoms-projects.vercel.app" [ref=e345]:
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/CSi9NxLmEDcnz4FRyxq562o3CAVi
+                - link "Add reservation management QR code card to dashboard" [ref=e349]:
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/CSi9NxLmEDcnz4FRyxq562o3CAVi
+                - generic [ref=e350]:
+                  - generic "This deployment had an error." [ref=e351]:
+                    - generic [ref=e355]: Error
+                  - generic [ref=e356]: 20s
+                - link "Production" [ref=e360]:
+                  - /url: https://qr-crm-saas-r8um-finc253k4-amahmed5maheram-gmailcoms-projects.vercel.app
+                  - img [ref=e361]
+                  - text: Production
+              - generic [ref=e363]:
+                - link "db4df6a" [ref=e365]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/commit/db4df6a8bdd1b083b28c3d00af4a05bf9f56cd4c
+                  - img [ref=e366]
+                  - generic [ref=e368]: db4df6a
+                - link "main" [ref=e370]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/tree/main
+                  - img [ref=e371]
+                  - generic [ref=e373]: main
+                - generic [ref=e374]:
+                  - generic [ref=e376]: 11m ago
+                  - img "github/ah56m" [ref=e382]:
+                    - img "github/ah56m" [ref=e383]
+              - button "Deployment Actions" [ref=e385]:
+                - img [ref=e388]
+            - generic [ref=e390] [cursor=pointer]:
+              - generic [ref=e391]:
+                - link "View deployment qr-crm-saas-r8um-6uoi5vlc7-amahmed5maheram-gmailcoms-projects.vercel.app" [ref=e392]:
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/2bTr266nMhY1WUc9HZhpLNDewTyU
+                - link "Add reservation hostess dashboard page" [ref=e396]:
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/2bTr266nMhY1WUc9HZhpLNDewTyU
+                - generic [ref=e397]:
+                  - generic "This deployment had an error." [ref=e398]:
+                    - generic [ref=e402]: Error
+                  - generic [ref=e403]: 19s
+                - link "Production" [ref=e407]:
+                  - /url: https://qr-crm-saas-r8um-6uoi5vlc7-amahmed5maheram-gmailcoms-projects.vercel.app
+                  - img [ref=e408]
+                  - text: Production
+              - generic [ref=e410]:
+                - link "767660d" [ref=e412]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/commit/767660d945155312a58d0848652302257ef8e35e
+                  - img [ref=e413]
+                  - generic [ref=e415]: 767660d
+                - link "main" [ref=e417]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/tree/main
+                  - img [ref=e418]
+                  - generic [ref=e420]: main
+                - generic [ref=e421]:
+                  - generic [ref=e423]: 13m ago
+                  - img "github/ah56m" [ref=e429]:
+                    - img "github/ah56m" [ref=e430]
+              - button "Deployment Actions" [ref=e432]:
+                - img [ref=e435]
+            - generic [ref=e437] [cursor=pointer]:
+              - generic [ref=e438]:
+                - link "View deployment qr-crm-saas-r8um-39yfmi4e2-amahmed5maheram-gmailcoms-projects.vercel.app" [ref=e439]:
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/BguSBC8S92TA148bZvV3Fub2fmPm
+                - link "Rename KDS to Kitchen" [ref=e443]:
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/BguSBC8S92TA148bZvV3Fub2fmPm
+                - generic [ref=e444]:
+                  - generic "This deployment is ready." [ref=e445]:
+                    - generic [ref=e449]: Ready
+                  - generic [ref=e450]: 16s
+                - link "Production" [ref=e454]:
+                  - /url: https://qr-crm-saas-r8um-39yfmi4e2-amahmed5maheram-gmailcoms-projects.vercel.app
+                  - img [ref=e455]
+                  - text: Production
+              - generic [ref=e457]:
+                - link "f8f301d" [ref=e459]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/commit/f8f301d00142977c960c30ba6aad693edf8439bb
+                  - img [ref=e460]
+                  - generic [ref=e462]: f8f301d
+                - link "main" [ref=e464]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/tree/main
+                  - img [ref=e465]
+                  - generic [ref=e467]: main
+                - generic [ref=e468]:
+                  - generic [ref=e470]: 18m ago
+                  - img "github/ah56m" [ref=e476]:
+                    - img "github/ah56m" [ref=e477]
+              - button "Deployment Actions" [ref=e479]:
+                - img [ref=e482]
+            - generic [ref=e484] [cursor=pointer]:
+              - generic [ref=e485]:
+                - link "View deployment qr-crm-saas-r8um-agbewv68i-amahmed5maheram-gmailcoms-projects.vercel.app" [ref=e486]:
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/F5Ag4JFTQXoudL6meAc1yJed5K1U
+                - link "Add station routing, algorithmic pacing, and All-Day aggregation to KDS" [ref=e490]:
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/F5Ag4JFTQXoudL6meAc1yJed5K1U
+                - generic [ref=e491]:
+                  - generic "This deployment is ready." [ref=e492]:
+                    - generic [ref=e496]: Ready
+                  - generic [ref=e497]: 15s
+                - link "Production" [ref=e501]:
+                  - /url: https://qr-crm-saas-r8um-agbewv68i-amahmed5maheram-gmailcoms-projects.vercel.app
+                  - img [ref=e502]
+                  - text: Production
+              - generic [ref=e504]:
+                - link "3ec6ed9" [ref=e506]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/commit/3ec6ed941f871ea689456730e88972c32ba2290d
+                  - img [ref=e507]
+                  - generic [ref=e509]: 3ec6ed9
+                - link "main" [ref=e511]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/tree/main
+                  - img [ref=e512]
+                  - generic [ref=e514]: main
+                - generic [ref=e515]:
+                  - generic [ref=e517]: 19m ago
+                  - img "github/ah56m" [ref=e523]:
+                    - img "github/ah56m" [ref=e524]
+              - button "Deployment Actions" [ref=e526]:
+                - img [ref=e529]
+            - generic [ref=e531] [cursor=pointer]:
+              - generic [ref=e532]:
+                - link "View deployment qr-crm-saas-r8um-ce79kgtrs-amahmed5maheram-gmailcoms-projects.vercel.app" [ref=e533]:
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/HQfUpMdasDKy7PMo31FfG5QQD4Zd
+                - link "Add real-time KPIs, bottleneck alerts, hot items tracking to KDS" [ref=e537]:
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/HQfUpMdasDKy7PMo31FfG5QQD4Zd
+                - generic [ref=e538]:
+                  - generic "This deployment is ready." [ref=e539]:
+                    - generic [ref=e543]: Ready
+                  - generic [ref=e544]: 15s
+                - link "Production" [ref=e548]:
+                  - /url: https://qr-crm-saas-r8um-ce79kgtrs-amahmed5maheram-gmailcoms-projects.vercel.app
+                  - img [ref=e549]
+                  - text: Production
+              - generic [ref=e551]:
+                - link "b95ef11" [ref=e553]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/commit/b95ef11a097c238d6eb5cd3e5a87292effd8013a
+                  - img [ref=e554]
+                  - generic [ref=e556]: b95ef11
+                - link "main" [ref=e558]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/tree/main
+                  - img [ref=e559]
+                  - generic [ref=e561]: main
+                - generic [ref=e562]:
+                  - generic [ref=e564]: 25m ago
+                  - img "github/ah56m" [ref=e570]:
+                    - img "github/ah56m" [ref=e571]
+              - button "Deployment Actions" [ref=e573]:
+                - img [ref=e576]
+            - generic [ref=e578] [cursor=pointer]:
+              - generic [ref=e579]:
+                - link "View deployment qr-crm-saas-r8um-m1kt1jsev-amahmed5maheram-gmailcoms-projects.vercel.app" [ref=e580]:
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/2V1y3P5kWb3fpoeh2RokkQQaBMYc
+                - link "Redesign kitchen as professional KDS — ticket-style, bold, kitchen-grade" [ref=e584]:
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/2V1y3P5kWb3fpoeh2RokkQQaBMYc
+                - generic [ref=e585]:
+                  - generic "This deployment is ready." [ref=e586]:
+                    - generic [ref=e590]: Ready
+                  - generic [ref=e591]: 15s
+                - link "Production" [ref=e595]:
+                  - /url: https://qr-crm-saas-r8um-m1kt1jsev-amahmed5maheram-gmailcoms-projects.vercel.app
+                  - img [ref=e596]
+                  - text: Production
+              - generic [ref=e598]:
+                - link "ea1ae3b" [ref=e600]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/commit/ea1ae3b347904f3fe02f611166f752213e1be783
+                  - img [ref=e601]
+                  - generic [ref=e603]: ea1ae3b
+                - link "main" [ref=e605]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/tree/main
+                  - img [ref=e606]
+                  - generic [ref=e608]: main
+                - generic [ref=e609]:
+                  - generic [ref=e611]: 32m ago
+                  - img "github/ah56m" [ref=e617]:
+                    - img "github/ah56m" [ref=e618]
+              - button "Deployment Actions" [ref=e620]:
+                - img [ref=e623]
+            - generic [ref=e625] [cursor=pointer]:
+              - generic [ref=e626]:
+                - link "View deployment qr-crm-saas-r8um-m96qvyvp9-amahmed5maheram-gmailcoms-projects.vercel.app" [ref=e627]:
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/mCvVjGW3Q5ZBnvmyGXVr6qPkuK2K
+                - link "Make expiry notice a slim fixed bar, show only within 3 days" [ref=e631]:
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/mCvVjGW3Q5ZBnvmyGXVr6qPkuK2K
+                - generic [ref=e632]:
+                  - generic "This deployment is ready." [ref=e633]:
+                    - generic [ref=e637]: Ready
+                  - generic [ref=e638]: 16s
+                - link "Production" [ref=e642]:
+                  - /url: https://qr-crm-saas-r8um-m96qvyvp9-amahmed5maheram-gmailcoms-projects.vercel.app
+                  - img [ref=e643]
+                  - text: Production
+              - generic [ref=e645]:
+                - link "24aafa6" [ref=e647]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/commit/24aafa6002348784ddcab55544eb26c414791801
+                  - img [ref=e648]
+                  - generic [ref=e650]: 24aafa6
+                - link "main" [ref=e652]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/tree/main
+                  - img [ref=e653]
+                  - generic [ref=e655]: main
+                - generic [ref=e656]:
+                  - generic [ref=e658]: 45m ago
+                  - img "github/ah56m" [ref=e664]:
+                    - img "github/ah56m" [ref=e665]
+              - button "Deployment Actions" [ref=e667]:
+                - img [ref=e670]
+            - generic [ref=e672] [cursor=pointer]:
+              - generic [ref=e673]:
+                - link "View deployment qr-crm-saas-r8um-qloidkoff-amahmed5maheram-gmailcoms-projects.vercel.app" [ref=e674]:
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/9wqHRCMZubfEeVaQbrN18eoX7p8x
+                - link "Add full-screen activation lock for inactive subscriptions" [ref=e678]:
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/9wqHRCMZubfEeVaQbrN18eoX7p8x
+                - generic [ref=e679]:
+                  - generic "This deployment is ready." [ref=e680]:
+                    - generic [ref=e684]: Ready
+                  - generic [ref=e685]: 20s
+                - link "Production" [ref=e689]:
+                  - /url: https://qr-crm-saas-r8um-qloidkoff-amahmed5maheram-gmailcoms-projects.vercel.app
+                  - img [ref=e690]
+                  - text: Production
+              - generic [ref=e692]:
+                - link "ef46b60" [ref=e694]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/commit/ef46b60d55ba7e5a47c14a1ab859d2a14514f024
+                  - img [ref=e695]
+                  - generic [ref=e697]: ef46b60
+                - link "main" [ref=e699]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/tree/main
+                  - img [ref=e700]
+                  - generic [ref=e702]: main
+                - generic [ref=e703]:
+                  - generic [ref=e705]: 53m ago
+                  - img "github/ah56m" [ref=e711]:
+                    - img "github/ah56m" [ref=e712]
+              - button "Deployment Actions" [ref=e714]:
+                - img [ref=e717]
+            - generic [ref=e719] [cursor=pointer]:
+              - generic [ref=e720]:
+                - link "View deployment qr-crm-saas-r8um-fbrbidlux-amahmed5maheram-gmailcoms-projects.vercel.app" [ref=e721]:
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/E9BvWyzYxThBAdT83gRmAaU3SqSU
+                - 'link "Simplify subscription: WhatsApp contact, dashboard button, activation codes only" [ref=e725]':
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/E9BvWyzYxThBAdT83gRmAaU3SqSU
+                - generic [ref=e726]:
+                  - generic "This deployment is ready." [ref=e727]:
+                    - generic [ref=e731]: Ready
+                  - generic [ref=e732]: 18s
+                - link "Production" [ref=e736]:
+                  - /url: https://qr-crm-saas-r8um-fbrbidlux-amahmed5maheram-gmailcoms-projects.vercel.app
+                  - img [ref=e737]
+                  - text: Production
+              - generic [ref=e739]:
+                - link "3c76bf0" [ref=e741]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/commit/3c76bf04a1aa50db01b41dcf4d0b00015a79ffc9
+                  - img [ref=e742]
+                  - generic [ref=e744]: 3c76bf0
+                - link "main" [ref=e746]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/tree/main
+                  - img [ref=e747]
+                  - generic [ref=e749]: main
+                - generic [ref=e750]:
+                  - generic [ref=e752]: 56m ago
+                  - img "github/ah56m" [ref=e758]:
+                    - img "github/ah56m" [ref=e759]
+              - button "Deployment Actions" [ref=e761]:
+                - img [ref=e764]
+            - generic [ref=e766] [cursor=pointer]:
+              - generic [ref=e767]:
+                - link "View deployment qr-crm-saas-r8um-ok5lrlmqt-amahmed5maheram-gmailcoms-projects.vercel.app" [ref=e768]:
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/Fw4x8XrhPVqKGHNez4fqeKSXKwJh
+                - 'link "fix: use userId instead of email for dev route owner check (identity.email is null in Password provider)" [ref=e772]':
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/Fw4x8XrhPVqKGHNez4fqeKSXKwJh
+                - generic [ref=e773]:
+                  - generic "This deployment is ready." [ref=e774]:
+                    - generic [ref=e778]: Ready
+                  - generic [ref=e779]: 20s
+                - link "Production" [ref=e783]:
+                  - /url: https://qr-crm-saas-r8um-ok5lrlmqt-amahmed5maheram-gmailcoms-projects.vercel.app
+                  - img [ref=e784]
+                  - text: Production
+              - generic [ref=e786]:
+                - link "478902f" [ref=e788]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/commit/478902f1dcee7288aa18fd3a62c9761b67a960e6
+                  - img [ref=e789]
+                  - generic [ref=e791]: 478902f
+                - link "main" [ref=e793]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/tree/main
+                  - img [ref=e794]
+                  - generic [ref=e796]: main
+                - generic [ref=e797]:
+                  - generic [ref=e799]: 1h ago
+                  - img "github/ah56m" [ref=e805]:
+                    - img "github/ah56m" [ref=e806]
+              - button "Deployment Actions" [ref=e808]:
+                - img [ref=e811]
+            - generic [ref=e813] [cursor=pointer]:
+              - generic [ref=e814]:
+                - link "View deployment qr-crm-saas-r8um-d8ovk2lav-amahmed5maheram-gmailcoms-projects.vercel.app" [ref=e815]:
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/B6mLws8zvaGJL4C6z8KQpJMcfZXu
+                - 'link "debug: log authUser email in ProtectedDevRoute" [ref=e819]':
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/B6mLws8zvaGJL4C6z8KQpJMcfZXu
+                - generic [ref=e820]:
+                  - generic "This deployment is ready." [ref=e821]:
+                    - generic [ref=e825]: Ready
+                  - generic [ref=e826]: 14s
+                - link "Production" [ref=e830]:
+                  - /url: https://qr-crm-saas-r8um-d8ovk2lav-amahmed5maheram-gmailcoms-projects.vercel.app
+                  - img [ref=e831]
+                  - text: Production
+              - generic [ref=e833]:
+                - link "d43237e" [ref=e835]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/commit/d43237ecfed224ab91a8dc1cd1ed3315abceaa03
+                  - img [ref=e836]
+                  - generic [ref=e838]: d43237e
+                - link "main" [ref=e840]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/tree/main
+                  - img [ref=e841]
+                  - generic [ref=e843]: main
+                - generic [ref=e844]:
+                  - generic [ref=e846]: 2h ago
+                  - img "github/ah56m" [ref=e852]:
+                    - img "github/ah56m" [ref=e853]
+              - button "Deployment Actions" [ref=e855]:
+                - img [ref=e858]
+            - generic [ref=e860] [cursor=pointer]:
+              - generic [ref=e861]:
+                - link "View deployment qr-crm-saas-r8um-7ljwydz59-amahmed5maheram-gmailcoms-projects.vercel.app" [ref=e862]:
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/DxX9hsdGZVqVDtrSVAfKMP7YqTUT
+                - 'link "fix: handle null authUser in ProtectedDevRoute when JWT expired" [ref=e866]':
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/DxX9hsdGZVqVDtrSVAfKMP7YqTUT
+                - generic [ref=e867]:
+                  - generic "This deployment is ready." [ref=e868]:
+                    - generic [ref=e872]: Ready
+                  - generic [ref=e873]: 22s
+                - link "Production" [ref=e877]:
+                  - /url: https://qr-crm-saas-r8um-7ljwydz59-amahmed5maheram-gmailcoms-projects.vercel.app
+                  - img [ref=e878]
+                  - text: Production
+              - generic [ref=e880]:
+                - link "3f8ccb2" [ref=e882]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/commit/3f8ccb244a636990604d03096f1560b7060de226
+                  - img [ref=e883]
+                  - generic [ref=e885]: 3f8ccb2
+                - link "main" [ref=e887]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/tree/main
+                  - img [ref=e888]
+                  - generic [ref=e890]: main
+                - generic [ref=e891]:
+                  - generic [ref=e893]: 2h ago
+                  - img "github/ah56m" [ref=e899]:
+                    - img "github/ah56m" [ref=e900]
+              - button "Deployment Actions" [ref=e902]:
+                - img [ref=e905]
+            - generic [ref=e907] [cursor=pointer]:
+              - generic [ref=e908]:
+                - link "View deployment qr-crm-saas-r8um-7eiqotc75-amahmed5maheram-gmailcoms-projects.vercel.app" [ref=e909]:
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/ENkeWMmWVw3HqxSSLxUT9y6PoCrN
+                - 'link "feat: restrict /dev page to owner email only" [ref=e913]':
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/ENkeWMmWVw3HqxSSLxUT9y6PoCrN
+                - generic [ref=e914]:
+                  - generic "This deployment is ready." [ref=e915]:
+                    - generic [ref=e919]: Ready
+                  - generic [ref=e920]: 22s
+                - link "Production" [ref=e924]:
+                  - /url: https://qr-crm-saas-r8um-7eiqotc75-amahmed5maheram-gmailcoms-projects.vercel.app
+                  - img [ref=e925]
+                  - text: Production
+              - generic [ref=e927]:
+                - link "625c9a7" [ref=e929]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/commit/625c9a7b4a8349dd7793c660a68f5584bd1013a4
+                  - img [ref=e930]
+                  - generic [ref=e932]: 625c9a7
+                - link "main" [ref=e934]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/tree/main
+                  - img [ref=e935]
+                  - generic [ref=e937]: main
+                - generic [ref=e938]:
+                  - generic [ref=e940]: 2h ago
+                  - img "github/ah56m" [ref=e946]:
+                    - img "github/ah56m" [ref=e947]
+              - button "Deployment Actions" [ref=e949]:
+                - img [ref=e952]
+            - generic [ref=e954] [cursor=pointer]:
+              - generic [ref=e955]:
+                - link "View deployment qr-crm-saas-r8um-ak1fjkrxo-amahmed5maheram-gmailcoms-projects.vercel.app" [ref=e956]:
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/4wrHSYKNqHPvZbN3kMy2ywia7441
+                - 'link "chore: trigger redeploy (repo public now)" [ref=e960]':
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/4wrHSYKNqHPvZbN3kMy2ywia7441
+                - generic [ref=e961]:
+                  - generic "This deployment is ready." [ref=e962]:
+                    - generic [ref=e966]: Ready
+                  - generic [ref=e967]: 22s
+                - link "Production" [ref=e971]:
+                  - /url: https://qr-crm-saas-r8um-ak1fjkrxo-amahmed5maheram-gmailcoms-projects.vercel.app
+                  - img [ref=e972]
+                  - text: Production
+              - generic [ref=e974]:
+                - link "602d76e" [ref=e976]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/commit/602d76ea7c76f2d42ab06235ada2fc04760c5e94
+                  - img [ref=e977]
+                  - generic [ref=e979]: 602d76e
+                - link "main" [ref=e981]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/tree/main
+                  - img [ref=e982]
+                  - generic [ref=e984]: main
+                - generic [ref=e985]:
+                  - generic [ref=e987]: 2h ago
+                  - img "github/ah56m" [ref=e993]:
+                    - img "github/ah56m" [ref=e994]
+              - button "Deployment Actions" [ref=e996]:
+                - img [ref=e999]
+            - generic [ref=e1001] [cursor=pointer]:
+              - generic [ref=e1002]:
+                - link "View deployment qr-crm-saas-r8um-9x9o5myyy-amahmed5maheram-gmailcoms-projects.vercel.app" [ref=e1003]:
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/J7bHPedazwpoXch7uXDKkyr9Ds4b
+                - 'link "chore: force redeploy" [ref=e1007]':
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/J7bHPedazwpoXch7uXDKkyr9Ds4b
+                - generic "This deployment has been blocked." [ref=e1009]:
+                  - generic [ref=e1013]: Blocked
+                - link "Production" [ref=e1017]:
+                  - /url: https://qr-crm-saas-r8um-9x9o5myyy-amahmed5maheram-gmailcoms-projects.vercel.app
+                  - img [ref=e1018]
+                  - text: Production
+              - generic [ref=e1020]:
+                - link "15cd8dc" [ref=e1022]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/commit/15cd8dca75350d05df7fed8cf4f5fb93f28f6135
+                  - img [ref=e1023]
+                  - generic [ref=e1025]: 15cd8dc
+                - link "main" [ref=e1027]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/tree/main
+                  - img [ref=e1028]
+                  - generic [ref=e1030]: main
+                - generic [ref=e1031]:
+                  - generic [ref=e1033]: 2h ago
+                  - img "github/ah56m" [ref=e1039]:
+                    - img "github/ah56m" [ref=e1040]
+              - button "Deployment Actions" [ref=e1042]:
+                - img [ref=e1045]
+            - generic [ref=e1047] [cursor=pointer]:
+              - generic [ref=e1048]:
+                - link "View deployment qr-crm-saas-r8um-qkrup5vxe-amahmed5maheram-gmailcoms-projects.vercel.app" [ref=e1049]:
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/65XDDTqAKAiucpYvQ6rrBnLJU18u
+                - 'link "feat: subscription codes + remove demo bypass" [ref=e1053]':
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/65XDDTqAKAiucpYvQ6rrBnLJU18u
+                - generic "This deployment has been blocked." [ref=e1055]:
+                  - generic [ref=e1059]: Blocked
+                - link "Production" [ref=e1063]:
+                  - /url: https://qr-crm-saas-r8um-qkrup5vxe-amahmed5maheram-gmailcoms-projects.vercel.app
+                  - img [ref=e1064]
+                  - text: Production
+              - generic [ref=e1066]:
+                - link "b8b95c5" [ref=e1068]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/commit/b8b95c5cb90f2a09e4e40caefbfc210bc39f472a
+                  - img [ref=e1069]
+                  - generic [ref=e1071]: b8b95c5
+                - link "main" [ref=e1073]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/tree/main
+                  - img [ref=e1074]
+                  - generic [ref=e1076]: main
+                - generic [ref=e1077]:
+                  - generic [ref=e1079]: 2h ago
+                  - img "github/ah56m" [ref=e1085]:
+                    - img "github/ah56m" [ref=e1086]
+              - button "Deployment Actions" [ref=e1088]:
+                - img [ref=e1091]
+            - generic [ref=e1093] [cursor=pointer]:
+              - generic [ref=e1094]:
+                - link "View deployment qr-crm-saas-r8um-9t9e90222-amahmed5maheram-gmailcoms-projects.vercel.app" [ref=e1095]:
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/2FyG3bhUAzLgShMgFnbQ9dK72Wkt
+                - link "Add code-based subscription activation system" [ref=e1099]:
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/2FyG3bhUAzLgShMgFnbQ9dK72Wkt
+                - generic "This deployment has been blocked." [ref=e1101]:
+                  - generic [ref=e1105]: Blocked
+                - link "Production" [ref=e1109]:
+                  - /url: https://qr-crm-saas-r8um-9t9e90222-amahmed5maheram-gmailcoms-projects.vercel.app
+                  - img [ref=e1110]
+                  - text: Production
+              - generic [ref=e1112]:
+                - link "7edeab7" [ref=e1114]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/commit/7edeab752ef0f809b56b2aa782e5f894a333f5cb
+                  - img [ref=e1115]
+                  - generic [ref=e1117]: 7edeab7
+                - link "main" [ref=e1119]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/tree/main
+                  - img [ref=e1120]
+                  - generic [ref=e1122]: main
+                - generic [ref=e1123]:
+                  - generic [ref=e1125]: 22h ago
+                  - img "github/ah56m" [ref=e1131]:
+                    - img "github/ah56m" [ref=e1132]
+              - button "Deployment Actions" [ref=e1134]:
+                - img [ref=e1137]
+            - generic [ref=e1139] [cursor=pointer]:
+              - generic [ref=e1140]:
+                - link "View deployment qr-crm-saas-r8um-ez6tkq3vs-amahmed5maheram-gmailcoms-projects.vercel.app" [ref=e1141]:
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/JB1LN3Lsz9rBuFZ39Pe7y3xzDjSG
+                - 'link "feat: add OpenWA local dev setup — Docker launch script, env stubs, README" [ref=e1145]':
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/JB1LN3Lsz9rBuFZ39Pe7y3xzDjSG
+                - generic [ref=e1146]:
+                  - generic "This deployment is ready." [ref=e1147]:
+                    - generic [ref=e1151]: Ready
+                  - generic [ref=e1152]: 21s
+                - link "Production" [ref=e1156]:
+                  - /url: https://qr-crm-saas-r8um-ez6tkq3vs-amahmed5maheram-gmailcoms-projects.vercel.app
+                  - img [ref=e1157]
+                  - text: Production
+              - generic [ref=e1159]:
+                - link "87d7834" [ref=e1161]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/commit/87d783484a68e6417cc9e3b94f9d907fdf7f36d3
+                  - img [ref=e1162]
+                  - generic [ref=e1164]: 87d7834
+                - link "main" [ref=e1166]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/tree/main
+                  - img [ref=e1167]
+                  - generic [ref=e1169]: main
+                - generic [ref=e1170]:
+                  - generic [ref=e1172]: May 30
+                  - img "github/ah56m" [ref=e1178]:
+                    - img "github/ah56m" [ref=e1179]
+              - button "Deployment Actions" [ref=e1181]:
+                - img [ref=e1184]
+            - generic [ref=e1186] [cursor=pointer]:
+              - generic [ref=e1187]:
+                - link "View deployment qr-crm-saas-r8um-4me3oewyr-amahmed5maheram-gmailcoms-projects.vercel.app" [ref=e1188]:
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/4jfQq5oayaBLGuUcpzzyqkigCftq
+                - 'link "feat: add trial banner and fix redirect after trial start" [ref=e1192]':
+                  - /url: /amahmed5maheram-gmailcoms-projects/qr-crm-saas-r8um/4jfQq5oayaBLGuUcpzzyqkigCftq
+                - generic [ref=e1193]:
+                  - generic "This deployment is ready." [ref=e1194]:
+                    - generic [ref=e1198]: Ready
+                  - generic [ref=e1199]: 16s
+                - link "Production" [ref=e1203]:
+                  - /url: https://qr-crm-saas-r8um-4me3oewyr-amahmed5maheram-gmailcoms-projects.vercel.app
+                  - img [ref=e1204]
+                  - text: Production
+              - generic [ref=e1206]:
+                - link "e9ce5d9" [ref=e1208]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/commit/e9ce5d94c07525d9c74781d485a61e52d3faed0e
+                  - img [ref=e1209]
+                  - generic [ref=e1211]: e9ce5d9
+                - link "main" [ref=e1213]:
+                  - /url: https://github.com/Ahmed27th/qr-crm-saas/tree/main
+                  - img [ref=e1214]
+                  - generic [ref=e1216]: main
+                - generic [ref=e1217]:
+                  - generic [ref=e1219]: May 25
+                  - img "github/ah56m" [ref=e1225]:
+                    - img "github/ah56m" [ref=e1226]
+              - button "Deployment Actions" [ref=e1228]:
+                - img [ref=e1231]
+          - button "Load More" [ref=e1233] [cursor=pointer]:
+            - generic [ref=e1234]: Load More
+          - generic [ref=e1235]:
+            - paragraph [ref=e1236]:
+              - text: Deployment Retention is enabled for this project — some deployments will be deleted after a set time period.
+              - link "Learn more" [ref=e1237] [cursor=pointer]:
+                - /url: /docs/security/deployment-retention
+                - text: Learn more
+                - img [ref=e1238]
+            - button "View Recently Deleted" [ref=e1240] [cursor=pointer]:
+              - generic [ref=e1241]: View Recently Deleted
+  - alert [ref=e1243]
+  - generic:
+    - generic:
+      - generic:
+        - generic:
+          - img
+  - alertdialog "Your Privacy" [ref=e1256]:
+    - document [ref=e1258]:
+      - generic [ref=e1263]: This site uses tracking technologies. You may opt in or opt out of the use of these technologies.
+      - generic [ref=e1264]:
+        - generic [ref=e1265]:
+          - button "Deny" [ref=e1266] [cursor=pointer]:
+            - generic [ref=e1267]: Deny
+          - button "Accept all" [ref=e1268] [cursor=pointer]:
+            - generic [ref=e1269]: Accept all
+        - button "Consent Settings" [ref=e1271] [cursor=pointer]:
+          - generic [ref=e1272]: Consent Settings
