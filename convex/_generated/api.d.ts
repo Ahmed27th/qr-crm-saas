@@ -9,6 +9,8 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as cleanup from "../cleanup.js";
+import type * as crons from "../crons.js";
 import type * as dev from "../dev.js";
 import type * as driverLocations from "../driverLocations.js";
 import type * as drivers from "../drivers.js";
@@ -35,6 +37,8 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  cleanup: typeof cleanup;
+  crons: typeof crons;
   dev: typeof dev;
   driverLocations: typeof driverLocations;
   drivers: typeof drivers;
