@@ -42,3 +42,8 @@ firecrawl.json
 
 # Local Netlify folder
 .netlify
+
+# Screenshots from Playwright browser tools
+reservation-page*.png
+vercel-deployments-status.png
+vercel-deployments
