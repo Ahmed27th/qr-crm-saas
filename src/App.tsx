@@ -59,8 +59,8 @@ function ProtectedDevRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/login" replace />;
   }
 
-  const allowedDevUsers = ['kx7f11ha5j2x0j5m32nvq757f5872181', 'kx7bntqzah3w7jmrd2s365kz1s8acdg3'];
-  if (!allowedDevUsers.includes(authUser.userId)) {
+  const allowedDevEmails = ['am.ahmed5maher.am@gmail.com'];
+  if (!allowedDevEmails.includes(authUser.email ?? '')) {
     return <Navigate to="/dashboard" replace />;
   }
 
