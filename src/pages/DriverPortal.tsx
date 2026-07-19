@@ -38,7 +38,7 @@ export function DriverPortal() {
       const { latitude: lat, longitude: lng } = pos.coords;
       setMyLocation({ lat, lng });
       if (driverId) {
-        try { await DataStore.updateDriverLocation(driverId, lat, lng); } catch {}
+        try { await DataStore.updateDriverLocation(driverId, lat, lng); } catch { /* location update failed silently */ }
       }
     };
     const onError = () => {};

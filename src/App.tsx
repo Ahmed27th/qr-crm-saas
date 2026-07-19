@@ -59,7 +59,8 @@ function ProtectedDevRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/login" replace />;
   }
 
-  if (authUser.userId !== 'kx7f11ha5j2x0j5m32nvq757f5872181') {
+  const allowedDevUsers = ['kx7f11ha5j2x0j5m32nvq757f5872181', 'kx7bntqzah3w7jmrd2s365kz1s8acdg3'];
+  if (!allowedDevUsers.includes(authUser.userId)) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -81,8 +82,8 @@ function App() {
       <Router>
         <Routes>
           <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<Auth />} />
-          <Route path="/signup" element={<Auth />} />
+          <Route path="/login" element={<Auth key="login" />} />
+          <Route path="/signup" element={<Auth key="signup" />} />
           <Route path="/tarifs" element={<Tarifs />} />
           <Route path="/menu/:restaurantId" element={<PublicMenu />} />
           <Route path="/book/:restaurantId" element={<PublicBooking />} />

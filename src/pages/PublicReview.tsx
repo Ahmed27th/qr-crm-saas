@@ -60,17 +60,6 @@ export const PublicReview = () => {
     return labels[val] ?? 'Sélectionnez une étoile';
   };
 
-  const RestaurantLogo = () => {
-    if (profile?.logo) {
-      return <img src={profile.logo} alt={profile.name} className="review-logo" />;
-    }
-    return (
-      <div className="review-logo-placeholder">
-        {profile?.name?.[0] ?? 'R'}
-      </div>
-    );
-  };
-
   const containerStyle = profile?.coverImage ? {
     backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.9)), url(${profile.coverImage})`,
     backgroundSize: 'cover',
@@ -127,7 +116,7 @@ export const PublicReview = () => {
       <div className="review-card-wrapper">
         {/* Header */}
         <header className="review-header">
-          <RestaurantLogo />
+          {profile?.logo ? <img src={profile.logo} alt={profile.name} className="review-logo" /> : <div className="review-logo-placeholder">{profile?.name?.[0] ?? 'R'}</div>}
           <h1 className="text-3xl font-black mb-1">{profile?.name ?? 'Notre Restaurant'}</h1>
           <p className="text-tertiary" style={{ fontSize: '0.9rem' }}>
             Partagez votre expérience avec nous

@@ -71,7 +71,7 @@ export function ServerDashboard() {
     try {
       setErrorMsg(null);
       await acceptOrder(orderId);
-    } catch (err: any) {
+    } catch {
       setErrorMsg(t('server_error', 'Erreur lors de la prise en charge'));
     }
   };
@@ -81,7 +81,7 @@ export function ServerDashboard() {
       setErrorMsg(null);
       await optimisticServe(orderId);
       setTab('payees');
-    } catch (err: any) {
+    } catch {
       setErrorMsg('Erreur lors du marquage "servi"');
     }
   };
@@ -90,8 +90,8 @@ export function ServerDashboard() {
     try {
       setErrorMsg(null);
       await optimisticPay(orderId);
-    } catch (err: any) {
-      if (err?.isConflict) {
+    } catch (err: unknown) {
+      if (err && typeof err === 'object' && 'isConflict' in err && (err as { isConflict: boolean }).isConflict) {
         setErrorMsg(t('server_conflict_paid', 'Cette commande a déjà été payée'));
       } else {
         setErrorMsg('Erreur lors du marquage "payé"');

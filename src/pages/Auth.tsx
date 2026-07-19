@@ -11,7 +11,7 @@ import './Auth.css';
 export function Auth() {
   const { t } = useTranslation();
   const location = useLocation();
-  const [isLogin, setIsLogin] = useState(location.pathname !== '/signup');
+  const isLogin = location.pathname !== '/signup';
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [resetSent, setResetSent] = useState(false);
   
@@ -35,14 +35,6 @@ export function Auth() {
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
-
-  // Sync state with location path
-  useEffect(() => {
-    setIsLogin(location.pathname !== '/signup');
-    setIsForgotPassword(false);
-    setResetSent(false);
-    setError('');
-  }, [location.pathname]);
 
   // Mock live orders state for interactive dashboard mockup
   interface MockOrder {
@@ -81,7 +73,7 @@ export function Auth() {
           // Advance status of a random order
           return prev.map((order) => {
             if (Math.random() > 0.5) {
-              let nextStatus: MockOrder['status'] = order.status;
+              let nextStatus: MockOrder['status'];
               if (order.status === 'preparing') nextStatus = 'ready';
               else if (order.status === 'ready') nextStatus = 'delivery';
               else if (order.status === 'delivery') nextStatus = 'delivered';
@@ -105,7 +97,7 @@ export function Auth() {
     try {
       localStorage.setItem('__convex_auth_remember', rememberMe ? 'true' : 'false');
 
-      const params: Record<string, any> = {
+      const params: Record<string, string> = {
         email,
         password,
         flow: isLogin ? "signIn" : "signUp",
@@ -120,8 +112,8 @@ export function Auth() {
       ]);
       setLoading(false);
       navigate(redirectTo);
-    } catch (err: any) {
-      setError(err.message || 'Une erreur est survenue');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Une erreur est survenue');
       setLoading(false);
     }
   };
@@ -376,18 +368,18 @@ export function Auth() {
 
                 {/* Sliding Toggle Control */}
                 <div className="auth-toggle-slider-container">
-                  <button 
-                    type="button" 
-                    className={`toggle-slider-btn ${isLogin ? 'active' : ''}`}
-                    onClick={() => { setIsLogin(true); setError(''); }}
-                  >
-                    {t('auth_login_tab')}
-                  </button>
-                  <button 
-                    type="button" 
-                    className={`toggle-slider-btn ${!isLogin ? 'active' : ''}`}
-                    onClick={() => { setIsLogin(false); setError(''); }}
-                  >
+                    <button 
+                      type="button" 
+                      className={`toggle-slider-btn ${isLogin ? 'active' : ''}`}
+                      onClick={() => { navigate('/login', { replace: true }); setError(''); }}
+                    >
+                      {t('auth_login_tab')}
+                    </button>
+                    <button 
+                      type="button" 
+                      className={`toggle-slider-btn ${!isLogin ? 'active' : ''}`}
+                      onClick={() => { navigate('/signup', { replace: true }); setError(''); }}
+                    >
                     {t('auth_signup_tab')}
                   </button>
                   <div className={`sliding-bg ${isLogin ? 'left' : 'right'}`}></div>

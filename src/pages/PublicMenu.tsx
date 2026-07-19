@@ -23,7 +23,9 @@ export function PublicMenu() {
   const [activeCategory, setActiveCategory] = useState('');
   const [cart, setCart] = useState<Record<string, number>>({});
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [orderMode, setOrderMode] = useState<'dinein' | 'delivery'>('dinein');
+  const [userOrderMode, setUserOrderMode] = useState<'dinein' | 'delivery'>('dinein');
+  const orderMode = !canDeliver ? 'dinein' : userOrderMode;
+  const setOrderMode = (mode: 'dinein' | 'delivery') => setUserOrderMode(mode);
   const [tableNumber, setTableNumber] = useState('');
   const [deliveryName, setDeliveryName] = useState('');
   const [deliveryPhone, setDeliveryPhone] = useState('');
@@ -42,12 +44,6 @@ export function PublicMenu() {
   const [lastOrderId, setLastOrderId] = useState<string | null>(null);
 
   const isRTL = i18n.language === 'ar' || i18n.language === 'ary';
-
-  useEffect(() => {
-    if (!canDeliver) {
-      setOrderMode('dinein');
-    }
-  }, [canDeliver]);
 
   useEffect(() => {
     
