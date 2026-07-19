@@ -2,8 +2,11 @@ import { useState } from 'react';
 import { useQuery, useMutation } from 'convex/react';
 import { api } from '../../convex/_generated/api';
 import type { Doc } from '../../convex/_generated/dataModel';
-import { Plus, X, Clock, Trash2, Crown, Star, Zap, CheckCircle, XCircle, RefreshCw, Copy, Check, Hash } from 'lucide-react';
+import { Plus, X, Clock, Trash2, Crown, Star, Zap, CheckCircle, XCircle, RefreshCw, Copy, Check, Hash, Lock, Mail, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import './DashboardDev.css';
+
+const DEV_EMAIL = 'am.ahmed5maher.am@gmail.com';
+const DEV_PASSWORD = 'A.Maher272006';
 
 const PLAN_ICONS: Record<string, React.ReactNode> = {
   starter: <Star size={16} />,
@@ -18,6 +21,60 @@ const PLAN_NAMES: Record<string, string> = {
 };
 
 export function DashboardDev() {
+  const [devAuthed, setDevAuthed] = useState(() => sessionStorage.getItem('__dev_auth') === 'true');
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [showPw, setShowPw] = useState(false);
+
+  const handleDevLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError('');
+    if (loginEmail === DEV_EMAIL && loginPassword === DEV_PASSWORD) {
+      sessionStorage.setItem('__dev_auth', 'true');
+      setDevAuthed(true);
+    } else {
+      setLoginError('Email ou mot de passe incorrect');
+    }
+  };
+
+  if (!devAuthed) {
+    return (
+      <div className="dev-login-wrapper">
+        <form className="dev-login-form" onSubmit={handleDevLogin}>
+          <div className="dev-login-header">
+            <Lock size={28} />
+            <h1>Developer Access</h1>
+            <p>Enter credentials to access the admin dashboard</p>
+          </div>
+          {loginError && (
+            <div className="dev-login-error">
+              <AlertCircle size={16} /> {loginError}
+            </div>
+          )}
+          <div className="dev-login-field">
+            <label>Email</label>
+            <div className="dev-login-input-wrap">
+              <Mail size={18} />
+              <input type="email" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} placeholder="am.ahmed5maher.am@gmail.com" required />
+            </div>
+          </div>
+          <div className="dev-login-field">
+            <label>Password</label>
+            <div className="dev-login-input-wrap">
+              <Lock size={18} />
+              <input type={showPw ? 'text' : 'password'} value={loginPassword} onChange={e => setLoginPassword(e.target.value)} placeholder="••••••••" required />
+              <button type="button" className="dev-login-toggle-pw" onClick={() => setShowPw(!showPw)}>
+                {showPw ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          </div>
+          <button type="submit" className="dev-login-submit">Access Dashboard</button>
+        </form>
+      </div>
+    );
+  }
+
   const subscriptions = useQuery(api.dev.getAllSubscriptions);
   const codes = useQuery(api.redeemCode.getAllCodes);
   const createSubscription = useMutation(api.dev.createSubscription);

@@ -467,3 +467,131 @@
   padding: 1rem 1.5rem;
   border-top: 1px solid var(--border-color);
 }
+
+/* ── Dev Login Screen ── */
+.dev-login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-primary);
+  padding: 1rem;
+}
+
+.dev-login-form {
+  width: 380px;
+  max-width: 100%;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 2.5rem 2rem;
+}
+
+.dev-login-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.dev-login-header svg {
+  color: var(--accent-primary);
+  margin-bottom: 0.75rem;
+}
+
+.dev-login-header h1 {
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin: 0 0 0.35rem;
+}
+
+.dev-login-header p {
+  font-size: 0.83rem;
+  color: var(--text-tertiary);
+  margin: 0;
+}
+
+.dev-login-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.85rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 8px;
+  color: #EF4444;
+  font-size: 0.82rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.dev-login-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1rem;
+}
+
+.dev-login-field label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dev-login-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  background: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  transition: border-color 0.2s;
+}
+
+.dev-login-input-wrap:focus-within {
+  border-color: var(--accent-primary);
+}
+
+.dev-login-input-wrap svg {
+  color: var(--text-tertiary);
+  flex-shrink: 0;
+}
+
+.dev-login-input-wrap input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+
+.dev-login-toggle-pw {
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+}
+
+.dev-login-submit {
+  width: 100%;
+  margin-top: 0.5rem;
+  padding: 0.7rem;
+  background: linear-gradient(135deg, #E2B36B, #C99A5E);
+  color: #0A0A0F;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: filter 0.2s;
+  font-family: inherit;
+}
+
+.dev-login-submit:hover {
+  filter: brightness(1.1);
+}

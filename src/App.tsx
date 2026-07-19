@@ -22,8 +22,6 @@ import { useEffect } from 'react';
 import { NotificationService } from './utils/notifications';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { useConvexAuth } from '@convex-dev/auth/react';
-import { useQuery } from 'convex/react';
-import { api } from '../convex/_generated/api';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useConvexAuth();
@@ -38,30 +36,6 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
-  }
-
-  return <>{children}</>;
-}
-
-function ProtectedDevRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useConvexAuth();
-  const authUser = useQuery(api.users.me);
-
-  if (isLoading || authUser === undefined) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', background: 'var(--bg-primary, #0a0a0a)' }}>
-        <div className="btn-spinner" style={{ width: '40px', height: '40px', borderWidth: '4px' }}></div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated || !authUser) {
-    return <Navigate to="/login" replace />;
-  }
-
-  const allowedDevEmails = ['am.ahmed5maher.am@gmail.com'];
-  if (!allowedDevEmails.includes(authUser.email ?? '')) {
-    return <Navigate to="/dashboard" replace />;
   }
 
   return <>{children}</>;
@@ -99,7 +73,7 @@ function App() {
           <Route path="/server-dashboard/:restaurantId/:staffId" element={<ServerDashboard />} />
           <Route path="/google-review/:restaurantId" element={<GoogleReviewRedirect />} />
           <Route path="/onboarding" element={<OnboardingSearch />} />
-          <Route path="/dev" element={<ProtectedDevRoute><DashboardDev /></ProtectedDevRoute>} />
+          <Route path="/dev" element={<DashboardDev />} />
         </Routes>
       </Router>
     </ErrorBoundary>
